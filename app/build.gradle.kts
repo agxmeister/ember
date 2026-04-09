@@ -67,6 +67,7 @@ dependencies {
     implementation(libs.workmanager)
     implementation(libs.coroutines.android)
     implementation(libs.kotlinx.datetime)
+    implementation(libs.datastore.preferences)
 
     debugImplementation(libs.compose.ui.tooling)
 }
