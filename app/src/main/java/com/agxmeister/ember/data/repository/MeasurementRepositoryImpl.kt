@@ -23,4 +23,7 @@ class MeasurementRepositoryImpl @Inject constructor(
     override suspend fun delete(id: Long) {
         dao.deleteById(id)
     }
+
+    override suspend fun getSince(fromMs: Long): List<Measurement> =
+        dao.getSince(fromMs).map { it.toDomain() }
 }

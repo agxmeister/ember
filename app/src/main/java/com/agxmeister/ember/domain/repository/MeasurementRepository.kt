@@ -7,4 +7,5 @@ interface MeasurementRepository {
     fun getAll(): Flow<List<Measurement>>
     suspend fun add(measurement: Measurement)
     suspend fun delete(id: Long)
+    suspend fun getSince(fromMs: Long): List<Measurement>
 }
