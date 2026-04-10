@@ -14,22 +14,27 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.agxmeister.ember.presentation.home.WeightWheelPicker
 
 @Composable
 fun OnboardingScreen(
@@ -70,6 +75,10 @@ private fun ColumnScope.WeightStep(
     onWeightChanged: (Double) -> Unit,
     onNext: () -> Unit,
 ) {
+    var text by rememberSaveable { mutableStateOf(weightKg.toString()) }
+    val parsed = text.toDoubleOrNull()
+    val isValid = parsed != null && parsed in 30.0..300.0
+
     Text("Welcome to Ember", style = MaterialTheme.typography.headlineSmall)
     Spacer(Modifier.height(8.dp))
     Text(
@@ -78,13 +87,20 @@ private fun ColumnScope.WeightStep(
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
     )
     Spacer(Modifier.height(32.dp))
-    WeightWheelPicker(
-        initialWeight = weightKg,
-        onWeightChanged = onWeightChanged,
+    OutlinedTextField(
+        value = text,
+        onValueChange = { input ->
+            text = input
+            input.toDoubleOrNull()?.let { onWeightChanged(it) }
+        },
+        label = { Text("Weight (kg)") },
+        isError = text.isNotEmpty() && !isValid,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+        singleLine = true,
         modifier = Modifier.fillMaxWidth(),
     )
     Spacer(Modifier.weight(1f))
-    Button(onClick = onNext, modifier = Modifier.fillMaxWidth()) {
+    Button(onClick = onNext, enabled = isValid, modifier = Modifier.fillMaxWidth()) {
         Text("Next")
     }
 }
