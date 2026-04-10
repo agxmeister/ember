@@ -12,6 +12,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -51,11 +52,13 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        WeightWheelPicker(
-            initialWeight = state.defaultWeightKg,
-            onWeightChanged = { selectedWeight = it },
-            modifier = Modifier.fillMaxWidth(),
-        )
+        key(state.defaultWeightKg) {
+            WeightWheelPicker(
+                initialWeight = state.defaultWeightKg,
+                onWeightChanged = { selectedWeight = it },
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
 
         Spacer(modifier = Modifier.height(40.dp))
 
