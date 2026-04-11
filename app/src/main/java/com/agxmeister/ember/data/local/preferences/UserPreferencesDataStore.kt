@@ -31,6 +31,9 @@ class UserPreferencesDataStore @Inject constructor(
     val initialWeightKg: Flow<Double> =
         context.dataStore.data.map { it[initialWeightKey] ?: 70.0 }
 
+    val dayStartHour: Flow<Int> =
+        context.dataStore.data.map { it[dayStartHourKey] ?: 7 }
+
     suspend fun saveOnboardingData(weightKg: Double, dayStartHour: Int, dayStartMinute: Int) {
         context.dataStore.edit { prefs ->
             prefs[initialWeightKey] = weightKg

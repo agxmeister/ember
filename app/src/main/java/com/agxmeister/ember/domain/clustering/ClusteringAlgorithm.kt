@@ -1,65 +1,44 @@
 package com.agxmeister.ember.domain.clustering
 
 import com.agxmeister.ember.domain.model.Cluster
+import com.agxmeister.ember.domain.model.DayCluster
 import com.agxmeister.ember.domain.model.Measurement
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import kotlin.math.abs
 
-private const val CLUSTER_WINDOW_MINUTES = 90
+// Day window: [dayStartHour-1, dayStartHour+16), total 17h = 1020 min → 4 slots of 255 min each.
+// Night (remaining 7h = 420 min) is split at its midpoint (210 min after window end):
+//   closer to window end  → Selene
+//   closer to window start → Eos
+private const val CLUSTER_MINUTES = 255    // 1020 / 4
+private const val WINDOW_MINUTES = 1020   // 17 * 60
+private const val NIGHT_MID_OFFSET = 1230 // 1020 + 420 / 2
 
 object ClusteringAlgorithm {
 
-    fun cluster(measurements: List<Measurement>): List<Cluster> {
-        if (measurements.isEmpty()) return emptyList()
-
-        val sorted = measurements.sortedBy { it.minuteOfDay() }
-
-        val groups = mutableListOf<MutableList<Measurement>>()
-        var current = mutableListOf(sorted.first())
-
-        for (measurement in sorted.drop(1)) {
-            val gap = measurement.minuteOfDay() - current.last().minuteOfDay()
-            if (gap > CLUSTER_WINDOW_MINUTES) {
-                groups.add(current)
-                current = mutableListOf(measurement)
-            } else {
-                current.add(measurement)
-            }
+    fun assign(minuteOfDay: Int, dayStartHour: Int): DayCluster {
+        val windowStart = ((dayStartHour - 1) * 60 + 1440) % 1440
+        val offset = (minuteOfDay - windowStart + 1440) % 1440
+        return when {
+            offset < CLUSTER_MINUTES -> DayCluster.Eos
+            offset < CLUSTER_MINUTES * 2 -> DayCluster.Helios
+            offset < CLUSTER_MINUTES * 3 -> DayCluster.Hesperus
+            offset < WINDOW_MINUTES -> DayCluster.Selene
+            offset < NIGHT_MID_OFFSET -> DayCluster.Selene
+            else -> DayCluster.Eos
         }
-        groups.add(current)
+    }
 
-        return groups.map { group ->
-            val median = group.map { it.minuteOfDay() }.average().toInt()
+    fun cluster(measurements: List<Measurement>, dayStartHour: Int): List<Cluster> {
+        val grouped = measurements.groupBy { m ->
+            val t = m.timestamp.toLocalDateTime(TimeZone.currentSystemDefault()).time
+            assign(t.hour * 60 + t.minute, dayStartHour)
+        }
+        return DayCluster.entries.map { dayCluster ->
             Cluster(
-                label = formatMinuteOfDay(median),
-                medianMinuteOfDay = median,
-                measurements = group.sortedBy { it.timestamp },
+                dayCluster = dayCluster,
+                measurements = (grouped[dayCluster] ?: emptyList()).sortedBy { it.timestamp },
             )
         }
-    }
-
-    fun nearestCluster(clusters: List<Cluster>, minuteOfDay: Int): Cluster? {
-        return clusters.minByOrNull { cluster ->
-            val diff = abs(cluster.medianMinuteOfDay - minuteOfDay)
-            minOf(diff, 1440 - diff)
-        }
-    }
-
-    private fun Measurement.minuteOfDay(): Int {
-        val time = timestamp.toLocalDateTime(TimeZone.currentSystemDefault()).time
-        return time.hour * 60 + time.minute
-    }
-
-    private fun formatMinuteOfDay(minutes: Int): String {
-        val hour = minutes / 60
-        val min = minutes % 60
-        val amPm = if (hour < 12) "AM" else "PM"
-        val displayHour = when {
-            hour == 0 -> 12
-            hour > 12 -> hour - 12
-            else -> hour
-        }
-        return "~%d:%02d %s".format(displayHour, min, amPm)
     }
 }

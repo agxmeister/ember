@@ -10,6 +10,7 @@ class UserPreferencesRepositoryImpl @Inject constructor(
 ) : UserPreferencesRepository {
     override val isOnboardingCompleted: Flow<Boolean> = dataStore.isOnboardingCompleted
     override val initialWeightKg: Flow<Double> = dataStore.initialWeightKg
+    override val dayStartHour: Flow<Int> = dataStore.dayStartHour
 
     override suspend fun saveOnboardingData(weightKg: Double, dayStartHour: Int, dayStartMinute: Int) {
         dataStore.saveOnboardingData(weightKg, dayStartHour, dayStartMinute)

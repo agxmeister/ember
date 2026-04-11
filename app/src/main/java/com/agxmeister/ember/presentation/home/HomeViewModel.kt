@@ -21,6 +21,7 @@ data class HomeUiState(
     val isRechecking: Boolean = false,
 )
 
+
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val getCurrentCluster: GetCurrentClusterUseCase,
@@ -36,8 +37,8 @@ class HomeViewModel @Inject constructor(
     ) { cluster, savedInitialWeight, isRechecking ->
         HomeUiState(
             currentCluster = cluster,
-            defaultWeightKg = cluster?.measurements
-                ?.maxByOrNull { it.timestamp }
+            defaultWeightKg = cluster.measurements
+                .maxByOrNull { it.timestamp }
                 ?.weightKg
                 ?: savedInitialWeight,
             isRechecking = isRechecking,
