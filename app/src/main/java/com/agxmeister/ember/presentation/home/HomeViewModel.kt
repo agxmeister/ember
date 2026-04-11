@@ -6,6 +6,7 @@ import com.agxmeister.ember.domain.model.Cluster
 import com.agxmeister.ember.domain.repository.UserPreferencesRepository
 import com.agxmeister.ember.domain.usecase.AddMeasurementUseCase
 import com.agxmeister.ember.domain.usecase.GetCurrentClusterUseCase
+import com.agxmeister.ember.domain.usecase.HasRecentMeasurementUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -17,25 +18,29 @@ import javax.inject.Inject
 data class HomeUiState(
     val currentCluster: Cluster? = null,
     val defaultWeightKg: Double = 70.0,
+    val isRechecking: Boolean = false,
 )
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val getCurrentCluster: GetCurrentClusterUseCase,
     private val addMeasurement: AddMeasurementUseCase,
+    private val hasRecentMeasurement: HasRecentMeasurementUseCase,
     preferencesRepository: UserPreferencesRepository,
 ) : ViewModel() {
 
     val uiState: StateFlow<HomeUiState> = combine(
         getCurrentCluster(),
         preferencesRepository.initialWeightKg,
-    ) { cluster, savedInitialWeight ->
+        hasRecentMeasurement(),
+    ) { cluster, savedInitialWeight, isRechecking ->
         HomeUiState(
             currentCluster = cluster,
             defaultWeightKg = cluster?.measurements
                 ?.maxByOrNull { it.timestamp }
                 ?.weightKg
                 ?: savedInitialWeight,
+            isRechecking = isRechecking,
         )
     }.stateIn(
         scope = viewModelScope,

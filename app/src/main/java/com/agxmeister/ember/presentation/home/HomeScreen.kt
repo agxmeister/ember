@@ -66,7 +66,7 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
             onClick = { viewModel.save(selectedWeight) },
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text("Save")
+            Text(if (state.isRechecking) "Re-check!" else "Check-in!")
         }
     }
 }
