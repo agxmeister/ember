@@ -31,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -75,9 +76,8 @@ private fun ColumnScope.WeightStep(
     onWeightChanged: (Double) -> Unit,
     onNext: () -> Unit,
 ) {
-    var text by rememberSaveable { mutableStateOf(weightKg.toString()) }
-    val parsed = text.toDoubleOrNull()
-    val isValid = parsed != null && parsed in 30.0..300.0
+    var text by rememberSaveable { mutableStateOf(weightKg.toInt().toString()) }
+    val isValid = text.isNotEmpty() && text.toIntOrNull()?.let { it in 30..300 } == true
 
     Text("Welcome to Ember", style = MaterialTheme.typography.headlineSmall)
     Spacer(Modifier.height(8.dp))
@@ -86,18 +86,20 @@ private fun ColumnScope.WeightStep(
         style = MaterialTheme.typography.bodyLarge,
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
     )
-    Spacer(Modifier.height(32.dp))
+    Spacer(Modifier.weight(1f))
     OutlinedTextField(
         value = text,
         onValueChange = { input ->
-            text = input
-            input.toDoubleOrNull()?.let { onWeightChanged(it) }
+            if (input.length <= 3 && input.all { it.isDigit() }) {
+                text = input
+                input.toIntOrNull()?.let { onWeightChanged(it.toDouble()) }
+            }
         },
-        label = { Text("Weight (kg)") },
-        isError = text.isNotEmpty() && !isValid,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+        textStyle = MaterialTheme.typography.displayMedium.copy(textAlign = TextAlign.Center),
+        suffix = { Text("kg", style = MaterialTheme.typography.headlineMedium) },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         singleLine = true,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.width(220.dp),
     )
     Spacer(Modifier.weight(1f))
     Button(onClick = onNext, enabled = isValid, modifier = Modifier.fillMaxWidth()) {

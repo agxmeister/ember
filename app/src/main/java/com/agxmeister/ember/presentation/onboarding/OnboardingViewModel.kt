@@ -13,7 +13,7 @@ import javax.inject.Inject
 
 data class OnboardingUiState(
     val step: Int = 0,
-    val weightKg: Double = 70.0,
+    val weightKg: Double = 62.0,
     val dayStartHour: Int = 7,
     val dayStartMinute: Int = 0,
 )
