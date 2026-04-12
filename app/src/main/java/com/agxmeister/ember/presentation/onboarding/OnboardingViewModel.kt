@@ -16,6 +16,7 @@ data class OnboardingUiState(
     val weightKg: Double = 62.0,
     val dayStartHour: Int = 7,
     val dayStartMinute: Int = 0,
+    val clusteringEnabled: Boolean = true,
 )
 
 @HiltViewModel
@@ -29,12 +30,13 @@ class OnboardingViewModel @Inject constructor(
     fun onWeightChanged(weightKg: Double) = _uiState.update { it.copy(weightKg = weightKg) }
     fun onDayStartHourChanged(hour: Int) = _uiState.update { it.copy(dayStartHour = hour) }
     fun onDayStartMinuteChanged(minute: Int) = _uiState.update { it.copy(dayStartMinute = minute) }
+    fun onClusteringEnabledChanged(enabled: Boolean) = _uiState.update { it.copy(clusteringEnabled = enabled) }
     fun onNextStep() = _uiState.update { it.copy(step = it.step + 1) }
 
     fun complete() {
         val state = _uiState.value
         viewModelScope.launch {
-            completeOnboarding(state.weightKg, state.dayStartHour, state.dayStartMinute)
+            completeOnboarding(state.weightKg, state.dayStartHour, state.dayStartMinute, state.clusteringEnabled)
         }
     }
 }

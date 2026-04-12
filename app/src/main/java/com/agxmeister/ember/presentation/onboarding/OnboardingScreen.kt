@@ -19,6 +19,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -61,6 +62,11 @@ fun OnboardingScreen(
                 minute = state.dayStartMinute,
                 onHourChanged = viewModel::onDayStartHourChanged,
                 onMinuteChanged = viewModel::onDayStartMinuteChanged,
+                onNext = viewModel::onNextStep,
+            )
+            2 -> ClusteringStep(
+                clusteringEnabled = state.clusteringEnabled,
+                onClusteringEnabledChanged = viewModel::onClusteringEnabledChanged,
                 onDone = {
                     viewModel.complete()
                     onComplete()
@@ -113,7 +119,7 @@ private fun ColumnScope.TimeStep(
     minute: Int,
     onHourChanged: (Int) -> Unit,
     onMinuteChanged: (Int) -> Unit,
-    onDone: () -> Unit,
+    onNext: () -> Unit,
 ) {
     Text("Morning reminder", style = MaterialTheme.typography.headlineSmall)
     Spacer(Modifier.height(8.dp))
@@ -151,6 +157,47 @@ private fun ColumnScope.TimeStep(
             label = { "%02d".format(it) },
             onValueChanged = onMinuteChanged,
             modifier = Modifier.width(100.dp),
+        )
+    }
+    Spacer(Modifier.weight(1f))
+    Button(onClick = onNext, modifier = Modifier.fillMaxWidth()) {
+        Text("Next")
+    }
+}
+
+@Composable
+private fun ColumnScope.ClusteringStep(
+    clusteringEnabled: Boolean,
+    onClusteringEnabledChanged: (Boolean) -> Unit,
+    onDone: () -> Unit,
+) {
+    Text("Smart tracking", style = MaterialTheme.typography.headlineSmall)
+    Spacer(Modifier.height(8.dp))
+    Text(
+        "Ember can group your measurements by time of day — morning, midday, evening, and night. " +
+            "This lets you compare like with like, giving you a clearer picture of your actual trend " +
+            "rather than natural daily fluctuations.",
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+    )
+    Spacer(Modifier.weight(1f))
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text("Time-of-day clustering", style = MaterialTheme.typography.bodyLarge)
+            Text(
+                if (clusteringEnabled) "On — trends shown per time slot" else "Off — daily averages shown",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+            )
+        }
+        Switch(
+            checked = clusteringEnabled,
+            onCheckedChange = onClusteringEnabledChanged,
+            modifier = Modifier.padding(start = 16.dp),
         )
     }
     Spacer(Modifier.weight(1f))

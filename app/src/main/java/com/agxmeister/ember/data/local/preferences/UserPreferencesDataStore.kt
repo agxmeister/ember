@@ -24,6 +24,7 @@ class UserPreferencesDataStore @Inject constructor(
     private val initialWeightKey = doublePreferencesKey("initial_weight_kg")
     private val dayStartHourKey = intPreferencesKey("day_start_hour")
     private val dayStartMinuteKey = intPreferencesKey("day_start_minute")
+    private val clusteringEnabledKey = booleanPreferencesKey("clustering_enabled")
 
     val isOnboardingCompleted: Flow<Boolean> =
         context.dataStore.data.map { it[onboardingCompletedKey] ?: false }
@@ -34,12 +35,22 @@ class UserPreferencesDataStore @Inject constructor(
     val dayStartHour: Flow<Int> =
         context.dataStore.data.map { it[dayStartHourKey] ?: 7 }
 
-    suspend fun saveOnboardingData(weightKg: Double, dayStartHour: Int, dayStartMinute: Int) {
+    val clusteringEnabled: Flow<Boolean> =
+        context.dataStore.data.map { it[clusteringEnabledKey] ?: true }
+
+    suspend fun saveOnboardingData(weightKg: Double, dayStartHour: Int, dayStartMinute: Int, clusteringEnabled: Boolean) {
         context.dataStore.edit { prefs ->
             prefs[initialWeightKey] = weightKg
             prefs[dayStartHourKey] = dayStartHour
             prefs[dayStartMinuteKey] = dayStartMinute
+            prefs[clusteringEnabledKey] = clusteringEnabled
             prefs[onboardingCompletedKey] = true
+        }
+    }
+
+    suspend fun setClusteringEnabled(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[clusteringEnabledKey] = enabled
         }
     }
 }

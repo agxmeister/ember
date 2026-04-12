@@ -8,8 +8,8 @@ class CompleteOnboardingUseCase @Inject constructor(
     private val preferencesRepository: UserPreferencesRepository,
     private val reminderScheduler: ReminderScheduler,
 ) {
-    suspend operator fun invoke(weightKg: Double, dayStartHour: Int, dayStartMinute: Int) {
-        preferencesRepository.saveOnboardingData(weightKg, dayStartHour, dayStartMinute)
+    suspend operator fun invoke(weightKg: Double, dayStartHour: Int, dayStartMinute: Int, clusteringEnabled: Boolean) {
+        preferencesRepository.saveOnboardingData(weightKg, dayStartHour, dayStartMinute, clusteringEnabled)
         reminderScheduler.scheduleForTime(dayStartHour, dayStartMinute)
     }
 }
