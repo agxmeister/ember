@@ -21,7 +21,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.agxmeister.ember.domain.model.Measurement
+import com.agxmeister.ember.presentation.theme.EmberTheme
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.agxmeister.ember.domain.model.Cluster
@@ -36,11 +39,34 @@ import com.patrykandpatrick.vico.compose.common.fill
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModel
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianLayerRangeProvider
+import com.patrykandpatrick.vico.core.cartesian.data.LineCartesianLayerModel
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
+import com.patrykandpatrick.vico.core.common.data.ExtraStore
+import java.text.DecimalFormat
+import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Duration.Companion.days
+
+// Adds 20 % of the data spread as padding above and below, keeping the axis
+// tightly zoomed on actual weight values rather than starting from zero.
+private val weightValueFormatter = CartesianValueFormatter.decimal(DecimalFormat("#;−#"))
+
+private val weightRangeProvider = object : CartesianLayerRangeProvider {
+    override fun getMinY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
+        val padding = (maxY - minY).coerceAtLeast(1.0) * 0.2
+        return minY - padding
+    }
+    override fun getMaxY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
+        val padding = (maxY - minY).coerceAtLeast(1.0) * 0.2
+        return maxY + padding
+    }
+}
 
 private val clusterColors = mapOf(
     DayCluster.Eos to Color(0xFFFFA726),
@@ -89,8 +115,6 @@ private fun CombinedClusterChart(clusters: List<Cluster>) {
     val nonEmpty = clusters.filter { it.measurements.isNotEmpty() }
     if (nonEmpty.isEmpty()) return
 
-    // Use the first cluster's dates as the shared x-axis reference.
-    // Clusters are measured on the same days so indices align across series.
     val referenceDates = remember(clusters) {
         nonEmpty.firstOrNull()?.measurements?.map { m ->
             m.timestamp.toLocalDateTime(TimeZone.currentSystemDefault()).date
@@ -109,6 +133,20 @@ private fun CombinedClusterChart(clusters: List<Cluster>) {
         }
     }
 
+    ClusterChartContent(
+        nonEmpty = nonEmpty,
+        referenceDates = referenceDates,
+        modelProducer = modelProducer,
+    )
+}
+
+@Composable
+private fun ClusterChartContent(
+    nonEmpty: List<Cluster>,
+    referenceDates: List<kotlinx.datetime.LocalDate>,
+    modelProducer: CartesianChartModelProducer? = null,
+    model: CartesianChartModel? = null,
+) {
     val eosLine = LineCartesianLayer.rememberLine(
         fill = LineCartesianLayer.LineFill.single(fill(clusterColors[DayCluster.Eos]!!))
     )
@@ -130,21 +168,36 @@ private fun CombinedClusterChart(clusters: List<Cluster>) {
     )
     val seriesLines = nonEmpty.map { lineByCluster[it.dayCluster]!! }
 
-    CartesianChartHost(
-        chart = rememberCartesianChart(
-            rememberLineCartesianLayer(
-                lineProvider = LineCartesianLayer.LineProvider.series(*seriesLines.toTypedArray()),
-            ),
-            startAxis = VerticalAxis.rememberStart(),
-            bottomAxis = HorizontalAxis.rememberBottom(
-                valueFormatter = { _, x, _ -> referenceDates.getOrNull(x.toInt())?.toString() ?: "" }
-            ),
+    val chart = rememberCartesianChart(
+        rememberLineCartesianLayer(
+            lineProvider = LineCartesianLayer.LineProvider.series(*seriesLines.toTypedArray()),
+            rangeProvider = weightRangeProvider,
         ),
-        modelProducer = modelProducer,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(300.dp),
+        startAxis = VerticalAxis.rememberStart(valueFormatter = weightValueFormatter),
+        bottomAxis = HorizontalAxis.rememberBottom(
+            valueFormatter = { _, x, _ ->
+                    val date = referenceDates.getOrNull(x.toInt())
+                    if (date != null) {
+                        val month = date.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }
+                        "$month ${date.dayOfMonth}"
+                    } else ""
+                }
+        ),
     )
+
+    if (modelProducer != null) {
+        CartesianChartHost(
+            chart = chart,
+            modelProducer = modelProducer,
+            modifier = Modifier.fillMaxWidth().height(300.dp),
+        )
+    } else if (model != null) {
+        CartesianChartHost(
+            chart = chart,
+            model = model,
+            modifier = Modifier.fillMaxWidth().height(300.dp),
+        )
+    }
 
     Spacer(modifier = Modifier.height(12.dp))
     Row(
@@ -167,6 +220,87 @@ private fun CombinedClusterChart(clusters: List<Cluster>) {
     }
 }
 
+private fun previewClusters(vararg included: DayCluster): List<Cluster> {
+    val now = Clock.System.now()
+    val baseWeights = mapOf(
+        DayCluster.Eos to 80.0,
+        DayCluster.Helios to 81.5,
+        DayCluster.Hesperus to 82.0,
+        DayCluster.Selene to 83.0,
+    )
+    // Daily fluctuation pattern: up/down noise on top of a gentle downward trend
+    val fluctuation = listOf(0.0, 0.3, -0.1, 0.4, 0.1, -0.2, 0.5, -0.3, 0.2, -0.4, 0.1, -0.1, 0.3, -0.2)
+    val trend = -0.05 // kg per day
+    return included.map { cluster ->
+        Cluster(
+            dayCluster = cluster,
+            measurements = (0..13).map { day ->
+                Measurement(
+                    weightKg = baseWeights[cluster]!! + fluctuation[day] + day * trend,
+                    timestamp = now - day.days,
+                )
+            },
+        )
+    }
+}
+
+private fun previewModel(clusters: List<Cluster>): CartesianChartModel =
+    CartesianChartModel(
+        LineCartesianLayerModel.build {
+            clusters.forEach { cluster -> series(cluster.measurements.map { it.weightKg }) }
+        }
+    )
+
+private fun previewDates(clusters: List<Cluster>) =
+    clusters.firstOrNull()?.measurements?.map { m ->
+        m.timestamp.toLocalDateTime(TimeZone.currentSystemDefault()).date
+    } ?: emptyList()
+
+@Preview(showBackground = true)
+@Composable
+private fun AllClustersPreview() {
+    val clusters = previewClusters(*DayCluster.entries.toTypedArray())
+    EmberTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            ClusterChartContent(
+                nonEmpty = clusters,
+                referenceDates = previewDates(clusters),
+                model = previewModel(clusters),
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TwoClustersPreview() {
+    val clusters = previewClusters(DayCluster.Eos, DayCluster.Selene)
+    EmberTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            ClusterChartContent(
+                nonEmpty = clusters,
+                referenceDates = previewDates(clusters),
+                model = previewModel(clusters),
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun OneClusterPreview() {
+    val clusters = previewClusters(DayCluster.Helios)
+    EmberTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            ClusterChartContent(
+                nonEmpty = clusters,
+                referenceDates = previewDates(clusters),
+                model = previewModel(clusters),
+            )
+        }
+    }
+}
+
 @Composable
 private fun DailyAverageChart(dailyAverages: List<DailyAverage>) {
     if (dailyAverages.isEmpty()) return
@@ -184,10 +318,14 @@ private fun DailyAverageChart(dailyAverages: List<DailyAverage>) {
     CartesianChartHost(
         chart = rememberCartesianChart(
             rememberLineCartesianLayer(),
-            startAxis = VerticalAxis.rememberStart(),
+            startAxis = VerticalAxis.rememberStart(valueFormatter = weightValueFormatter),
             bottomAxis = HorizontalAxis.rememberBottom(
                 valueFormatter = { _, x, _ ->
-                    dailyAverages.getOrNull(x.toInt())?.date?.toString() ?: ""
+                    val date = dailyAverages.getOrNull(x.toInt())?.date
+                    if (date != null) {
+                        val month = date.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }
+                        "$month ${date.dayOfMonth}"
+                    } else ""
                 }
             ),
         ),
