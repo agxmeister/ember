@@ -23,8 +23,18 @@ import kotlin.time.Duration.Companion.days
 
 sealed class ChartUiState {
     data object Empty : ChartUiState()
-    data class Clustered(val clusters: List<Cluster>, val median: Double, val trend: Double?) : ChartUiState()
-    data class Classic(val dailyAverages: List<DailyAverage>, val median: Double, val trend: Double?) : ChartUiState()
+    data class Clustered(
+        val clusters: List<Cluster>,
+        val showChart: Boolean,
+        val median: Double?,
+        val trend: Double?,
+    ) : ChartUiState()
+    data class Classic(
+        val dailyAverages: List<DailyAverage>,
+        val showChart: Boolean,
+        val median: Double?,
+        val trend: Double?,
+    ) : ChartUiState()
 }
 
 @HiltViewModel
@@ -43,15 +53,28 @@ class ChartViewModel @Inject constructor(
         val oneWeekAgo = now - 7.days
         val twoWeeksAgo = now - 14.days
 
+        val allMeasurements = clusters.flatMap { it.measurements }
+        val totalCount = allMeasurements.size
+        val recentCount = allMeasurements.count { it.timestamp >= oneWeekAgo }
+        val previousWeekCount = allMeasurements.count { it.timestamp >= twoWeeksAgo && it.timestamp < oneWeekAgo }
+
+        val showChart = recentCount >= 3
+        val showMedian = totalCount >= 5
+        val showTrend = previousWeekCount >= 1
+
         if (clusteringEnabled) {
             val nonEmpty = clusters.filter { it.measurements.isNotEmpty() }
             if (nonEmpty.isEmpty()) {
                 ChartUiState.Empty
             } else {
-                val currentMedian = nonEmpty.periodMedian(oneWeekAgo, now)
-                    ?: nonEmpty.map { it.measurements.map { m -> m.weightKg }.median() }.average()
-                val previousMedian = nonEmpty.periodMedian(twoWeeksAgo, oneWeekAgo)
-                ChartUiState.Clustered(nonEmpty, currentMedian, previousMedian?.let { currentMedian - it })
+                val median = if (showMedian) {
+                    nonEmpty.periodMedian(oneWeekAgo, now)
+                        ?: nonEmpty.map { it.measurements.map { m -> m.weightKg }.median() }.average()
+                } else null
+                val trend = if (showTrend && median != null) {
+                    nonEmpty.periodMedian(twoWeeksAgo, oneWeekAgo)?.let { median - it }
+                } else null
+                ChartUiState.Clustered(nonEmpty, showChart, median, trend)
             }
         } else {
             if (dailyAverages.isEmpty()) {
@@ -61,11 +84,15 @@ class ChartViewModel @Inject constructor(
                 val oneWeekAgoDate = today.minus(DatePeriod(days = 7))
                 val twoWeeksAgoDate = today.minus(DatePeriod(days = 14))
                 val currentWeek = dailyAverages.filter { it.date >= oneWeekAgoDate }
-                val previousWeek = dailyAverages.filter { it.date >= twoWeeksAgoDate && it.date < oneWeekAgoDate }
-                val currentMedian = if (currentWeek.isNotEmpty()) currentWeek.map { it.weightKg }.median()
-                                    else dailyAverages.map { it.weightKg }.median()
-                val previousMedian = if (previousWeek.isNotEmpty()) previousWeek.map { it.weightKg }.median() else null
-                ChartUiState.Classic(dailyAverages, currentMedian, previousMedian?.let { currentMedian - it })
+                val median = if (showMedian) {
+                    if (currentWeek.isNotEmpty()) currentWeek.map { it.weightKg }.median()
+                    else dailyAverages.map { it.weightKg }.median()
+                } else null
+                val trend = if (showTrend && median != null) {
+                    val previousWeek = dailyAverages.filter { it.date >= twoWeeksAgoDate && it.date < oneWeekAgoDate }
+                    if (previousWeek.isNotEmpty()) median - previousWeek.map { it.weightKg }.median() else null
+                } else null
+                ChartUiState.Classic(dailyAverages, showChart, median, trend)
             }
         }
     }.stateIn(

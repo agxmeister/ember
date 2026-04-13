@@ -60,6 +60,7 @@ import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.core.common.data.ExtraStore
 import java.text.DecimalFormat
 import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.math.abs
@@ -115,7 +116,19 @@ fun ChartScreen(viewModel: ChartViewModel = hiltViewModel()) {
             ) {
                 Text("Weight Trends", style = MaterialTheme.typography.headlineSmall)
                 Spacer(modifier = Modifier.height(16.dp))
-                CombinedClusterChart(clusters = state.clusters, median = state.median, trend = state.trend)
+                when {
+                    state.showChart -> CombinedClusterChart(
+                        clusters = state.clusters,
+                        median = state.median,
+                        trend = state.trend,
+                    )
+                    state.median != null -> MedianDisplay(median = state.median, trend = state.trend)
+                    else -> Text(
+                        text = "Keep measuring! You need at least 3 measurements this week to see the chart, and 5 in total for the median.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
         is ChartUiState.Classic -> {
@@ -126,14 +139,54 @@ fun ChartScreen(viewModel: ChartViewModel = hiltViewModel()) {
             ) {
                 Text("Weight Trends", style = MaterialTheme.typography.headlineSmall)
                 Spacer(modifier = Modifier.height(16.dp))
-                DailyAverageChart(dailyAverages = state.dailyAverages, median = state.median, trend = state.trend)
+                when {
+                    state.showChart -> DailyAverageChart(
+                        dailyAverages = state.dailyAverages,
+                        median = state.median,
+                        trend = state.trend,
+                    )
+                    state.median != null -> MedianDisplay(median = state.median, trend = state.trend)
+                    else -> Text(
+                        text = "Keep measuring! You need at least 3 measurements this week to see the chart, and 5 in total for the median.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun CombinedClusterChart(clusters: List<Cluster>, median: Double, trend: Double?) {
+private fun MedianDisplay(median: Double, trend: Double?) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text(
+            text = "Current median",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = "${DecimalFormat("0.0").format(median)} kg",
+            style = MaterialTheme.typography.displaySmall,
+        )
+        if (trend != null) {
+            Text(
+                text = "${formatTrend(trend)} vs prev. week",
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (trend <= 0) Color(0xFF4CAF50) else Color(0xFFE53935),
+            )
+        }
+    }
+}
+
+@Composable
+private fun CombinedClusterChart(clusters: List<Cluster>, median: Double?, trend: Double?) {
     val nonEmpty = clusters.filter { it.measurements.isNotEmpty() }
     if (nonEmpty.isEmpty()) return
 
@@ -154,7 +207,7 @@ private fun CombinedClusterChart(clusters: List<Cluster>, median: Double, trend:
                 }
             }
             extras {
-                it[medianKey] = median
+                if (median != null) it[medianKey] = median
                 if (trend != null) it[trendKey] = trend
             }
         }
@@ -172,7 +225,7 @@ private fun CombinedClusterChart(clusters: List<Cluster>, median: Double, trend:
 @Composable
 private fun ClusterChartContent(
     nonEmpty: List<Cluster>,
-    referenceDates: List<kotlinx.datetime.LocalDate>,
+    referenceDates: List<LocalDate>,
     median: Double? = null,
     trend: Double? = null,
     modelProducer: CartesianChartModelProducer? = null,
@@ -298,7 +351,13 @@ private fun ClusterChartContent(
     }
 }
 
-private fun previewClusters(vararg included: DayCluster): List<Cluster> {
+// — Preview helpers —
+
+private fun buildClusters(vararg specs: Pair<DayCluster, List<Measurement>>): List<Cluster> =
+    specs.map { (cluster, measurements) -> Cluster(dayCluster = cluster, measurements = measurements) }
+
+// 14 days of data across all clusters (chart + median + trend)
+private fun previewClusters14Days(vararg included: DayCluster): List<Cluster> {
     val now = Clock.System.now()
     val baseWeights = mapOf(
         DayCluster.Eos to 80.0,
@@ -306,15 +365,13 @@ private fun previewClusters(vararg included: DayCluster): List<Cluster> {
         DayCluster.Hesperus to 82.0,
         DayCluster.Selene to 83.0,
     )
-    // Daily fluctuation pattern: up/down noise on top of a gentle downward trend
     val fluctuation = listOf(0.0, 0.3, -0.1, 0.4, 0.1, -0.2, 0.5, -0.3, 0.2, -0.4, 0.1, -0.1, 0.3, -0.2)
-    val trend = -0.05 // kg per day
     return included.map { cluster ->
         Cluster(
             dayCluster = cluster,
             measurements = (0..13).map { day ->
                 Measurement(
-                    weightKg = baseWeights[cluster]!! + fluctuation[day] + day * trend,
+                    weightKg = baseWeights[cluster]!! + fluctuation[day] + day * -0.05,
                     timestamp = now - day.days,
                 )
             },
@@ -322,46 +379,164 @@ private fun previewClusters(vararg included: DayCluster): List<Cluster> {
     }
 }
 
+// 4 measurements all within last 7 days → chart visible, < 5 total → no median
+private fun previewClustersChartOnly(): List<Cluster> {
+    val now = Clock.System.now()
+    return buildClusters(
+        DayCluster.Eos to (0..3).map { day ->
+            Measurement(weightKg = 80.0 - day * 0.1, timestamp = now - day.days)
+        }
+    )
+}
+
+// 1 recent + 5 old (> 14 days ago) → >= 5 total → median; < 3 recent → no chart; 0 in prev week → no trend
+private fun previewClustersMedianOnly(): List<Cluster> {
+    val now = Clock.System.now()
+    return buildClusters(
+        DayCluster.Eos to listOf(
+            Measurement(weightKg = 79.5, timestamp = now - 2.days),
+        ) + (0..4).map { i ->
+            Measurement(weightKg = 80.0 + i * 0.2, timestamp = now - (20 + i).days)
+        }
+    )
+}
+
+// 1 recent + 3 in prev week + 2 old → >= 5 total → median; < 3 recent → no chart; 3 in prev week → trend
+private fun previewClustersMedianOnlyWithTrend(): List<Cluster> {
+    val now = Clock.System.now()
+    return buildClusters(
+        DayCluster.Eos to listOf(
+            Measurement(weightKg = 79.5, timestamp = now - 2.days),
+        ) + (0..2).map { i ->
+            Measurement(weightKg = 80.2 + i * 0.1, timestamp = now - (8 + i).days)
+        } + (0..1).map { i ->
+            Measurement(weightKg = 80.5, timestamp = now - (20 + i).days)
+        }
+    )
+}
+
+// 5 in last 7 days + 2 older than 14 days → >= 5 total → median; >= 3 recent → chart; 0 in prev week → no trend
+private fun previewClustersChartAndMedianNoTrend(): List<Cluster> {
+    val now = Clock.System.now()
+    return buildClusters(
+        DayCluster.Eos to (0..4).map { day ->
+            Measurement(weightKg = 80.0 - day * 0.1, timestamp = now - day.days)
+        } + (0..1).map { i ->
+            Measurement(weightKg = 80.8, timestamp = now - (20 + i).days)
+        }
+    )
+}
+
 private fun previewModel(clusters: List<Cluster>): CartesianChartModel =
     CartesianChartModel(
         LineCartesianLayerModel.build {
-            clusters.forEach { cluster ->
+            clusters.filter { it.measurements.isNotEmpty() }.forEach { cluster ->
                 series(cluster.measurements.sortedBy { it.timestamp }.map { it.weightKg })
             }
         }
     )
 
-private fun previewDates(clusters: List<Cluster>) =
+private fun previewDates(clusters: List<Cluster>): List<LocalDate> =
     clusters.firstOrNull()?.measurements
         ?.sortedBy { it.timestamp }
         ?.map { m -> m.timestamp.toLocalDateTime(TimeZone.currentSystemDefault()).date }
         ?: emptyList()
 
 private fun previewMedian(clusters: List<Cluster>): Double {
-    val clusterMedians = clusters.filter { it.measurements.isNotEmpty() }.map { cluster ->
-        val sorted = cluster.measurements.take(7).map { it.weightKg }.sorted()
-        if (sorted.size % 2 == 0) (sorted[sorted.size / 2 - 1] + sorted[sorted.size / 2]) / 2.0
-        else sorted[sorted.size / 2]
-    }
-    return if (clusterMedians.isEmpty()) 0.0 else clusterMedians.average()
+    val allWeights = clusters.flatMap { it.measurements }.map { it.weightKg }.sorted()
+    return if (allWeights.size % 2 == 0) (allWeights[allWeights.size / 2 - 1] + allWeights[allWeights.size / 2]) / 2.0
+    else allWeights[allWeights.size / 2]
 }
 
 private fun previewTrend(clusters: List<Cluster>): Double {
-    val medianForRange = { range: IntRange ->
-        val clusterMedians = clusters.filter { it.measurements.isNotEmpty() }.map { cluster ->
-            val sorted = cluster.measurements.slice(range).map { it.weightKg }.sorted()
-            if (sorted.size % 2 == 0) (sorted[sorted.size / 2 - 1] + sorted[sorted.size / 2]) / 2.0
-            else sorted[sorted.size / 2]
-        }
-        if (clusterMedians.isEmpty()) 0.0 else clusterMedians.average()
+    val now = Clock.System.now()
+    val oneWeekAgo = now - 7.days
+    val twoWeeksAgo = now - 14.days
+    val medianForRange = { from: kotlinx.datetime.Instant, to: kotlinx.datetime.Instant ->
+        val weights = clusters.flatMap { it.measurements }
+            .filter { it.timestamp >= from && it.timestamp <= to }
+            .map { it.weightKg }.sorted()
+        if (weights.isEmpty()) null
+        else if (weights.size % 2 == 0) (weights[weights.size / 2 - 1] + weights[weights.size / 2]) / 2.0
+        else weights[weights.size / 2]
     }
-    return medianForRange(0..6) - medianForRange(7..13)
+    val current = medianForRange(oneWeekAgo, now) ?: 0.0
+    val previous = medianForRange(twoWeeksAgo, oneWeekAgo) ?: 0.0
+    return current - previous
 }
 
-@Preview(showBackground = true)
+// — Previews —
+
+@Preview(showBackground = true, name = "Empty — no data")
 @Composable
-private fun AllClustersPreview() {
-    val clusters = previewClusters(*DayCluster.entries.toTypedArray())
+private fun EmptyPreview() {
+    EmberTheme {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("No data yet. Start by adding your weight on the Home screen.")
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Chart only — < 5 total, no median")
+@Composable
+private fun ChartOnlyPreview() {
+    val clusters = previewClustersChartOnly()
+    EmberTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            ClusterChartContent(
+                nonEmpty = clusters,
+                referenceDates = previewDates(clusters),
+                median = null,
+                trend = null,
+                model = previewModel(clusters),
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Median only — no chart, no trend")
+@Composable
+private fun MedianOnlyNoTrendPreview() {
+    val clusters = previewClustersMedianOnly()
+    EmberTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            MedianDisplay(median = previewMedian(clusters), trend = null)
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Median only — no chart, with trend")
+@Composable
+private fun MedianOnlyWithTrendPreview() {
+    val clusters = previewClustersMedianOnlyWithTrend()
+    EmberTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            MedianDisplay(median = previewMedian(clusters), trend = previewTrend(clusters))
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Chart + median — no trend")
+@Composable
+private fun ChartAndMedianNoTrendPreview() {
+    val clusters = previewClustersChartAndMedianNoTrend()
+    EmberTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            ClusterChartContent(
+                nonEmpty = clusters,
+                referenceDates = previewDates(clusters),
+                median = previewMedian(clusters),
+                trend = null,
+                model = previewModel(clusters),
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Chart + median + trend — all clusters")
+@Composable
+private fun ChartAndMedianWithTrendAllClustersPreview() {
+    val clusters = previewClusters14Days(*DayCluster.entries.toTypedArray())
     EmberTheme {
         Column(modifier = Modifier.padding(16.dp)) {
             ClusterChartContent(
@@ -375,27 +550,10 @@ private fun AllClustersPreview() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Chart + median + trend — two clusters")
 @Composable
-private fun TwoClustersPreview() {
-    val clusters = previewClusters(DayCluster.Eos, DayCluster.Selene)
-    EmberTheme {
-        Column(modifier = Modifier.padding(16.dp)) {
-            ClusterChartContent(
-                nonEmpty = clusters,
-                referenceDates = previewDates(clusters),
-                median = previewMedian(clusters),
-                trend = previewTrend(clusters),
-                model = previewModel(clusters),
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun OneClusterPreview() {
-    val clusters = previewClusters(DayCluster.Helios)
+private fun ChartAndMedianWithTrendTwoClustersPreview() {
+    val clusters = previewClusters14Days(DayCluster.Eos, DayCluster.Selene)
     EmberTheme {
         Column(modifier = Modifier.padding(16.dp)) {
             ClusterChartContent(
@@ -410,7 +568,7 @@ private fun OneClusterPreview() {
 }
 
 @Composable
-private fun DailyAverageChart(dailyAverages: List<DailyAverage>, median: Double, trend: Double?) {
+private fun DailyAverageChart(dailyAverages: List<DailyAverage>, median: Double?, trend: Double?) {
     if (dailyAverages.isEmpty()) return
 
     val modelProducer = remember(dailyAverages) { CartesianChartModelProducer() }
@@ -421,7 +579,7 @@ private fun DailyAverageChart(dailyAverages: List<DailyAverage>, median: Double,
                 series(dailyAverages.map { it.weightKg })
             }
             extras {
-                it[medianKey] = median
+                if (median != null) it[medianKey] = median
                 if (trend != null) it[trendKey] = trend
             }
         }
@@ -433,20 +591,22 @@ private fun DailyAverageChart(dailyAverages: List<DailyAverage>, median: Double,
         thickness = 2.5.dp,
     )
     val medianLabelComponent = rememberTextComponent(color = medianColor)
-    val medianDecoration = remember(median, trend) {
-        HorizontalLine(
-            y = { it.getOrNull(medianKey) ?: median },
-            line = medianLineComponent,
-            labelComponent = medianLabelComponent,
-            label = { extraStore ->
-                val m = DecimalFormat("0.0").format(extraStore.getOrNull(medianKey) ?: median)
-                val t = extraStore.getOrNull(trendKey) ?: trend
-                if (t != null) "$m, ${formatTrend(t)} vs prev. week" else m
-            },
-            horizontalLabelPosition = Position.Horizontal.End,
-            verticalLabelPosition = Position.Vertical.Top,
-        )
-    }
+    val medianDecoration = if (median != null) {
+        remember(median, trend) {
+            HorizontalLine(
+                y = { it.getOrNull(medianKey) ?: median },
+                line = medianLineComponent,
+                labelComponent = medianLabelComponent,
+                label = { extraStore ->
+                    val m = DecimalFormat("0.0").format(extraStore.getOrNull(medianKey) ?: median)
+                    val t = extraStore.getOrNull(trendKey) ?: trend
+                    if (t != null) "$m, ${formatTrend(t)} vs prev. week" else m
+                },
+                horizontalLabelPosition = Position.Horizontal.End,
+                verticalLabelPosition = Position.Vertical.Top,
+            )
+        }
+    } else null
 
     val scrollState = rememberVicoScrollState(
         initialScroll = Scroll.Absolute.End,
@@ -476,7 +636,7 @@ private fun DailyAverageChart(dailyAverages: List<DailyAverage>, median: Double,
                     } else ""
                 }
             ),
-            decorations = listOf(medianDecoration),
+            decorations = listOfNotNull(medianDecoration),
         ),
         modelProducer = modelProducer,
         scrollState = scrollState,
@@ -485,5 +645,4 @@ private fun DailyAverageChart(dailyAverages: List<DailyAverage>, median: Double,
             .fillMaxWidth()
             .height(200.dp),
     )
-
 }
