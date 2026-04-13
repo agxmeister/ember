@@ -147,17 +147,22 @@ private fun ClusterChartContent(
     modelProducer: CartesianChartModelProducer? = null,
     model: CartesianChartModel? = null,
 ) {
+    val pointConnector = remember { LineCartesianLayer.PointConnector.cubic() }
     val eosLine = LineCartesianLayer.rememberLine(
-        fill = LineCartesianLayer.LineFill.single(fill(clusterColors[DayCluster.Eos]!!))
+        fill = LineCartesianLayer.LineFill.single(fill(clusterColors[DayCluster.Eos]!!)),
+        pointConnector = pointConnector,
     )
     val heliosLine = LineCartesianLayer.rememberLine(
-        fill = LineCartesianLayer.LineFill.single(fill(clusterColors[DayCluster.Helios]!!))
+        fill = LineCartesianLayer.LineFill.single(fill(clusterColors[DayCluster.Helios]!!)),
+        pointConnector = pointConnector,
     )
     val hesperusLine = LineCartesianLayer.rememberLine(
-        fill = LineCartesianLayer.LineFill.single(fill(clusterColors[DayCluster.Hesperus]!!))
+        fill = LineCartesianLayer.LineFill.single(fill(clusterColors[DayCluster.Hesperus]!!)),
+        pointConnector = pointConnector,
     )
     val seleneLine = LineCartesianLayer.rememberLine(
-        fill = LineCartesianLayer.LineFill.single(fill(clusterColors[DayCluster.Selene]!!))
+        fill = LineCartesianLayer.LineFill.single(fill(clusterColors[DayCluster.Selene]!!)),
+        pointConnector = pointConnector,
     )
 
     val lineByCluster = mapOf(
@@ -175,6 +180,7 @@ private fun ClusterChartContent(
         ),
         startAxis = VerticalAxis.rememberStart(valueFormatter = weightValueFormatter),
         bottomAxis = HorizontalAxis.rememberBottom(
+            itemPlacer = HorizontalAxis.ItemPlacer.aligned(shiftExtremeLines = false, spacing = { 2 }, addExtremeLabelPadding = false),
             valueFormatter = { _, x, _ ->
                     val date = referenceDates.getOrNull(x.toInt())
                     if (date != null) {
@@ -183,6 +189,7 @@ private fun ClusterChartContent(
                     } else ""
                 }
         ),
+
     )
 
     if (modelProducer != null) {
@@ -317,9 +324,14 @@ private fun DailyAverageChart(dailyAverages: List<DailyAverage>) {
 
     CartesianChartHost(
         chart = rememberCartesianChart(
-            rememberLineCartesianLayer(),
+            rememberLineCartesianLayer(
+                lineProvider = LineCartesianLayer.LineProvider.series(
+                    LineCartesianLayer.rememberLine(pointConnector = remember { LineCartesianLayer.PointConnector.cubic() })
+                ),
+            ),
             startAxis = VerticalAxis.rememberStart(valueFormatter = weightValueFormatter),
             bottomAxis = HorizontalAxis.rememberBottom(
+                itemPlacer = HorizontalAxis.ItemPlacer.aligned(shiftExtremeLines = false, spacing = { 2 }, addExtremeLabelPadding = false),
                 valueFormatter = { _, x, _ ->
                     val date = dailyAverages.getOrNull(x.toInt())?.date
                     if (date != null) {
@@ -328,6 +340,7 @@ private fun DailyAverageChart(dailyAverages: List<DailyAverage>) {
                     } else ""
                 }
             ),
+    
         ),
         modelProducer = modelProducer,
         modifier = Modifier
