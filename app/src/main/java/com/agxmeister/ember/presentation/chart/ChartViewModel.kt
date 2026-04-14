@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.agxmeister.ember.domain.model.Cluster
 import com.agxmeister.ember.domain.model.DailyAverage
+import com.agxmeister.ember.domain.model.WeightGoal
 import com.agxmeister.ember.domain.repository.UserPreferencesRepository
 import com.agxmeister.ember.domain.usecase.GetClusterTrendsUseCase
 import com.agxmeister.ember.domain.usecase.GetDailyAveragesUseCase
@@ -28,12 +29,14 @@ sealed class ChartUiState {
         val showChart: Boolean,
         val median: Double?,
         val trend: Double?,
+        val weightGoal: WeightGoal,
     ) : ChartUiState()
     data class Classic(
         val dailyAverages: List<DailyAverage>,
         val showChart: Boolean,
         val median: Double?,
         val trend: Double?,
+        val weightGoal: WeightGoal,
     ) : ChartUiState()
 }
 
@@ -46,9 +49,10 @@ class ChartViewModel @Inject constructor(
 
     val uiState: StateFlow<ChartUiState> = combine(
         preferencesRepository.clusteringEnabled,
+        preferencesRepository.weightGoal,
         getClusterTrends(),
         getDailyAverages(),
-    ) { clusteringEnabled, clusters, dailyAverages ->
+    ) { clusteringEnabled, weightGoal, clusters, dailyAverages ->
         val now = Clock.System.now()
         val oneWeekAgo = now - 7.days
         val twoWeeksAgo = now - 14.days
@@ -74,7 +78,7 @@ class ChartViewModel @Inject constructor(
                 val trend = if (showTrend && median != null) {
                     nonEmpty.periodMedian(twoWeeksAgo, oneWeekAgo)?.let { median - it }
                 } else null
-                ChartUiState.Clustered(nonEmpty, showChart, median, trend)
+                ChartUiState.Clustered(nonEmpty, showChart, median, trend, weightGoal)
             }
         } else {
             if (dailyAverages.isEmpty()) {
@@ -92,7 +96,7 @@ class ChartViewModel @Inject constructor(
                     val previousWeek = dailyAverages.filter { it.date >= twoWeeksAgoDate && it.date < oneWeekAgoDate }
                     if (previousWeek.isNotEmpty()) median - previousWeek.map { it.weightKg }.median() else null
                 } else null
-                ChartUiState.Classic(dailyAverages, showChart, median, trend)
+                ChartUiState.Classic(dailyAverages, showChart, median, trend, weightGoal)
             }
         }
     }.stateIn(

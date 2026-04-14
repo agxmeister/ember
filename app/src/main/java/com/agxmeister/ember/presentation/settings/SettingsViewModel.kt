@@ -3,9 +3,11 @@ package com.agxmeister.ember.presentation.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.agxmeister.ember.domain.model.Cluster
+import com.agxmeister.ember.domain.model.WeightGoal
 import com.agxmeister.ember.domain.repository.UserPreferencesRepository
 import com.agxmeister.ember.domain.usecase.GetClusterTrendsUseCase
 import com.agxmeister.ember.domain.usecase.SetClusteringEnabledUseCase
+import com.agxmeister.ember.domain.usecase.SetWeightGoalUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,6 +20,7 @@ class SettingsViewModel @Inject constructor(
     getClusterTrends: GetClusterTrendsUseCase,
     preferencesRepository: UserPreferencesRepository,
     private val setClusteringEnabled: SetClusteringEnabledUseCase,
+    private val setWeightGoal: SetWeightGoalUseCase,
 ) : ViewModel() {
 
     val clusters: StateFlow<List<Cluster>> = getClusterTrends()
@@ -34,7 +37,18 @@ class SettingsViewModel @Inject constructor(
             initialValue = true,
         )
 
+    val weightGoal: StateFlow<WeightGoal> = preferencesRepository.weightGoal
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = WeightGoal.Decrease,
+        )
+
     fun onClusteringEnabledChanged(enabled: Boolean) {
         viewModelScope.launch { setClusteringEnabled(enabled) }
+    }
+
+    fun onWeightGoalChanged(goal: WeightGoal) {
+        viewModelScope.launch { setWeightGoal(goal) }
     }
 }

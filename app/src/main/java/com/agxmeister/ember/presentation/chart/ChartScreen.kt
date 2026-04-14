@@ -30,6 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.agxmeister.ember.domain.model.Cluster
 import com.agxmeister.ember.domain.model.DailyAverage
 import com.agxmeister.ember.domain.model.DayCluster
+import com.agxmeister.ember.domain.model.WeightGoal
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
@@ -121,8 +122,9 @@ fun ChartScreen(viewModel: ChartViewModel = hiltViewModel()) {
                         clusters = state.clusters,
                         median = state.median,
                         trend = state.trend,
+                        weightGoal = state.weightGoal,
                     )
-                    state.median != null -> MedianDisplay(median = state.median, trend = state.trend)
+                    state.median != null -> MedianDisplay(median = state.median, trend = state.trend, weightGoal = state.weightGoal)
                     else -> Text(
                         text = "Keep measuring! You need at least 3 measurements this week to see the chart, and 5 in total for the median.",
                         style = MaterialTheme.typography.bodyMedium,
@@ -144,8 +146,9 @@ fun ChartScreen(viewModel: ChartViewModel = hiltViewModel()) {
                         dailyAverages = state.dailyAverages,
                         median = state.median,
                         trend = state.trend,
+                        weightGoal = state.weightGoal,
                     )
-                    state.median != null -> MedianDisplay(median = state.median, trend = state.trend)
+                    state.median != null -> MedianDisplay(median = state.median, trend = state.trend, weightGoal = state.weightGoal)
                     else -> Text(
                         text = "Keep measuring! You need at least 3 measurements this week to see the chart, and 5 in total for the median.",
                         style = MaterialTheme.typography.bodyMedium,
@@ -158,7 +161,7 @@ fun ChartScreen(viewModel: ChartViewModel = hiltViewModel()) {
 }
 
 @Composable
-private fun MedianDisplay(median: Double, trend: Double?) {
+private fun MedianDisplay(median: Double, trend: Double?, weightGoal: WeightGoal) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -176,17 +179,21 @@ private fun MedianDisplay(median: Double, trend: Double?) {
             style = MaterialTheme.typography.displaySmall,
         )
         if (trend != null) {
+            val isProgress = when (weightGoal) {
+                WeightGoal.Decrease -> trend <= 0
+                WeightGoal.Increase -> trend >= 0
+            }
             Text(
                 text = "${formatTrend(trend)} vs prev. week",
                 style = MaterialTheme.typography.bodyMedium,
-                color = if (trend <= 0) Color(0xFF4CAF50) else Color(0xFFE53935),
+                color = if (isProgress) Color(0xFF4CAF50) else Color(0xFFE53935),
             )
         }
     }
 }
 
 @Composable
-private fun CombinedClusterChart(clusters: List<Cluster>, median: Double?, trend: Double?) {
+private fun CombinedClusterChart(clusters: List<Cluster>, median: Double?, trend: Double?, weightGoal: WeightGoal) {
     val nonEmpty = clusters.filter { it.measurements.isNotEmpty() }
     if (nonEmpty.isEmpty()) return
 
@@ -218,6 +225,7 @@ private fun CombinedClusterChart(clusters: List<Cluster>, median: Double?, trend
         referenceDates = referenceDates,
         median = median,
         trend = trend,
+        weightGoal = weightGoal,
         modelProducer = modelProducer,
     )
 }
@@ -228,6 +236,7 @@ private fun ClusterChartContent(
     referenceDates: List<LocalDate>,
     median: Double? = null,
     trend: Double? = null,
+    weightGoal: WeightGoal = WeightGoal.Decrease,
     modelProducer: CartesianChartModelProducer? = null,
     model: CartesianChartModel? = null,
 ) {
@@ -260,14 +269,18 @@ private fun ClusterChartContent(
     )
     val seriesLines = sorted.map { lineByCluster[it.dayCluster]!! }
 
-    val medianColor = Color(0xFFE53935)
+    val medianColor = when {
+        trend == null -> Color(0xFFE53935)
+        (weightGoal == WeightGoal.Decrease && trend <= 0) || (weightGoal == WeightGoal.Increase && trend >= 0) -> Color(0xFF4CAF50)
+        else -> Color(0xFFE53935)
+    }
     val medianLineComponent = rememberLineComponent(
         fill = fill(medianColor),
         thickness = 2.5.dp,
     )
     val medianLabelComponent = rememberTextComponent(color = medianColor)
     val medianDecoration = if (median != null) {
-        remember(median, trend) {
+        remember(median, trend, weightGoal) {
             HorizontalLine(
                 y = { it.getOrNull(medianKey) ?: median },
                 line = medianLineComponent,
@@ -372,6 +385,29 @@ private fun previewClusters14Days(vararg included: DayCluster): List<Cluster> {
             measurements = (0..13).map { day ->
                 Measurement(
                     weightKg = baseWeights[cluster]!! + fluctuation[day] + day * -0.05,
+                    timestamp = now - day.days,
+                )
+            },
+        )
+    }
+}
+
+// 14 days of data with a downward trend (recent week lower than previous week)
+private fun previewClusters14DaysDecreasing(vararg included: DayCluster): List<Cluster> {
+    val now = Clock.System.now()
+    val baseWeights = mapOf(
+        DayCluster.Eos to 80.0,
+        DayCluster.Helios to 81.5,
+        DayCluster.Hesperus to 82.0,
+        DayCluster.Selene to 83.0,
+    )
+    val fluctuation = listOf(0.0, 0.3, -0.1, 0.4, 0.1, -0.2, 0.5, -0.3, 0.2, -0.4, 0.1, -0.1, 0.3, -0.2)
+    return included.map { cluster ->
+        Cluster(
+            dayCluster = cluster,
+            measurements = (0..13).map { day ->
+                Measurement(
+                    weightKg = baseWeights[cluster]!! + fluctuation[day] + day * 0.05,
                     timestamp = now - day.days,
                 )
             },
@@ -494,24 +530,52 @@ private fun ChartOnlyPreview() {
     }
 }
 
-@Preview(showBackground = true, name = "Median only — no chart, no trend")
+@Preview(showBackground = true, name = "Median — no trend")
 @Composable
 private fun MedianOnlyNoTrendPreview() {
-    val clusters = previewClustersMedianOnly()
     EmberTheme {
         Column(modifier = Modifier.padding(16.dp)) {
-            MedianDisplay(median = previewMedian(clusters), trend = null)
+            MedianDisplay(median = 80.0, trend = null, weightGoal = WeightGoal.Decrease)
         }
     }
 }
 
-@Preview(showBackground = true, name = "Median only — no chart, with trend")
+@Preview(showBackground = true, name = "Median — decrease goal, trending down (green)")
 @Composable
-private fun MedianOnlyWithTrendPreview() {
-    val clusters = previewClustersMedianOnlyWithTrend()
+private fun MedianDecreaseGoalPositiveTrendPreview() {
     EmberTheme {
         Column(modifier = Modifier.padding(16.dp)) {
-            MedianDisplay(median = previewMedian(clusters), trend = previewTrend(clusters))
+            MedianDisplay(median = 79.5, trend = -0.8, weightGoal = WeightGoal.Decrease)
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Median — decrease goal, trending up (red)")
+@Composable
+private fun MedianDecreaseGoalNegativeTrendPreview() {
+    EmberTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            MedianDisplay(median = 80.8, trend = +0.8, weightGoal = WeightGoal.Decrease)
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Median — increase goal, trending up (green)")
+@Composable
+private fun MedianIncreaseGoalPositiveTrendPreview() {
+    EmberTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            MedianDisplay(median = 80.8, trend = +0.8, weightGoal = WeightGoal.Increase)
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Median — increase goal, trending down (red)")
+@Composable
+private fun MedianIncreaseGoalNegativeTrendPreview() {
+    EmberTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            MedianDisplay(median = 79.5, trend = -0.8, weightGoal = WeightGoal.Increase)
         }
     }
 }
@@ -567,8 +631,44 @@ private fun ChartAndMedianWithTrendTwoClustersPreview() {
     }
 }
 
+@Preview(showBackground = true, name = "Chart + median + trend — toward goal, all clusters")
 @Composable
-private fun DailyAverageChart(dailyAverages: List<DailyAverage>, median: Double?, trend: Double?) {
+private fun ChartAndMedianTowardGoalAllClustersPreview() {
+    val clusters = previewClusters14DaysDecreasing(*DayCluster.entries.toTypedArray())
+    EmberTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            ClusterChartContent(
+                nonEmpty = clusters,
+                referenceDates = previewDates(clusters),
+                median = previewMedian(clusters),
+                trend = previewTrend(clusters),
+                weightGoal = WeightGoal.Decrease,
+                model = previewModel(clusters),
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Chart + median + trend — toward goal, two clusters")
+@Composable
+private fun ChartAndMedianTowardGoalTwoClustersPreview() {
+    val clusters = previewClusters14DaysDecreasing(DayCluster.Eos, DayCluster.Selene)
+    EmberTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            ClusterChartContent(
+                nonEmpty = clusters,
+                referenceDates = previewDates(clusters),
+                median = previewMedian(clusters),
+                trend = previewTrend(clusters),
+                weightGoal = WeightGoal.Decrease,
+                model = previewModel(clusters),
+            )
+        }
+    }
+}
+
+@Composable
+private fun DailyAverageChart(dailyAverages: List<DailyAverage>, median: Double?, trend: Double?, weightGoal: WeightGoal) {
     if (dailyAverages.isEmpty()) return
 
     val modelProducer = remember(dailyAverages) { CartesianChartModelProducer() }
@@ -585,14 +685,18 @@ private fun DailyAverageChart(dailyAverages: List<DailyAverage>, median: Double?
         }
     }
 
-    val medianColor = Color(0xFFE53935)
+    val medianColor = when {
+        trend == null -> Color(0xFFE53935)
+        (weightGoal == WeightGoal.Decrease && trend <= 0) || (weightGoal == WeightGoal.Increase && trend >= 0) -> Color(0xFF4CAF50)
+        else -> Color(0xFFE53935)
+    }
     val medianLineComponent = rememberLineComponent(
         fill = fill(medianColor),
         thickness = 2.5.dp,
     )
     val medianLabelComponent = rememberTextComponent(color = medianColor)
     val medianDecoration = if (median != null) {
-        remember(median, trend) {
+        remember(median, trend, weightGoal) {
             HorizontalLine(
                 y = { it.getOrNull(medianKey) ?: median },
                 line = medianLineComponent,

@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,11 +22,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.agxmeister.ember.domain.model.WeightGoal
 
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     val clusters by viewModel.clusters.collectAsStateWithLifecycle()
     val clusteringEnabled by viewModel.clusteringEnabled.collectAsStateWithLifecycle()
+    val weightGoal by viewModel.weightGoal.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier
@@ -31,6 +36,24 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             .padding(16.dp),
     ) {
         Text("Settings", style = MaterialTheme.typography.headlineSmall)
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text("Goal", style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            SegmentedButton(
+                selected = weightGoal == WeightGoal.Decrease,
+                onClick = { viewModel.onWeightGoalChanged(WeightGoal.Decrease) },
+                shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+            ) { Text("Lose weight") }
+            SegmentedButton(
+                selected = weightGoal == WeightGoal.Increase,
+                onClick = { viewModel.onWeightGoalChanged(WeightGoal.Increase) },
+                shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+            ) { Text("Gain weight") }
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        HorizontalDivider()
         Spacer(modifier = Modifier.height(24.dp))
 
         Text("Tracking mode", style = MaterialTheme.typography.titleMedium)

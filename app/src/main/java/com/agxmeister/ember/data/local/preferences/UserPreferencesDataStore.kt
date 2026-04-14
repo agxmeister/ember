@@ -7,7 +7,9 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.agxmeister.ember.domain.model.WeightGoal
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -25,6 +27,7 @@ class UserPreferencesDataStore @Inject constructor(
     private val dayStartHourKey = intPreferencesKey("day_start_hour")
     private val dayStartMinuteKey = intPreferencesKey("day_start_minute")
     private val clusteringEnabledKey = booleanPreferencesKey("clustering_enabled")
+    private val weightGoalKey = stringPreferencesKey("weight_goal")
 
     val isOnboardingCompleted: Flow<Boolean> =
         context.dataStore.data.map { it[onboardingCompletedKey] ?: false }
@@ -38,12 +41,27 @@ class UserPreferencesDataStore @Inject constructor(
     val clusteringEnabled: Flow<Boolean> =
         context.dataStore.data.map { it[clusteringEnabledKey] ?: true }
 
-    suspend fun saveOnboardingData(weightKg: Double, dayStartHour: Int, dayStartMinute: Int, clusteringEnabled: Boolean) {
+    val weightGoal: Flow<WeightGoal> =
+        context.dataStore.data.map { prefs ->
+            when (prefs[weightGoalKey]) {
+                WeightGoal.Increase.name -> WeightGoal.Increase
+                else -> WeightGoal.Decrease
+            }
+        }
+
+    suspend fun saveOnboardingData(
+        weightKg: Double,
+        dayStartHour: Int,
+        dayStartMinute: Int,
+        clusteringEnabled: Boolean,
+        weightGoal: WeightGoal,
+    ) {
         context.dataStore.edit { prefs ->
             prefs[initialWeightKey] = weightKg
             prefs[dayStartHourKey] = dayStartHour
             prefs[dayStartMinuteKey] = dayStartMinute
             prefs[clusteringEnabledKey] = clusteringEnabled
+            prefs[weightGoalKey] = weightGoal.name
             prefs[onboardingCompletedKey] = true
         }
     }
@@ -51,6 +69,12 @@ class UserPreferencesDataStore @Inject constructor(
     suspend fun setClusteringEnabled(enabled: Boolean) {
         context.dataStore.edit { prefs ->
             prefs[clusteringEnabledKey] = enabled
+        }
+    }
+
+    suspend fun setWeightGoal(goal: WeightGoal) {
+        context.dataStore.edit { prefs ->
+            prefs[weightGoalKey] = goal.name
         }
     }
 }

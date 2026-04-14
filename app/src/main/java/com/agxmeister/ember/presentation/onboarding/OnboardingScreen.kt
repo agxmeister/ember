@@ -18,9 +18,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import com.agxmeister.ember.domain.model.WeightGoal
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -57,14 +59,19 @@ fun OnboardingScreen(
                 onWeightChanged = viewModel::onWeightChanged,
                 onNext = viewModel::onNextStep,
             )
-            1 -> TimeStep(
+            1 -> GoalStep(
+                goal = state.weightGoal,
+                onGoalChanged = viewModel::onWeightGoalChanged,
+                onNext = viewModel::onNextStep,
+            )
+            2 -> TimeStep(
                 hour = state.dayStartHour,
                 minute = state.dayStartMinute,
                 onHourChanged = viewModel::onDayStartHourChanged,
                 onMinuteChanged = viewModel::onDayStartMinuteChanged,
                 onNext = viewModel::onNextStep,
             )
-            2 -> ClusteringStep(
+            3 -> ClusteringStep(
                 clusteringEnabled = state.clusteringEnabled,
                 onClusteringEnabledChanged = viewModel::onClusteringEnabledChanged,
                 onDone = {
@@ -110,6 +117,87 @@ private fun ColumnScope.WeightStep(
     Spacer(Modifier.weight(1f))
     Button(onClick = onNext, enabled = isValid, modifier = Modifier.fillMaxWidth()) {
         Text("Next")
+    }
+}
+
+@Composable
+private fun ColumnScope.GoalStep(
+    goal: WeightGoal,
+    onGoalChanged: (WeightGoal) -> Unit,
+    onNext: () -> Unit,
+) {
+    Text("Your goal", style = MaterialTheme.typography.headlineSmall)
+    Spacer(Modifier.height(8.dp))
+    Text(
+        "This lets Ember colour your trends correctly — green for progress, red for the wrong direction.",
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+    )
+    Spacer(Modifier.weight(1f))
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        GoalOption(
+            label = "Lose weight",
+            description = "I want to decrease my weight",
+            selected = goal == WeightGoal.Decrease,
+            onClick = { onGoalChanged(WeightGoal.Decrease) },
+        )
+        GoalOption(
+            label = "Gain weight",
+            description = "I want to increase my weight",
+            selected = goal == WeightGoal.Increase,
+            onClick = { onGoalChanged(WeightGoal.Increase) },
+        )
+    }
+    Spacer(Modifier.weight(1f))
+    Button(onClick = onNext, modifier = Modifier.fillMaxWidth()) {
+        Text("Next")
+    }
+}
+
+@Composable
+private fun GoalOption(
+    label: String,
+    description: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    if (selected) {
+        Button(
+            onClick = onClick,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column(
+                modifier = Modifier.padding(vertical = 4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(label, style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
+                )
+            }
+        }
+    } else {
+        OutlinedButton(
+            onClick = onClick,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column(
+                modifier = Modifier.padding(vertical = 4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(label, style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                )
+            }
+        }
     }
 }
 
