@@ -14,15 +14,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import com.agxmeister.ember.domain.model.WeightGoal
+import com.agxmeister.ember.presentation.theme.EmberTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -33,8 +34,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -91,16 +96,17 @@ private fun ColumnScope.WeightStep(
 ) {
     var text by rememberSaveable { mutableStateOf(weightKg.toInt().toString()) }
     val isValid = text.isNotEmpty() && text.toIntOrNull()?.let { it in 30..300 } == true
+    val borderColor = MaterialTheme.colorScheme.outline
 
     Text("Welcome to Ember", style = MaterialTheme.typography.headlineSmall)
     Spacer(Modifier.height(8.dp))
     Text(
-        "What's your current weight?",
+        "What's your current weight, roughly?",
         style = MaterialTheme.typography.bodyLarge,
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
     )
     Spacer(Modifier.weight(1f))
-    OutlinedTextField(
+    BasicTextField(
         value = text,
         onValueChange = { input ->
             if (input.length <= 3 && input.all { it.isDigit() }) {
@@ -108,11 +114,31 @@ private fun ColumnScope.WeightStep(
                 input.toIntOrNull()?.let { onWeightChanged(it.toDouble()) }
             }
         },
-        textStyle = MaterialTheme.typography.displayMedium.copy(textAlign = TextAlign.Center),
-        suffix = { Text("kg", style = MaterialTheme.typography.headlineMedium) },
+        textStyle = MaterialTheme.typography.displayLarge.copy(
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurface,
+        ),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         singleLine = true,
-        modifier = Modifier.width(220.dp),
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+        modifier = Modifier
+            .width(220.dp)
+            .drawBehind {
+                val strokeWidth = 1.dp.toPx()
+                val y = size.height
+                drawLine(
+                    color = borderColor,
+                    start = Offset(0f, y),
+                    end = Offset(size.width, y),
+                    strokeWidth = strokeWidth,
+                )
+            },
+    )
+    Spacer(Modifier.height(8.dp))
+    Text(
+        text = "kg",
+        style = MaterialTheme.typography.headlineMedium,
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
     )
     Spacer(Modifier.weight(1f))
     Button(onClick = onNext, enabled = isValid, modifier = Modifier.fillMaxWidth()) {
