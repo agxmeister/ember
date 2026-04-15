@@ -320,6 +320,25 @@ private fun ColumnScope.ClusteringStep(
     }
 }
 
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun WeightStepPreview() {
+    EmberTheme {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 32.dp, vertical = 48.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            WeightStep(
+                weightKg = 75.0,
+                onWeightChanged = {},
+                onNext = {},
+            )
+        }
+    }
+}
+
 private val ITEM_HEIGHT: Dp = 56.dp
 
 @Composable
