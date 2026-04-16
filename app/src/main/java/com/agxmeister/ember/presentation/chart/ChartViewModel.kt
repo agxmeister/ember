@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.agxmeister.ember.domain.model.Cluster
 import com.agxmeister.ember.domain.model.DailyAverage
 import com.agxmeister.ember.domain.model.WeightGoal
+import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.repository.UserPreferencesRepository
 import com.agxmeister.ember.domain.usecase.GetClusterTrendsUseCase
 import com.agxmeister.ember.domain.usecase.GetDailyAveragesUseCase
@@ -30,6 +31,7 @@ sealed class ChartUiState {
         val median: Double?,
         val trend: Double?,
         val weightGoal: WeightGoal,
+        val weightUnit: WeightUnit,
     ) : ChartUiState()
     data class Classic(
         val dailyAverages: List<DailyAverage>,
@@ -37,6 +39,7 @@ sealed class ChartUiState {
         val median: Double?,
         val trend: Double?,
         val weightGoal: WeightGoal,
+        val weightUnit: WeightUnit,
     ) : ChartUiState()
 }
 
@@ -50,9 +53,10 @@ class ChartViewModel @Inject constructor(
     val uiState: StateFlow<ChartUiState> = combine(
         preferencesRepository.clusteringEnabled,
         preferencesRepository.weightGoal,
+        preferencesRepository.weightUnit,
         getClusterTrends(),
         getDailyAverages(),
-    ) { clusteringEnabled, weightGoal, clusters, dailyAverages ->
+    ) { clusteringEnabled, weightGoal, weightUnit, clusters, dailyAverages ->
         val now = Clock.System.now()
         val oneWeekAgo = now - 7.days
         val twoWeeksAgo = now - 14.days
@@ -78,7 +82,7 @@ class ChartViewModel @Inject constructor(
                 val trend = if (showTrend && median != null) {
                     nonEmpty.periodMedian(twoWeeksAgo, oneWeekAgo)?.let { median - it }
                 } else null
-                ChartUiState.Clustered(nonEmpty, showChart, median, trend, weightGoal)
+                ChartUiState.Clustered(nonEmpty, showChart, median, trend, weightGoal, weightUnit)
             }
         } else {
             if (dailyAverages.isEmpty()) {
@@ -96,7 +100,7 @@ class ChartViewModel @Inject constructor(
                     val previousWeek = dailyAverages.filter { it.date >= twoWeeksAgoDate && it.date < oneWeekAgoDate }
                     if (previousWeek.isNotEmpty()) median - previousWeek.map { it.weightKg }.median() else null
                 } else null
-                ChartUiState.Classic(dailyAverages, showChart, median, trend, weightGoal)
+                ChartUiState.Classic(dailyAverages, showChart, median, trend, weightGoal, weightUnit)
             }
         }
     }.stateIn(

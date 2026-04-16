@@ -3,6 +3,7 @@ package com.agxmeister.ember.presentation.onboarding
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.agxmeister.ember.domain.model.WeightGoal
+import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.usecase.CompleteOnboardingUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +16,7 @@ import javax.inject.Inject
 data class OnboardingUiState(
     val step: Int = 0,
     val weightKg: Double = 62.0,
+    val weightUnit: WeightUnit = WeightUnit.Kg,
     val weightGoal: WeightGoal = WeightGoal.Decrease,
     val dayStartHour: Int = 7,
     val dayStartMinute: Int = 0,
@@ -30,6 +32,7 @@ class OnboardingViewModel @Inject constructor(
     val uiState: StateFlow<OnboardingUiState> = _uiState.asStateFlow()
 
     fun onWeightChanged(weightKg: Double) = _uiState.update { it.copy(weightKg = weightKg) }
+    fun onWeightUnitChanged(unit: WeightUnit) = _uiState.update { it.copy(weightUnit = unit) }
     fun onWeightGoalChanged(goal: WeightGoal) = _uiState.update { it.copy(weightGoal = goal) }
     fun onDayStartHourChanged(hour: Int) = _uiState.update { it.copy(dayStartHour = hour) }
     fun onDayStartMinuteChanged(minute: Int) = _uiState.update { it.copy(dayStartMinute = minute) }
@@ -39,7 +42,7 @@ class OnboardingViewModel @Inject constructor(
     fun complete() {
         val state = _uiState.value
         viewModelScope.launch {
-            completeOnboarding(state.weightKg, state.dayStartHour, state.dayStartMinute, state.clusteringEnabled, state.weightGoal)
+            completeOnboarding(state.weightKg, state.dayStartHour, state.dayStartMinute, state.clusteringEnabled, state.weightGoal, state.weightUnit)
         }
     }
 }

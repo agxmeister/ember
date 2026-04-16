@@ -31,6 +31,7 @@ import com.agxmeister.ember.domain.model.Cluster
 import com.agxmeister.ember.domain.model.DailyAverage
 import com.agxmeister.ember.domain.model.DayCluster
 import com.agxmeister.ember.domain.model.WeightGoal
+import com.agxmeister.ember.domain.model.WeightUnit
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
@@ -123,8 +124,9 @@ fun ChartScreen(viewModel: ChartViewModel = hiltViewModel()) {
                         median = state.median,
                         trend = state.trend,
                         weightGoal = state.weightGoal,
+                        weightUnit = state.weightUnit,
                     )
-                    state.median != null -> MedianDisplay(median = state.median, trend = state.trend, weightGoal = state.weightGoal)
+                    state.median != null -> MedianDisplay(median = state.median, trend = state.trend, weightGoal = state.weightGoal, weightUnit = state.weightUnit)
                     else -> Text(
                         text = "Keep measuring! You need at least 3 measurements this week to see the chart, and 5 in total for the median.",
                         style = MaterialTheme.typography.bodyMedium,
@@ -147,8 +149,9 @@ fun ChartScreen(viewModel: ChartViewModel = hiltViewModel()) {
                         median = state.median,
                         trend = state.trend,
                         weightGoal = state.weightGoal,
+                        weightUnit = state.weightUnit,
                     )
-                    state.median != null -> MedianDisplay(median = state.median, trend = state.trend, weightGoal = state.weightGoal)
+                    state.median != null -> MedianDisplay(median = state.median, trend = state.trend, weightGoal = state.weightGoal, weightUnit = state.weightUnit)
                     else -> Text(
                         text = "Keep measuring! You need at least 3 measurements this week to see the chart, and 5 in total for the median.",
                         style = MaterialTheme.typography.bodyMedium,
@@ -161,7 +164,9 @@ fun ChartScreen(viewModel: ChartViewModel = hiltViewModel()) {
 }
 
 @Composable
-private fun MedianDisplay(median: Double, trend: Double?, weightGoal: WeightGoal) {
+private fun MedianDisplay(median: Double, trend: Double?, weightGoal: WeightGoal, weightUnit: WeightUnit = WeightUnit.Kg) {
+    val displayMedian = weightUnit.fromKg(median)
+    val displayTrend = trend?.let { weightUnit.scaleDiff(it) }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -175,16 +180,16 @@ private fun MedianDisplay(median: Double, trend: Double?, weightGoal: WeightGoal
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
-            text = "${DecimalFormat("0.0").format(median)} kg",
+            text = "${DecimalFormat("0.0").format(displayMedian)} ${weightUnit.label}",
             style = MaterialTheme.typography.displaySmall,
         )
-        if (trend != null) {
+        if (displayTrend != null) {
             val isProgress = when (weightGoal) {
-                WeightGoal.Decrease -> trend <= 0
-                WeightGoal.Increase -> trend >= 0
+                WeightGoal.Decrease -> displayTrend <= 0
+                WeightGoal.Increase -> displayTrend >= 0
             }
             Text(
-                text = "${formatTrend(trend)} vs prev. week",
+                text = "${formatTrend(displayTrend)} vs prev. week",
                 style = MaterialTheme.typography.bodyMedium,
                 color = if (isProgress) Color(0xFF4CAF50) else Color(0xFFE53935),
             )
@@ -193,7 +198,7 @@ private fun MedianDisplay(median: Double, trend: Double?, weightGoal: WeightGoal
 }
 
 @Composable
-private fun CombinedClusterChart(clusters: List<Cluster>, median: Double?, trend: Double?, weightGoal: WeightGoal) {
+private fun CombinedClusterChart(clusters: List<Cluster>, median: Double?, trend: Double?, weightGoal: WeightGoal, weightUnit: WeightUnit = WeightUnit.Kg) {
     val nonEmpty = clusters.filter { it.measurements.isNotEmpty() }
     if (nonEmpty.isEmpty()) return
 
@@ -205,17 +210,19 @@ private fun CombinedClusterChart(clusters: List<Cluster>, median: Double?, trend
     }
 
     val modelProducer = remember(clusters) { CartesianChartModelProducer() }
+    val displayMedian = median?.let { weightUnit.fromKg(it) }
+    val displayTrend = trend?.let { weightUnit.scaleDiff(it) }
 
-    LaunchedEffect(clusters, median, trend) {
+    LaunchedEffect(clusters, median, trend, weightUnit) {
         modelProducer.runTransaction {
             lineSeries {
                 nonEmpty.forEach { cluster ->
-                    series(cluster.measurements.map { it.weightKg })
+                    series(cluster.measurements.map { weightUnit.fromKg(it.weightKg) })
                 }
             }
             extras {
-                if (median != null) it[medianKey] = median
-                if (trend != null) it[trendKey] = trend
+                if (displayMedian != null) it[medianKey] = displayMedian
+                if (displayTrend != null) it[trendKey] = displayTrend
             }
         }
     }
@@ -223,9 +230,10 @@ private fun CombinedClusterChart(clusters: List<Cluster>, median: Double?, trend
     ClusterChartContent(
         nonEmpty = nonEmpty,
         referenceDates = referenceDates,
-        median = median,
-        trend = trend,
+        median = displayMedian,
+        trend = displayTrend,
         weightGoal = weightGoal,
+        weightUnit = weightUnit,
         modelProducer = modelProducer,
     )
 }
@@ -237,6 +245,7 @@ private fun ClusterChartContent(
     median: Double? = null,
     trend: Double? = null,
     weightGoal: WeightGoal = WeightGoal.Decrease,
+    weightUnit: WeightUnit = WeightUnit.Kg,
     modelProducer: CartesianChartModelProducer? = null,
     model: CartesianChartModel? = null,
 ) {
@@ -280,7 +289,7 @@ private fun ClusterChartContent(
     )
     val medianLabelComponent = rememberTextComponent(color = medianColor)
     val medianDecoration = if (median != null) {
-        remember(median, trend, weightGoal) {
+        remember(median, trend, weightGoal, weightUnit) {
             HorizontalLine(
                 y = { it.getOrNull(medianKey) ?: median },
                 line = medianLineComponent,
@@ -288,7 +297,7 @@ private fun ClusterChartContent(
                 label = { extraStore ->
                     val m = DecimalFormat("0.0").format(extraStore.getOrNull(medianKey) ?: median)
                     val t = extraStore.getOrNull(trendKey) ?: trend
-                    if (t != null) "$m, ${formatTrend(t)} vs prev. week" else m
+                    if (t != null) "$m ${weightUnit.label}, ${formatTrend(t)} vs prev. week" else "$m ${weightUnit.label}"
                 },
                 horizontalLabelPosition = Position.Horizontal.End,
                 verticalLabelPosition = Position.Vertical.Top,
@@ -668,26 +677,28 @@ private fun ChartAndMedianTowardGoalTwoClustersPreview() {
 }
 
 @Composable
-private fun DailyAverageChart(dailyAverages: List<DailyAverage>, median: Double?, trend: Double?, weightGoal: WeightGoal) {
+private fun DailyAverageChart(dailyAverages: List<DailyAverage>, median: Double?, trend: Double?, weightGoal: WeightGoal, weightUnit: WeightUnit = WeightUnit.Kg) {
     if (dailyAverages.isEmpty()) return
 
     val modelProducer = remember(dailyAverages) { CartesianChartModelProducer() }
+    val displayMedian = median?.let { weightUnit.fromKg(it) }
+    val displayTrend = trend?.let { weightUnit.scaleDiff(it) }
 
-    LaunchedEffect(dailyAverages, median, trend) {
+    LaunchedEffect(dailyAverages, median, trend, weightUnit) {
         modelProducer.runTransaction {
             lineSeries {
-                series(dailyAverages.map { it.weightKg })
+                series(dailyAverages.map { weightUnit.fromKg(it.weightKg) })
             }
             extras {
-                if (median != null) it[medianKey] = median
-                if (trend != null) it[trendKey] = trend
+                if (displayMedian != null) it[medianKey] = displayMedian
+                if (displayTrend != null) it[trendKey] = displayTrend
             }
         }
     }
 
     val medianColor = when {
-        trend == null -> Color(0xFFE53935)
-        (weightGoal == WeightGoal.Decrease && trend <= 0) || (weightGoal == WeightGoal.Increase && trend >= 0) -> Color(0xFF4CAF50)
+        displayTrend == null -> Color(0xFFE53935)
+        (weightGoal == WeightGoal.Decrease && displayTrend <= 0) || (weightGoal == WeightGoal.Increase && displayTrend >= 0) -> Color(0xFF4CAF50)
         else -> Color(0xFFE53935)
     }
     val medianLineComponent = rememberLineComponent(
@@ -695,16 +706,16 @@ private fun DailyAverageChart(dailyAverages: List<DailyAverage>, median: Double?
         thickness = 2.5.dp,
     )
     val medianLabelComponent = rememberTextComponent(color = medianColor)
-    val medianDecoration = if (median != null) {
-        remember(median, trend, weightGoal) {
+    val medianDecoration = if (displayMedian != null) {
+        remember(displayMedian, displayTrend, weightGoal, weightUnit) {
             HorizontalLine(
-                y = { it.getOrNull(medianKey) ?: median },
+                y = { it.getOrNull(medianKey) ?: displayMedian },
                 line = medianLineComponent,
                 labelComponent = medianLabelComponent,
                 label = { extraStore ->
-                    val m = DecimalFormat("0.0").format(extraStore.getOrNull(medianKey) ?: median)
-                    val t = extraStore.getOrNull(trendKey) ?: trend
-                    if (t != null) "$m, ${formatTrend(t)} vs prev. week" else m
+                    val m = DecimalFormat("0.0").format(extraStore.getOrNull(medianKey) ?: displayMedian)
+                    val t = extraStore.getOrNull(trendKey) ?: displayTrend
+                    if (t != null) "$m ${weightUnit.label}, ${formatTrend(t)} vs prev. week" else "$m ${weightUnit.label}"
                 },
                 horizontalLabelPosition = Position.Horizontal.End,
                 verticalLabelPosition = Position.Vertical.Top,

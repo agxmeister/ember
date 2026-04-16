@@ -18,28 +18,27 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.agxmeister.ember.domain.model.WeightUnit
 
-private const val STEP = 0.1
-private const val MIN_WEIGHT = 30.0
-private const val MAX_WEIGHT = 300.0
 private val ITEM_HEIGHT = 56.dp
-
-private fun weightToIndex(weight: Double): Int =
-    ((weight - MIN_WEIGHT) / STEP).toInt().coerceIn(0, itemCount() - 1)
-
-private fun indexToWeight(index: Int): Double =
-    MIN_WEIGHT + index * STEP
-
-private fun itemCount(): Int =
-    ((MAX_WEIGHT - MIN_WEIGHT) / STEP).toInt() + 1
+private const val MIN_KG = 30.0
+private const val MAX_KG = 300.0
 
 @Composable
 fun WeightWheelPicker(
-    initialWeight: Double,
-    onWeightChanged: (Double) -> Unit,
+    initialWeightKg: Double,
+    unit: WeightUnit,
+    onWeightKgChanged: (Double) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val listState = rememberLazyListState(initialFirstVisibleItemIndex = weightToIndex(initialWeight))
+    val minValue = unit.fromKg(MIN_KG)
+    val step = unit.step
+    val count = ((unit.fromKg(MAX_KG) - minValue) / step).toInt() + 1
+
+    fun toIndex(kg: Double): Int = ((unit.fromKg(kg) - minValue) / step).toInt().coerceIn(0, count - 1)
+    fun fromIndex(index: Int): Double = unit.toKg(minValue + index * step)
+
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = toIndex(initialWeightKg))
     val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
 
     val selectedIndex by remember {
@@ -49,7 +48,7 @@ fun WeightWheelPicker(
     }
 
     LaunchedEffect(selectedIndex) {
-        onWeightChanged(indexToWeight(selectedIndex))
+        onWeightKgChanged(fromIndex(selectedIndex))
     }
 
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
@@ -61,7 +60,8 @@ fun WeightWheelPicker(
                 .height(ITEM_HEIGHT * 3),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            items(itemCount()) { index ->
+            items(count) { index ->
+                val displayValue = minValue + index * step
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -69,7 +69,7 @@ fun WeightWheelPicker(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = "%.1f kg".format(indexToWeight(index)),
+                        text = "%.1f ${unit.label}".format(displayValue),
                         style = if (index == selectedIndex) {
                             MaterialTheme.typography.headlineMedium
                         } else {

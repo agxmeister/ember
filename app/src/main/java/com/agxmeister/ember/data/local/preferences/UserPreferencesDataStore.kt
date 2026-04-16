@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.agxmeister.ember.domain.model.WeightGoal
+import com.agxmeister.ember.domain.model.WeightUnit
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -28,6 +29,7 @@ class UserPreferencesDataStore @Inject constructor(
     private val dayStartMinuteKey = intPreferencesKey("day_start_minute")
     private val clusteringEnabledKey = booleanPreferencesKey("clustering_enabled")
     private val weightGoalKey = stringPreferencesKey("weight_goal")
+    private val weightUnitKey = stringPreferencesKey("weight_unit")
 
     val isOnboardingCompleted: Flow<Boolean> =
         context.dataStore.data.map { it[onboardingCompletedKey] ?: false }
@@ -49,12 +51,21 @@ class UserPreferencesDataStore @Inject constructor(
             }
         }
 
+    val weightUnit: Flow<WeightUnit> =
+        context.dataStore.data.map { prefs ->
+            when (prefs[weightUnitKey]) {
+                WeightUnit.Lbs.name -> WeightUnit.Lbs
+                else -> WeightUnit.Kg
+            }
+        }
+
     suspend fun saveOnboardingData(
         weightKg: Double,
         dayStartHour: Int,
         dayStartMinute: Int,
         clusteringEnabled: Boolean,
         weightGoal: WeightGoal,
+        weightUnit: WeightUnit,
     ) {
         context.dataStore.edit { prefs ->
             prefs[initialWeightKey] = weightKg
@@ -62,6 +73,7 @@ class UserPreferencesDataStore @Inject constructor(
             prefs[dayStartMinuteKey] = dayStartMinute
             prefs[clusteringEnabledKey] = clusteringEnabled
             prefs[weightGoalKey] = weightGoal.name
+            prefs[weightUnitKey] = weightUnit.name
             prefs[onboardingCompletedKey] = true
         }
     }
@@ -75,6 +87,12 @@ class UserPreferencesDataStore @Inject constructor(
     suspend fun setWeightGoal(goal: WeightGoal) {
         context.dataStore.edit { prefs ->
             prefs[weightGoalKey] = goal.name
+        }
+    }
+
+    suspend fun setWeightUnit(unit: WeightUnit) {
+        context.dataStore.edit { prefs ->
+            prefs[weightUnitKey] = unit.name
         }
     }
 }

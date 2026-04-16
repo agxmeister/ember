@@ -23,12 +23,14 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.agxmeister.ember.domain.model.WeightGoal
+import com.agxmeister.ember.domain.model.WeightUnit
 
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     val clusters by viewModel.clusters.collectAsStateWithLifecycle()
     val clusteringEnabled by viewModel.clusteringEnabled.collectAsStateWithLifecycle()
     val weightGoal by viewModel.weightGoal.collectAsStateWithLifecycle()
+    val weightUnit by viewModel.weightUnit.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier
@@ -36,6 +38,21 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             .padding(16.dp),
     ) {
         Text("Settings", style = MaterialTheme.typography.headlineSmall)
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text("Unit", style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            WeightUnit.entries.forEachIndexed { index, unit ->
+                SegmentedButton(
+                    selected = weightUnit == unit,
+                    onClick = { viewModel.onWeightUnitChanged(unit) },
+                    shape = SegmentedButtonDefaults.itemShape(index = index, count = WeightUnit.entries.size),
+                ) { Text(unit.label) }
+            }
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        HorizontalDivider()
         Spacer(modifier = Modifier.height(24.dp))
 
         Text("Goal", style = MaterialTheme.typography.titleMedium)

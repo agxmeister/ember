@@ -3,6 +3,7 @@ package com.agxmeister.ember.presentation.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.agxmeister.ember.domain.model.Cluster
+import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.repository.UserPreferencesRepository
 import com.agxmeister.ember.domain.usecase.AddMeasurementUseCase
 import com.agxmeister.ember.domain.usecase.GetCurrentClusterUseCase
@@ -18,6 +19,7 @@ import javax.inject.Inject
 data class HomeUiState(
     val currentCluster: Cluster? = null,
     val defaultWeightKg: Double = 70.0,
+    val weightUnit: WeightUnit = WeightUnit.Kg,
     val isRechecking: Boolean = false,
 )
 
@@ -34,13 +36,15 @@ class HomeViewModel @Inject constructor(
         getCurrentCluster(),
         preferencesRepository.initialWeightKg,
         hasRecentMeasurement(),
-    ) { cluster, savedInitialWeight, isRechecking ->
+        preferencesRepository.weightUnit,
+    ) { cluster, savedInitialWeight, isRechecking, weightUnit ->
         HomeUiState(
             currentCluster = cluster,
             defaultWeightKg = cluster.measurements
                 .maxByOrNull { it.timestamp }
                 ?.weightKg
                 ?: savedInitialWeight,
+            weightUnit = weightUnit,
             isRechecking = isRechecking,
         )
     }.stateIn(

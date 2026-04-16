@@ -2,6 +2,7 @@ package com.agxmeister.ember.data.repository
 
 import com.agxmeister.ember.data.local.preferences.UserPreferencesDataStore
 import com.agxmeister.ember.domain.model.WeightGoal
+import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.repository.UserPreferencesRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -14,6 +15,7 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     override val dayStartHour: Flow<Int> = dataStore.dayStartHour
     override val clusteringEnabled: Flow<Boolean> = dataStore.clusteringEnabled
     override val weightGoal: Flow<WeightGoal> = dataStore.weightGoal
+    override val weightUnit: Flow<WeightUnit> = dataStore.weightUnit
 
     override suspend fun saveOnboardingData(
         weightKg: Double,
@@ -21,8 +23,9 @@ class UserPreferencesRepositoryImpl @Inject constructor(
         dayStartMinute: Int,
         clusteringEnabled: Boolean,
         weightGoal: WeightGoal,
+        weightUnit: WeightUnit,
     ) {
-        dataStore.saveOnboardingData(weightKg, dayStartHour, dayStartMinute, clusteringEnabled, weightGoal)
+        dataStore.saveOnboardingData(weightKg, dayStartHour, dayStartMinute, clusteringEnabled, weightGoal, weightUnit)
     }
 
     override suspend fun setClusteringEnabled(enabled: Boolean) {
@@ -31,5 +34,9 @@ class UserPreferencesRepositoryImpl @Inject constructor(
 
     override suspend fun setWeightGoal(goal: WeightGoal) {
         dataStore.setWeightGoal(goal)
+    }
+
+    override suspend fun setWeightUnit(unit: WeightUnit) {
+        dataStore.setWeightUnit(unit)
     }
 }

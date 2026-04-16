@@ -52,10 +52,11 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        key(state.defaultWeightKg) {
+        key(state.defaultWeightKg, state.weightUnit) {
             WeightWheelPicker(
-                initialWeight = state.defaultWeightKg,
-                onWeightChanged = { selectedWeight = it },
+                initialWeightKg = state.defaultWeightKg,
+                unit = state.weightUnit,
+                onWeightKgChanged = { selectedWeight = it },
                 modifier = Modifier.fillMaxWidth(),
             )
         }

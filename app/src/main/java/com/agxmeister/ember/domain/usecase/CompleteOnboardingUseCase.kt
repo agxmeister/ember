@@ -1,6 +1,7 @@
 package com.agxmeister.ember.domain.usecase
 
 import com.agxmeister.ember.domain.model.WeightGoal
+import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.repository.UserPreferencesRepository
 import com.agxmeister.ember.notification.ReminderScheduler
 import javax.inject.Inject
@@ -15,8 +16,9 @@ class CompleteOnboardingUseCase @Inject constructor(
         dayStartMinute: Int,
         clusteringEnabled: Boolean,
         weightGoal: WeightGoal,
+        weightUnit: WeightUnit,
     ) {
-        preferencesRepository.saveOnboardingData(weightKg, dayStartHour, dayStartMinute, clusteringEnabled, weightGoal)
+        preferencesRepository.saveOnboardingData(weightKg, dayStartHour, dayStartMinute, clusteringEnabled, weightGoal, weightUnit)
         reminderScheduler.scheduleForTime(dayStartHour, dayStartMinute)
     }
 }

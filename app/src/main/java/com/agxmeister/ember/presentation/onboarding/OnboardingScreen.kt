@@ -20,9 +20,13 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import com.agxmeister.ember.domain.model.WeightGoal
+import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.presentation.theme.EmberTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -61,7 +65,9 @@ fun OnboardingScreen(
         when (state.step) {
             0 -> WeightStep(
                 weightKg = state.weightKg,
+                weightUnit = state.weightUnit,
                 onWeightChanged = viewModel::onWeightChanged,
+                onUnitChanged = viewModel::onWeightUnitChanged,
                 onNext = viewModel::onNextStep,
             )
             1 -> GoalStep(
@@ -91,11 +97,15 @@ fun OnboardingScreen(
 @Composable
 private fun ColumnScope.WeightStep(
     weightKg: Double,
+    weightUnit: WeightUnit,
     onWeightChanged: (Double) -> Unit,
+    onUnitChanged: (WeightUnit) -> Unit,
     onNext: () -> Unit,
 ) {
-    var text by rememberSaveable { mutableStateOf(weightKg.toInt().toString()) }
-    val isValid = text.isNotEmpty() && text.toIntOrNull()?.let { it in 30..300 } == true
+    var text by rememberSaveable(weightUnit) {
+        mutableStateOf(weightUnit.fromKg(weightKg).toInt().toString())
+    }
+    val isValid = text.isNotEmpty() && text.toIntOrNull()?.let { it in weightUnit.displayRange } == true
     val borderColor = MaterialTheme.colorScheme.outline
 
     Text("Welcome to Ember", style = MaterialTheme.typography.headlineSmall)
@@ -111,7 +121,7 @@ private fun ColumnScope.WeightStep(
         onValueChange = { input ->
             if (input.length <= 3 && input.all { it.isDigit() }) {
                 text = input
-                input.toIntOrNull()?.let { onWeightChanged(it.toDouble()) }
+                input.toIntOrNull()?.let { onWeightChanged(weightUnit.toKg(it.toDouble())) }
             }
         },
         textStyle = MaterialTheme.typography.displayLarge.copy(
@@ -134,12 +144,16 @@ private fun ColumnScope.WeightStep(
                 )
             },
     )
-    Spacer(Modifier.height(8.dp))
-    Text(
-        text = "kg",
-        style = MaterialTheme.typography.headlineMedium,
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-    )
+    Spacer(Modifier.height(16.dp))
+    SingleChoiceSegmentedButtonRow(modifier = Modifier.width(200.dp)) {
+        WeightUnit.entries.forEachIndexed { index, unit ->
+            SegmentedButton(
+                selected = weightUnit == unit,
+                onClick = { onUnitChanged(unit) },
+                shape = SegmentedButtonDefaults.itemShape(index = index, count = WeightUnit.entries.size),
+            ) { Text(unit.label) }
+        }
+    }
     Spacer(Modifier.weight(1f))
     Button(onClick = onNext, enabled = isValid, modifier = Modifier.fillMaxWidth()) {
         Text("Next")
@@ -332,7 +346,9 @@ private fun WeightStepPreview() {
         ) {
             WeightStep(
                 weightKg = 75.0,
+                weightUnit = WeightUnit.Kg,
                 onWeightChanged = {},
+                onUnitChanged = {},
                 onNext = {},
             )
         }
