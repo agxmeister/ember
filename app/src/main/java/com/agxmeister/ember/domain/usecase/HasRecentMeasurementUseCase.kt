@@ -16,14 +16,13 @@ class HasRecentMeasurementUseCase @Inject constructor(
 ) {
     operator fun invoke(): Flow<Boolean> {
         val tz = TimeZone.currentSystemDefault()
-        val now = Clock.System.now().toLocalDateTime(tz)
-        val today = now.date
-        val minuteOfDay = now.hour * 60 + now.minute
         return combine(
             measurementRepository.getAll(),
             preferencesRepository.dayStartHour,
         ) { measurements, dayStartHour ->
-            val currentCluster = ClusteringAlgorithm.assign(minuteOfDay, dayStartHour)
+            val now = Clock.System.now().toLocalDateTime(tz)
+            val today = now.date
+            val currentCluster = ClusteringAlgorithm.assign(now.hour * 60 + now.minute, dayStartHour)
             measurements.any { m ->
                 val mLocal = m.timestamp.toLocalDateTime(tz)
                 val mCluster = ClusteringAlgorithm.assign(mLocal.hour * 60 + mLocal.minute, dayStartHour)

@@ -14,15 +14,13 @@ class GetCurrentClusterUseCase @Inject constructor(
     private val getClusterTrends: GetClusterTrendsUseCase,
     private val preferencesRepository: UserPreferencesRepository,
 ) {
-    operator fun invoke(): Flow<Cluster> {
-        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-        val minuteOfDay = now.hour * 60 + now.minute
-        return combine(
+    operator fun invoke(): Flow<Cluster> =
+        combine(
             getClusterTrends(),
             preferencesRepository.dayStartHour,
         ) { clusters, dayStartHour ->
-            val currentSlot = ClusteringAlgorithm.assign(minuteOfDay, dayStartHour)
+            val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+            val currentSlot = ClusteringAlgorithm.assign(now.hour * 60 + now.minute, dayStartHour)
             clusters.first { it.dayCluster == currentSlot }
         }
-    }
 }
