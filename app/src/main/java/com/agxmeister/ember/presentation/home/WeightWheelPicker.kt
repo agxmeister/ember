@@ -38,7 +38,7 @@ fun WeightWheelPicker(
     fun toIndex(kg: Double): Int = ((unit.fromKg(kg) - minValue) / step).toInt().coerceIn(0, count - 1)
     fun fromIndex(index: Int): Double = unit.toKg(minValue + index * step)
 
-    val listState = rememberLazyListState(initialFirstVisibleItemIndex = toIndex(initialWeightKg))
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = (toIndex(initialWeightKg) - 1).coerceAtLeast(0))
     val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
 
     val selectedIndex by remember {
