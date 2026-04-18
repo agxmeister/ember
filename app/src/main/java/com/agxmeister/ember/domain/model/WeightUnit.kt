@@ -14,7 +14,7 @@ enum class WeightUnit {
     val step: Double
         get() = when (this) {
             Kg -> 0.1
-            Lbs -> 0.5
+            Lbs -> 0.1
         }
 
     fun fromKg(kg: Double): Double = when (this) {
