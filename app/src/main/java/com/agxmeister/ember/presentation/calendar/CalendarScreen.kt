@@ -288,12 +288,12 @@ private fun MeasurementListContent(
             .padding(horizontal = 16.dp)
             .padding(bottom = 24.dp),
     ) {
-        Text(
-            text = dateLabel(date),
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(bottom = 16.dp),
-        )
         if (measurements.isEmpty()) {
+            Text(
+                text = dateLabel(date),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 16.dp),
+            )
             Text(
                 text = "No measurements",
                 style = MaterialTheme.typography.bodyMedium,
@@ -303,6 +303,7 @@ private fun MeasurementListContent(
         } else {
             measurements.forEach { m ->
                 MeasurementRow(
+                    date = date,
                     measurement = m,
                     weightUnit = weightUnit,
                     onEdit = { onEdit(m) },
@@ -321,6 +322,7 @@ private fun MeasurementListContent(
 
 @Composable
 private fun MeasurementRow(
+    date: LocalDate,
     measurement: Measurement,
     weightUnit: WeightUnit,
     onEdit: () -> Unit,
@@ -330,28 +332,31 @@ private fun MeasurementRow(
     val time = measurement.timestamp.toLocalDateTime(tz).time
     val weight = weightUnit.fromKg(measurement.weightKg)
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
     ) {
-        Text(
-            text = "%02d:%02d".format(time.hour, time.minute),
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.width(56.dp),
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                text = "${dateLabel(date)}  %02d:%02d".format(time.hour, time.minute),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f),
+            )
+            IconButton(onClick = onEdit) {
+                Icon(Icons.Default.Edit, contentDescription = "Edit")
+            }
+            IconButton(onClick = onDelete) {
+                Icon(Icons.Default.Delete, contentDescription = "Delete")
+            }
+        }
         Text(
             text = "%.1f ${weightUnit.label}".format(weight),
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.displaySmall,
         )
-        IconButton(onClick = onEdit) {
-            Icon(Icons.Default.Edit, contentDescription = "Edit")
-        }
-        IconButton(onClick = onDelete) {
-            Icon(Icons.Default.Delete, contentDescription = "Delete")
-        }
     }
 }
 
