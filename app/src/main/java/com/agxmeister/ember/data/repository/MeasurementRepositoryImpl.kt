@@ -16,8 +16,15 @@ class MeasurementRepositoryImpl @Inject constructor(
     override fun getAll(): Flow<List<Measurement>> =
         dao.getAll().map { entities -> entities.map { it.toDomain() } }
 
+    override fun getForDateRange(fromMs: Long, toMs: Long): Flow<List<Measurement>> =
+        dao.getForDateRange(fromMs, toMs).map { entities -> entities.map { it.toDomain() } }
+
     override suspend fun add(measurement: Measurement) {
         dao.insert(measurement.toEntity())
+    }
+
+    override suspend fun update(measurement: Measurement) {
+        dao.update(measurement.toEntity())
     }
 
     override suspend fun delete(id: Long) {

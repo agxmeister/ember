@@ -2,6 +2,7 @@ package com.agxmeister.ember.presentation.calendar
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,18 +11,33 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimeInput
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,18 +45,45 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.agxmeister.ember.domain.model.Measurement
+import com.agxmeister.ember.domain.model.WeightUnit
+import com.agxmeister.ember.presentation.home.WeightWheelPicker
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
+import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(viewModel: CalendarViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val pendingReplace by viewModel.pendingReplace.collectAsStateWithLifecycle()
+    val pendingDelete by viewModel.pendingDelete.collectAsStateWithLifecycle()
     val today = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
+
+    var isEditing by remember { mutableStateOf(false) }
+    var editingMeasurement by remember { mutableStateOf<Measurement?>(null) }
+
+    LaunchedEffect(uiState.selectedDate) {
+        if (uiState.selectedDate == null) {
+            isEditing = false
+            editingMeasurement = null
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.saveEvents.collect {
+            isEditing = false
+            editingMeasurement = null
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -105,11 +148,87 @@ fun CalendarScreen(viewModel: CalendarViewModel = hiltViewModel()) {
                             hasRecord = date in uiState.measurementDates,
                             isToday = date == today,
                             modifier = Modifier.weight(1f),
+                            onClick = { viewModel.selectDate(date) },
                         )
                     }
                 }
             }
         }
+    }
+
+    uiState.selectedDate?.let { date ->
+        ModalBottomSheet(onDismissRequest = viewModel::dismissSheet) {
+            if (isEditing) {
+                MeasurementEditForm(
+                    date = date,
+                    measurement = editingMeasurement,
+                    weightUnit = uiState.weightUnit,
+                    defaultWeightKg = editingMeasurement?.weightKg
+                        ?: uiState.selectedDateMeasurements.lastOrNull()?.weightKg
+                        ?: uiState.defaultWeightKg,
+                    onSave = { id, weightKg, timestamp ->
+                        viewModel.requestSave(id, weightKg, timestamp)
+                    },
+                    onCancel = {
+                        isEditing = false
+                        editingMeasurement = null
+                    },
+                )
+            } else {
+                MeasurementListContent(
+                    date = date,
+                    measurements = uiState.selectedDateMeasurements,
+                    weightUnit = uiState.weightUnit,
+                    onEdit = { m ->
+                        editingMeasurement = m
+                        isEditing = true
+                    },
+                    onDelete = { m -> viewModel.requestDelete(m) },
+                    onAdd = {
+                        editingMeasurement = null
+                        isEditing = true
+                    },
+                )
+            }
+        }
+    }
+
+    pendingDelete?.let { delete ->
+        val shortDate = shortDateLabel(delete.date)
+        val deleteMessage = if (delete.clusterName != null) {
+            "Delete measurement for ${delete.clusterName} on $shortDate?"
+        } else {
+            "Delete measurement for $shortDate?"
+        }
+        AlertDialog(
+            onDismissRequest = viewModel::cancelDelete,
+            text = { Text(deleteMessage) },
+            confirmButton = {
+                TextButton(onClick = viewModel::confirmDelete) { Text("Delete") }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::cancelDelete) { Text("Cancel") }
+            },
+        )
+    }
+
+    pendingReplace?.let { replace ->
+        val shortDate = shortDateLabel(replace.date)
+        val replaceMessage = if (replace.clusterName != null) {
+            "A measurement for ${replace.clusterName} on $shortDate already exists. Replace it?"
+        } else {
+            "A measurement for $shortDate already exists. Replace it?"
+        }
+        AlertDialog(
+            onDismissRequest = viewModel::cancelReplace,
+            text = { Text(replaceMessage) },
+            confirmButton = {
+                TextButton(onClick = viewModel::confirmReplace) { Text("Replace") }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::cancelReplace) { Text("Cancel") }
+            },
+        )
     }
 }
 
@@ -118,6 +237,7 @@ private fun DayCell(
     dayNumber: Int,
     hasRecord: Boolean,
     isToday: Boolean,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val primary = MaterialTheme.colorScheme.primary
@@ -130,6 +250,7 @@ private fun DayCell(
             .padding(2.dp)
             .aspectRatio(1f)
             .clip(CircleShape)
+            .clickable(onClick = onClick)
             .then(
                 when {
                     hasRecord -> Modifier.background(primary)
@@ -148,4 +269,153 @@ private fun DayCell(
             },
         )
     }
+}
+
+@Composable
+private fun MeasurementListContent(
+    date: LocalDate,
+    measurements: List<Measurement>,
+    weightUnit: WeightUnit,
+    onEdit: (Measurement) -> Unit,
+    onDelete: (Measurement) -> Unit,
+    onAdd: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 24.dp),
+    ) {
+        Text(
+            text = dateLabel(date),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(bottom = 16.dp),
+        )
+        if (measurements.isEmpty()) {
+            Text(
+                text = "No measurements",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 16.dp),
+            )
+        } else {
+            measurements.forEach { m ->
+                MeasurementRow(
+                    measurement = m,
+                    weightUnit = weightUnit,
+                    onEdit = { onEdit(m) },
+                    onDelete = { onDelete(m) },
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+        }
+        Button(onClick = onAdd, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Default.Add, contentDescription = null)
+            Spacer(Modifier.width(8.dp))
+            Text("Add measurement")
+        }
+    }
+}
+
+@Composable
+private fun MeasurementRow(
+    measurement: Measurement,
+    weightUnit: WeightUnit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    val tz = TimeZone.currentSystemDefault()
+    val time = measurement.timestamp.toLocalDateTime(tz).time
+    val weight = weightUnit.fromKg(measurement.weightKg)
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+    ) {
+        Text(
+            text = "%02d:%02d".format(time.hour, time.minute),
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.width(56.dp),
+        )
+        Text(
+            text = "%.1f ${weightUnit.label}".format(weight),
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.weight(1f),
+        )
+        IconButton(onClick = onEdit) {
+            Icon(Icons.Default.Edit, contentDescription = "Edit")
+        }
+        IconButton(onClick = onDelete) {
+            Icon(Icons.Default.Delete, contentDescription = "Delete")
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MeasurementEditForm(
+    date: LocalDate,
+    measurement: Measurement?,
+    weightUnit: WeightUnit,
+    defaultWeightKg: Double,
+    onSave: (id: Long, weightKg: Double, timestamp: Instant) -> Unit,
+    onCancel: () -> Unit,
+) {
+    val tz = TimeZone.currentSystemDefault()
+    val initialTime = measurement?.timestamp?.toLocalDateTime(tz)?.time ?: LocalTime(12, 0)
+    val timePickerState = rememberTimePickerState(
+        initialHour = initialTime.hour,
+        initialMinute = initialTime.minute,
+        is24Hour = true,
+    )
+    var selectedWeightKg by remember { mutableStateOf(defaultWeightKg) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 24.dp),
+    ) {
+        Text(
+            text = dateLabel(date),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(bottom = 16.dp),
+        )
+        TimeInput(
+            state = timePickerState,
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+        )
+        Spacer(Modifier.height(8.dp))
+        WeightWheelPicker(
+            initialWeightKg = defaultWeightKg,
+            unit = weightUnit,
+            onWeightKgChanged = { selectedWeightKg = it },
+        )
+        Spacer(Modifier.height(16.dp))
+        Row(
+            horizontalArrangement = Arrangement.End,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            TextButton(onClick = onCancel) { Text("Cancel") }
+            Spacer(Modifier.width(8.dp))
+            Button(
+                onClick = {
+                    val dateTime = LocalDateTime(date, LocalTime(timePickerState.hour, timePickerState.minute))
+                    onSave(measurement?.id ?: 0L, selectedWeightKg, dateTime.toInstant(tz))
+                },
+            ) { Text("Save") }
+        }
+    }
+}
+
+private fun dateLabel(date: LocalDate): String {
+    val month = date.month.name.lowercase().replaceFirstChar { it.uppercaseChar() }
+    return "${date.dayOfMonth} $month ${date.year}"
+}
+
+private fun shortDateLabel(date: LocalDate): String {
+    val month = date.month.name.take(3).lowercase().replaceFirstChar { it.uppercaseChar() }
+    return "$month ${date.dayOfMonth}"
 }

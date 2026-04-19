@@ -5,7 +5,9 @@ import kotlinx.coroutines.flow.Flow
 
 interface MeasurementRepository {
     fun getAll(): Flow<List<Measurement>>
+    fun getForDateRange(fromMs: Long, toMs: Long): Flow<List<Measurement>>
     suspend fun add(measurement: Measurement)
+    suspend fun update(measurement: Measurement)
     suspend fun delete(id: Long)
     suspend fun getSince(fromMs: Long): List<Measurement>
 }
