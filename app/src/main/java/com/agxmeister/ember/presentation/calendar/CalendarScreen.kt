@@ -41,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -396,16 +397,42 @@ private fun MeasurementEditForm(
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 16.dp),
         )
-        TimeInput(
-            state = timePickerState,
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-        )
-        Spacer(Modifier.height(8.dp))
         WeightWheelPicker(
             initialWeightKg = defaultWeightKg,
             unit = weightUnit,
             onWeightKgChanged = { selectedWeightKg = it },
         )
+        Spacer(Modifier.height(8.dp))
+        Box(
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            contentAlignment = Alignment.Center,
+        ) {
+            TimeInput(
+                state = timePickerState,
+                modifier = Modifier.scale(0.8f),
+            )
+            if (!timeEditing) {
+                Column(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                        .clickable { timeEditing = true },
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    Text(
+                        text = "%02d:%02d".format(timePickerState.hour, timePickerState.minute),
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        text = "tap to change",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                    )
+                }
+            }
+        }
         Spacer(Modifier.height(16.dp))
         Row(
             horizontalArrangement = Arrangement.End,
