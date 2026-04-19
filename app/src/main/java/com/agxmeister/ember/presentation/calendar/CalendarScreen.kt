@@ -166,6 +166,8 @@ fun CalendarScreen(viewModel: CalendarViewModel = hiltViewModel()) {
                     defaultWeightKg = editingMeasurement?.weightKg
                         ?: uiState.selectedDateMeasurements.lastOrNull()?.weightKg
                         ?: uiState.defaultWeightKg,
+                    dayStartHour = uiState.dayStartHour,
+                    dayStartMinute = uiState.dayStartMinute,
                     onSave = { id, weightKg, timestamp ->
                         viewModel.requestSave(id, weightKg, timestamp)
                     },
@@ -360,17 +362,23 @@ private fun MeasurementEditForm(
     measurement: Measurement?,
     weightUnit: WeightUnit,
     defaultWeightKg: Double,
+    dayStartHour: Int,
+    dayStartMinute: Int,
     onSave: (id: Long, weightKg: Double, timestamp: Instant) -> Unit,
     onCancel: () -> Unit,
 ) {
     val tz = TimeZone.currentSystemDefault()
-    val initialTime = measurement?.timestamp?.toLocalDateTime(tz)?.time ?: LocalTime(12, 0)
+    val initialTime = measurement?.timestamp?.toLocalDateTime(tz)?.time ?: run {
+        val totalMinutes = dayStartHour * 60 + dayStartMinute + 15
+        LocalTime(totalMinutes / 60 % 24, totalMinutes % 60)
+    }
     val timePickerState = rememberTimePickerState(
         initialHour = initialTime.hour,
         initialMinute = initialTime.minute,
         is24Hour = true,
     )
     var selectedWeightKg by remember { mutableStateOf(defaultWeightKg) }
+    var timeEditing by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier

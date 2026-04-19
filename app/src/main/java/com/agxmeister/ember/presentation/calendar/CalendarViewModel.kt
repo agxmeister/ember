@@ -41,6 +41,8 @@ data class CalendarUiState(
     val selectedDateMeasurements: List<Measurement> = emptyList(),
     val weightUnit: WeightUnit = WeightUnit.Kg,
     val defaultWeightKg: Double = 70.0,
+    val dayStartHour: Int = 7,
+    val dayStartMinute: Int = 0,
 )
 
 data class PendingReplace(
@@ -82,14 +84,17 @@ class CalendarViewModel @Inject constructor(
             if (date != null) getMeasurementsForDate(date) else flowOf(emptyList())
         }
 
+    private val dayStart = combine(
+        preferencesRepository.dayStartHour,
+        preferencesRepository.dayStartMinute,
+    ) { h, m -> h to m }
+
     val uiState: StateFlow<CalendarUiState> = combine(
-        getMeasurementDates(),
-        _displayYearMonth,
-        selectedDateMeasurements,
-        preferencesRepository.weightUnit,
-        preferencesRepository.initialWeightKg,
-    ) { dates, yearMonth, measurements, weightUnit, defaultWeightKg ->
+        combine(getMeasurementDates(), _displayYearMonth, selectedDateMeasurements) { a, b, c -> Triple(a, b, c) },
+        combine(preferencesRepository.weightUnit, preferencesRepository.initialWeightKg, dayStart) { u, w, ds -> Triple(u, w, ds) },
+    ) { (dates, yearMonth, measurements), (weightUnit, defaultWeightKg, dayStart) ->
         val (year, month) = yearMonth
+        val (dayStartHour, dayStartMinute) = dayStart
         CalendarUiState(
             measurementDates = dates,
             displayYear = year,
@@ -98,6 +103,8 @@ class CalendarViewModel @Inject constructor(
             selectedDateMeasurements = measurements,
             weightUnit = weightUnit,
             defaultWeightKg = defaultWeightKg,
+            dayStartHour = dayStartHour,
+            dayStartMinute = dayStartMinute,
         )
     }.stateIn(
         scope = viewModelScope,
