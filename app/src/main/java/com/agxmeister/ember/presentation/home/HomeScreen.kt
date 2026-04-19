@@ -82,6 +82,7 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
             Spacer(modifier = Modifier.height(40.dp))
 
             Button(
+                enabled = checkmarkAlpha.value == 0f,
                 onClick = {
                     viewModel.save(selectedWeight)
                     coroutineScope.launch {
