@@ -8,6 +8,7 @@ interface UserPreferencesRepository {
     val isOnboardingCompleted: Flow<Boolean>
     val initialWeightKg: Flow<Double>
     val dayStartHour: Flow<Int>
+    val dayStartMinute: Flow<Int>
     val clusteringEnabled: Flow<Boolean>
     val weightGoal: Flow<WeightGoal>
     val weightUnit: Flow<WeightUnit>

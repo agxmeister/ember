@@ -18,7 +18,7 @@ data class OnboardingUiState(
     val weightKg: Double = 62.0,
     val weightUnit: WeightUnit = WeightUnit.Kg,
     val weightGoal: WeightGoal = WeightGoal.Decrease,
-    val dayStartHour: Int = 7,
+    val dayStartHour: Int = 8,
     val dayStartMinute: Int = 0,
     val clusteringEnabled: Boolean = true,
 )

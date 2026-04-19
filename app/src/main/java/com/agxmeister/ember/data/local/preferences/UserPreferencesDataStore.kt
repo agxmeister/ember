@@ -38,7 +38,10 @@ class UserPreferencesDataStore @Inject constructor(
         context.dataStore.data.map { it[initialWeightKey] ?: 70.0 }
 
     val dayStartHour: Flow<Int> =
-        context.dataStore.data.map { it[dayStartHourKey] ?: 7 }
+        context.dataStore.data.map { it[dayStartHourKey] ?: 8 }
+
+    val dayStartMinute: Flow<Int> =
+        context.dataStore.data.map { it[dayStartMinuteKey] ?: 0 }
 
     val clusteringEnabled: Flow<Boolean> =
         context.dataStore.data.map { it[clusteringEnabledKey] ?: true }

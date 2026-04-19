@@ -13,6 +13,7 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     override val isOnboardingCompleted: Flow<Boolean> = dataStore.isOnboardingCompleted
     override val initialWeightKg: Flow<Double> = dataStore.initialWeightKg
     override val dayStartHour: Flow<Int> = dataStore.dayStartHour
+    override val dayStartMinute: Flow<Int> = dataStore.dayStartMinute
     override val clusteringEnabled: Flow<Boolean> = dataStore.clusteringEnabled
     override val weightGoal: Flow<WeightGoal> = dataStore.weightGoal
     override val weightUnit: Flow<WeightUnit> = dataStore.weightUnit
