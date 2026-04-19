@@ -366,13 +366,17 @@ private fun IntWheelPicker(
     modifier: Modifier = Modifier,
 ) {
     val items = range.toList()
-    val listState = rememberLazyListState(initialFirstVisibleItemIndex = (initialValue - range.first).coerceIn(0, items.size - 1))
+    // Pad with one null sentinel at each end so every real value can occupy the center slot.
+    val paddedSize = items.size + 2
+    val initialScrollIndex = (initialValue - range.first)  // null sentinel at 0 shifts real items by 1
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialScrollIndex.coerceIn(0, paddedSize - 1))
     val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
 
     val selectedIndex by remember { derivedStateOf { listState.firstVisibleItemIndex + 1 } }
 
     LaunchedEffect(selectedIndex) {
-        val value = items.getOrNull(selectedIndex) ?: items.last()
+        val realIndex = selectedIndex - 1
+        val value = items.getOrNull(realIndex) ?: return@LaunchedEffect
         onValueChanged(value)
     }
 
@@ -385,26 +389,30 @@ private fun IntWheelPicker(
                 .height(ITEM_HEIGHT * 3),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            items(items.size) { idx ->
+            items(paddedSize) { paddedIdx ->
+                val realIndex = paddedIdx - 1
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(ITEM_HEIGHT),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(
-                        text = label(items[idx]),
-                        style = if (idx == selectedIndex) {
-                            MaterialTheme.typography.headlineMedium
-                        } else {
-                            MaterialTheme.typography.bodyLarge
-                        },
-                        color = if (idx == selectedIndex) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
-                        },
-                    )
+                    val value = items.getOrNull(realIndex)
+                    if (value != null) {
+                        Text(
+                            text = label(value),
+                            style = if (paddedIdx == selectedIndex) {
+                                MaterialTheme.typography.headlineMedium
+                            } else {
+                                MaterialTheme.typography.bodyLarge
+                            },
+                            color = if (paddedIdx == selectedIndex) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                            },
+                        )
+                    }
                 }
             }
         }
