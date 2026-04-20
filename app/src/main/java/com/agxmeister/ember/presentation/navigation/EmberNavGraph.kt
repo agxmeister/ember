@@ -92,7 +92,17 @@ fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
                 )
             }
             composable(Screen.Home.route) { HomeScreen() }
-            composable(Screen.Chart.route) { ChartScreen() }
+            composable(Screen.Chart.route) {
+                ChartScreen(onNavigateToHome = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                })
+            }
             composable(Screen.Calendar.route) { CalendarScreen() }
             composable(Screen.Settings.route) { SettingsScreen() }
         }

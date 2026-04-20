@@ -1,17 +1,13 @@
 package com.agxmeister.ember.presentation.chart
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,144 +17,150 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.agxmeister.ember.domain.model.Measurement
-import com.agxmeister.ember.presentation.theme.EmberTheme
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.agxmeister.ember.domain.model.Cluster
-import com.agxmeister.ember.domain.model.DailyAverage
-import com.agxmeister.ember.domain.model.DayCluster
+import com.agxmeister.ember.domain.model.DailyCandle
 import com.agxmeister.ember.domain.model.WeightGoal
 import com.agxmeister.ember.domain.model.WeightUnit
+import com.agxmeister.ember.presentation.theme.EmberTheme
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisLabelComponent
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
+import com.patrykandpatrick.vico.compose.cartesian.layer.rememberCandlestickCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLine
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
-import com.patrykandpatrick.vico.compose.common.fill
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.compose.cartesian.rememberVicoScrollState
 import com.patrykandpatrick.vico.compose.cartesian.rememberVicoZoomState
-import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisLabelComponent
 import com.patrykandpatrick.vico.compose.common.component.rememberLineComponent
-import com.patrykandpatrick.vico.compose.common.component.rememberTextComponent
+import com.patrykandpatrick.vico.compose.common.fill
 import com.patrykandpatrick.vico.core.cartesian.AutoScrollCondition
 import com.patrykandpatrick.vico.core.cartesian.Scroll
 import com.patrykandpatrick.vico.core.cartesian.Zoom
-import com.patrykandpatrick.vico.core.common.Position
-import androidx.compose.ui.unit.sp
 import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
-import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModel
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianLayerRangeProvider
-import com.patrykandpatrick.vico.core.cartesian.data.LineCartesianLayerModel
-import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
-import com.patrykandpatrick.vico.core.cartesian.decoration.HorizontalLine
-import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
+import com.patrykandpatrick.vico.core.cartesian.data.candlestickSeries
+import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
+import com.patrykandpatrick.vico.core.cartesian.layer.CandlestickCartesianLayer
+import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
+import com.patrykandpatrick.vico.core.cartesian.layer.absolute
 import com.patrykandpatrick.vico.core.common.data.ExtraStore
 import java.text.DecimalFormat
 import kotlinx.datetime.Clock
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDateTime
 import kotlin.math.abs
 import kotlin.time.Duration.Companion.days
 
-// Adds 20 % of the data spread as padding above and below, keeping the axis
-// tightly zoomed on actual weight values rather than starting from zero.
-private val weightValueFormatter = CartesianValueFormatter.decimal(DecimalFormat("#;−#"))
+// ──── Chart layout ────
+private const val WINDOW_DAYS = 7
+private const val LAST_INDEX = WINDOW_DAYS - 1
+private val ChartHeight = 300.dp
+private val CandleBodyThickness = 8.dp
 
+// ──── Colors ────
+private val ProgressColor = Color(0xFF4CAF50)
+private val RegressColor = Color(0xFFE53935)
+private val NeutralCandleColor = Color(0xFF9E9E9E)
+private val MedianLineColor = Color(0xFF29B6F6)
+
+// ──── Formatters ────
+private val oneDecimal = DecimalFormat("0.0")
+private val weightValueFormatter = CartesianValueFormatter.decimal(DecimalFormat("0.0;−0.0"))
+private val yStepKey = ExtraStore.Key<Double>()
+
+// 20% vertical padding above and below the data extents keeps candles visually centered.
 private val weightRangeProvider = object : CartesianLayerRangeProvider {
-    override fun getMinY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
-        val padding = (maxY - minY).coerceAtLeast(1.0) * 0.2
-        return minY - padding
-    }
-    override fun getMaxY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
-        val padding = (maxY - minY).coerceAtLeast(1.0) * 0.2
-        return maxY + padding
-    }
+    override fun getMinY(minY: Double, maxY: Double, extraStore: ExtraStore): Double =
+        minY - yPadding(minY, maxY)
+    override fun getMaxY(minY: Double, maxY: Double, extraStore: ExtraStore): Double =
+        maxY + yPadding(minY, maxY)
+    private fun yPadding(minY: Double, maxY: Double) = (maxY - minY).coerceAtLeast(1.0) * 0.2
 }
 
-private val clusterColors = mapOf(
-    DayCluster.Eos to Color(0xFFFFA726),
-    DayCluster.Helios to Color(0xFFFFD54F),
-    DayCluster.Hesperus to Color(0xFFAB47BC),
-    DayCluster.Selene to Color(0xFF5C6BC0),
-)
-
-private val medianKey = ExtraStore.Key<Double>()
-private val trendKey = ExtraStore.Key<Double>()
-
-private val trendFormat = DecimalFormat("0.0")
+private fun monthAbbr(date: LocalDate): String =
+    date.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }
 
 private fun formatTrend(trend: Double): String {
-    val formatted = trendFormat.format(abs(trend))
+    val formatted = oneDecimal.format(abs(trend))
     return if (trend < 0) "−$formatted" else "+$formatted"
 }
 
+private fun yStepFor(amplitude: Double): Double = when {
+    amplitude < 1.0 -> 0.2
+    amplitude < 3.0 -> 0.5
+    amplitude < 7.0 -> 1.0
+    else -> 2.0
+}
+
+// Vico derives minX/maxX from actual data. To always render the full WINDOW_DAYS span
+// we anchor the median line at x=0 and x=LAST_INDEX using the nearest known median value.
+private fun anchoredMedianPoints(points: List<Pair<Int, Double>>): List<Pair<Int, Double>> {
+    if (points.isEmpty()) return emptyList()
+    return buildList {
+        if (points.first().first > 0) add(0 to points.first().second)
+        addAll(points)
+        if (points.last().first < LAST_INDEX) add(LAST_INDEX to points.last().second)
+    }
+}
+
 @Composable
-fun ChartScreen(viewModel: ChartViewModel = hiltViewModel()) {
+fun ChartScreen(onNavigateToHome: () -> Unit = {}, viewModel: ChartViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     when (val state = uiState) {
-        is ChartUiState.Empty -> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("No data yet. Start by adding your weight on the Home screen.")
+        is ChartUiState.Empty -> EmptyChartScreen(onNavigateToHome)
+        is ChartUiState.Candle -> Column(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+        ) {
+            when {
+                state.showChart -> CandleChart(
+                    candles = state.candles,
+                    showMedianLine = state.showMedianLine,
+                    weightGoal = state.weightGoal,
+                    weightUnit = state.weightUnit,
+                )
+                state.median != null -> MedianDisplay(
+                    median = state.median,
+                    trend = state.trend,
+                    weightGoal = state.weightGoal,
+                    weightUnit = state.weightUnit,
+                )
+                else -> WarmUpScreen(
+                    candles = state.candles,
+                    recentCount = state.recentCount,
+                    weightUnit = state.weightUnit,
+                )
             }
         }
-        is ChartUiState.Clustered -> {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-            ) {
-                Text("Weight Trends", style = MaterialTheme.typography.headlineSmall)
-                Spacer(modifier = Modifier.height(16.dp))
-                when {
-                    state.showChart -> CombinedClusterChart(
-                        clusters = state.clusters,
-                        median = state.median,
-                        trend = state.trend,
-                        weightGoal = state.weightGoal,
-                        weightUnit = state.weightUnit,
-                    )
-                    state.median != null -> MedianDisplay(median = state.median, trend = state.trend, weightGoal = state.weightGoal, weightUnit = state.weightUnit)
-                    else -> Text(
-                        text = "Keep measuring! You need at least 3 measurements this week to see the chart, and 5 in total for the median.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-        }
-        is ChartUiState.Classic -> {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-            ) {
-                Text("Weight Trends", style = MaterialTheme.typography.headlineSmall)
-                Spacer(modifier = Modifier.height(16.dp))
-                when {
-                    state.showChart -> DailyAverageChart(
-                        dailyAverages = state.dailyAverages,
-                        median = state.median,
-                        trend = state.trend,
-                        weightGoal = state.weightGoal,
-                        weightUnit = state.weightUnit,
-                    )
-                    state.median != null -> MedianDisplay(median = state.median, trend = state.trend, weightGoal = state.weightGoal, weightUnit = state.weightUnit)
-                    else -> Text(
-                        text = "Keep measuring! You need at least 3 measurements this week to see the chart, and 5 in total for the median.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
+    }
+}
+
+@Composable
+private fun EmptyChartScreen(onNavigateToHome: () -> Unit) {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(32.dp),
+        ) {
+            Text(
+                text = "No data yet. Start by adding your weight on the Home screen.",
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+            )
+            Button(onClick = onNavigateToHome) { Text("Go to Home") }
         }
     }
 }
@@ -168,9 +170,7 @@ private fun MedianDisplay(median: Double, trend: Double?, weightGoal: WeightGoal
     val displayMedian = weightUnit.fromKg(median)
     val displayTrend = trend?.let { weightUnit.scaleDiff(it) }
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 24.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
@@ -180,7 +180,7 @@ private fun MedianDisplay(median: Double, trend: Double?, weightGoal: WeightGoal
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
-            text = "${DecimalFormat("0.0").format(displayMedian)} ${weightUnit.label}",
+            text = "${oneDecimal.format(displayMedian)} ${weightUnit.label}",
             style = MaterialTheme.typography.displaySmall,
         )
         if (displayTrend != null) {
@@ -191,573 +191,245 @@ private fun MedianDisplay(median: Double, trend: Double?, weightGoal: WeightGoal
             Text(
                 text = "${formatTrend(displayTrend)} vs prev. week",
                 style = MaterialTheme.typography.bodyMedium,
-                color = if (isProgress) Color(0xFF4CAF50) else Color(0xFFE53935),
+                color = if (isProgress) ProgressColor else RegressColor,
             )
         }
     }
 }
 
 @Composable
-private fun CombinedClusterChart(clusters: List<Cluster>, median: Double?, trend: Double?, weightGoal: WeightGoal, weightUnit: WeightUnit = WeightUnit.Kg) {
-    val nonEmpty = clusters.filter { it.measurements.isNotEmpty() }
-    if (nonEmpty.isEmpty()) return
+private fun CandleChart(
+    candles: List<DailyCandle>,
+    showMedianLine: Boolean,
+    weightGoal: WeightGoal,
+    weightUnit: WeightUnit = WeightUnit.Kg,
+) {
+    if (candles.isEmpty()) return
 
-    val referenceDates = remember(clusters) {
-        nonEmpty.firstOrNull()?.measurements
-            ?.sortedBy { it.timestamp }
-            ?.map { m -> m.timestamp.toLocalDateTime(TimeZone.currentSystemDefault()).date }
-            ?: emptyList()
+    val today = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
+    val allDates = remember(today) { (LAST_INDEX downTo 0).map { today.minus(DatePeriod(days = it)) } }
+    val dateToIndex = remember(allDates) { allDates.withIndex().associate { (i, d) -> d to i } }
+    val modelProducer = remember { CartesianChartModelProducer() }
+
+    LaunchedEffect(candles, weightUnit) {
+        val indexed = candles.mapNotNull { c -> dateToIndex[c.date]?.let { i -> i to c } }
+        if (indexed.isEmpty()) return@LaunchedEffect
+        modelProducer.populateFrom(indexed, weightUnit)
     }
 
-    val modelProducer = remember(clusters) { CartesianChartModelProducer() }
-    val displayMedian = median?.let { weightUnit.fromKg(it) }
-    val displayTrend = trend?.let { weightUnit.scaleDiff(it) }
-
-    LaunchedEffect(clusters, median, trend, weightUnit) {
-        modelProducer.runTransaction {
-            lineSeries {
-                nonEmpty.forEach { cluster ->
-                    series(cluster.measurements.map { weightUnit.fromKg(it.weightKg) })
-                }
-            }
-            extras {
-                if (displayMedian != null) it[medianKey] = displayMedian
-                if (displayTrend != null) it[trendKey] = displayTrend
-            }
-        }
-    }
-
-    ClusterChartContent(
-        nonEmpty = nonEmpty,
-        referenceDates = referenceDates,
-        median = displayMedian,
-        trend = displayTrend,
+    CandleChartContent(
+        allDates = allDates,
+        showMedianLine = showMedianLine,
         weightGoal = weightGoal,
-        weightUnit = weightUnit,
         modelProducer = modelProducer,
     )
 }
 
-@Composable
-private fun ClusterChartContent(
-    nonEmpty: List<Cluster>,
-    referenceDates: List<LocalDate>,
-    median: Double? = null,
-    trend: Double? = null,
-    weightGoal: WeightGoal = WeightGoal.Decrease,
-    weightUnit: WeightUnit = WeightUnit.Kg,
-    modelProducer: CartesianChartModelProducer? = null,
-    model: CartesianChartModel? = null,
+private suspend fun CartesianChartModelProducer.populateFrom(
+    indexed: List<Pair<Int, DailyCandle>>,
+    weightUnit: WeightUnit,
 ) {
-    val sorted = remember(nonEmpty) {
-        nonEmpty.map { it.copy(measurements = it.measurements.sortedBy { m -> m.timestamp }) }
-    }
-    val pointConnector = remember { LineCartesianLayer.PointConnector.cubic() }
-    val eosLine = LineCartesianLayer.rememberLine(
-        fill = LineCartesianLayer.LineFill.single(fill(clusterColors[DayCluster.Eos]!!)),
-        pointConnector = pointConnector,
+    val highs = indexed.map { weightUnit.fromKg(it.second.high) }
+    val lows = indexed.map { weightUnit.fromKg(it.second.low) }
+    val medianPoints = anchoredMedianPoints(
+        indexed.map { it.first to weightUnit.fromKg(it.second.rollingMedian) }
     )
-    val heliosLine = LineCartesianLayer.rememberLine(
-        fill = LineCartesianLayer.LineFill.single(fill(clusterColors[DayCluster.Helios]!!)),
-        pointConnector = pointConnector,
-    )
-    val hesperusLine = LineCartesianLayer.rememberLine(
-        fill = LineCartesianLayer.LineFill.single(fill(clusterColors[DayCluster.Hesperus]!!)),
-        pointConnector = pointConnector,
-    )
-    val seleneLine = LineCartesianLayer.rememberLine(
-        fill = LineCartesianLayer.LineFill.single(fill(clusterColors[DayCluster.Selene]!!)),
-        pointConnector = pointConnector,
-    )
-
-    val lineByCluster = mapOf(
-        DayCluster.Eos to eosLine,
-        DayCluster.Helios to heliosLine,
-        DayCluster.Hesperus to hesperusLine,
-        DayCluster.Selene to seleneLine,
-    )
-    val seriesLines = sorted.map { lineByCluster[it.dayCluster]!! }
-
-    val medianColor = when {
-        trend == null -> Color(0xFFE53935)
-        (weightGoal == WeightGoal.Decrease && trend <= 0) || (weightGoal == WeightGoal.Increase && trend >= 0) -> Color(0xFF4CAF50)
-        else -> Color(0xFFE53935)
-    }
-    val medianLineComponent = rememberLineComponent(
-        fill = fill(medianColor),
-        thickness = 2.5.dp,
-    )
-    val medianLabelComponent = rememberTextComponent(color = medianColor)
-    val medianDecoration = if (median != null) {
-        remember(median, trend, weightGoal, weightUnit) {
-            HorizontalLine(
-                y = { it.getOrNull(medianKey) ?: median },
-                line = medianLineComponent,
-                labelComponent = medianLabelComponent,
-                label = { extraStore ->
-                    val m = DecimalFormat("0.0").format(extraStore.getOrNull(medianKey) ?: median)
-                    val t = extraStore.getOrNull(trendKey) ?: trend
-                    if (t != null) "$m ${weightUnit.label}, ${formatTrend(t)} vs prev. week" else "$m ${weightUnit.label}"
-                },
-                horizontalLabelPosition = Position.Horizontal.End,
-                verticalLabelPosition = Position.Vertical.Top,
-            )
-        }
-    } else null
-
-    val scrollState = rememberVicoScrollState(
-        initialScroll = Scroll.Absolute.End,
-        autoScroll = Scroll.Absolute.End,
-        autoScrollCondition = AutoScrollCondition.OnModelGrowth,
-    )
-    val zoomState = rememberVicoZoomState(
-        initialZoom = Zoom.max(Zoom.x(8.0), Zoom.Content),
-    )
-
-    val chart = rememberCartesianChart(
-        rememberLineCartesianLayer(
-            lineProvider = LineCartesianLayer.LineProvider.series(*seriesLines.toTypedArray()),
-            rangeProvider = weightRangeProvider,
-        ),
-        startAxis = VerticalAxis.rememberStart(valueFormatter = weightValueFormatter),
-        bottomAxis = HorizontalAxis.rememberBottom(
-            label = rememberAxisLabelComponent(textSize = 10.sp),
-            itemPlacer = HorizontalAxis.ItemPlacer.aligned(shiftExtremeLines = false, spacing = { 1 }, addExtremeLabelPadding = false),
-            valueFormatter = { _, x, _ ->
-                    val date = referenceDates.getOrNull(x.toInt())
-                    if (date != null) {
-                        val month = date.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }
-                        "$month ${date.dayOfMonth}"
-                    } else ""
-                }
-        ),
-        decorations = listOfNotNull(medianDecoration),
-    )
-
-    if (modelProducer != null) {
-        CartesianChartHost(
-            chart = chart,
-            modelProducer = modelProducer,
-            scrollState = scrollState,
-            zoomState = zoomState,
-            modifier = Modifier.fillMaxWidth().height(300.dp),
+    runTransaction {
+        candlestickSeries(
+            x = indexed.map { it.first },
+            opening = indexed.map { weightUnit.fromKg(it.second.open) },
+            closing = indexed.map { weightUnit.fromKg(it.second.close) },
+            low = lows,
+            high = highs,
         )
-    } else if (model != null) {
-        CartesianChartHost(
-            chart = chart,
-            model = model,
-            scrollState = scrollState,
-            zoomState = zoomState,
-            modifier = Modifier.fillMaxWidth().height(300.dp),
-        )
-    }
-
-    Spacer(modifier = Modifier.height(12.dp))
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        sorted.forEach { cluster ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(10.dp)
-                        .background(clusterColors[cluster.dayCluster] ?: Color.Gray, CircleShape)
-                )
-                Text(text = cluster.label, style = MaterialTheme.typography.labelSmall)
-            }
+        lineSeries {
+            series(x = medianPoints.map { it.first }, y = medianPoints.map { it.second })
         }
-    }
-}
-
-// — Preview helpers —
-
-private fun buildClusters(vararg specs: Pair<DayCluster, List<Measurement>>): List<Cluster> =
-    specs.map { (cluster, measurements) -> Cluster(dayCluster = cluster, measurements = measurements) }
-
-// 14 days of data across all clusters (chart + median + trend)
-private fun previewClusters14Days(vararg included: DayCluster): List<Cluster> {
-    val now = Clock.System.now()
-    val baseWeights = mapOf(
-        DayCluster.Eos to 80.0,
-        DayCluster.Helios to 81.5,
-        DayCluster.Hesperus to 82.0,
-        DayCluster.Selene to 83.0,
-    )
-    val fluctuation = listOf(0.0, 0.3, -0.1, 0.4, 0.1, -0.2, 0.5, -0.3, 0.2, -0.4, 0.1, -0.1, 0.3, -0.2)
-    return included.map { cluster ->
-        Cluster(
-            dayCluster = cluster,
-            measurements = (0..13).map { day ->
-                Measurement(
-                    weightKg = baseWeights[cluster]!! + fluctuation[day] + day * -0.05,
-                    timestamp = now - day.days,
-                )
-            },
-        )
-    }
-}
-
-// 14 days of data with a downward trend (recent week lower than previous week)
-private fun previewClusters14DaysDecreasing(vararg included: DayCluster): List<Cluster> {
-    val now = Clock.System.now()
-    val baseWeights = mapOf(
-        DayCluster.Eos to 80.0,
-        DayCluster.Helios to 81.5,
-        DayCluster.Hesperus to 82.0,
-        DayCluster.Selene to 83.0,
-    )
-    val fluctuation = listOf(0.0, 0.3, -0.1, 0.4, 0.1, -0.2, 0.5, -0.3, 0.2, -0.4, 0.1, -0.1, 0.3, -0.2)
-    return included.map { cluster ->
-        Cluster(
-            dayCluster = cluster,
-            measurements = (0..13).map { day ->
-                Measurement(
-                    weightKg = baseWeights[cluster]!! + fluctuation[day] + day * 0.05,
-                    timestamp = now - day.days,
-                )
-            },
-        )
-    }
-}
-
-// 4 measurements all within last 7 days → chart visible, < 5 total → no median
-private fun previewClustersChartOnly(): List<Cluster> {
-    val now = Clock.System.now()
-    return buildClusters(
-        DayCluster.Eos to (0..3).map { day ->
-            Measurement(weightKg = 80.0 - day * 0.1, timestamp = now - day.days)
-        }
-    )
-}
-
-// 1 recent + 5 old (> 14 days ago) → >= 5 total → median; < 3 recent → no chart; 0 in prev week → no trend
-private fun previewClustersMedianOnly(): List<Cluster> {
-    val now = Clock.System.now()
-    return buildClusters(
-        DayCluster.Eos to listOf(
-            Measurement(weightKg = 79.5, timestamp = now - 2.days),
-        ) + (0..4).map { i ->
-            Measurement(weightKg = 80.0 + i * 0.2, timestamp = now - (20 + i).days)
-        }
-    )
-}
-
-// 1 recent + 3 in prev week + 2 old → >= 5 total → median; < 3 recent → no chart; 3 in prev week → trend
-private fun previewClustersMedianOnlyWithTrend(): List<Cluster> {
-    val now = Clock.System.now()
-    return buildClusters(
-        DayCluster.Eos to listOf(
-            Measurement(weightKg = 79.5, timestamp = now - 2.days),
-        ) + (0..2).map { i ->
-            Measurement(weightKg = 80.2 + i * 0.1, timestamp = now - (8 + i).days)
-        } + (0..1).map { i ->
-            Measurement(weightKg = 80.5, timestamp = now - (20 + i).days)
-        }
-    )
-}
-
-// 5 in last 7 days + 2 older than 14 days → >= 5 total → median; >= 3 recent → chart; 0 in prev week → no trend
-private fun previewClustersChartAndMedianNoTrend(): List<Cluster> {
-    val now = Clock.System.now()
-    return buildClusters(
-        DayCluster.Eos to (0..4).map { day ->
-            Measurement(weightKg = 80.0 - day * 0.1, timestamp = now - day.days)
-        } + (0..1).map { i ->
-            Measurement(weightKg = 80.8, timestamp = now - (20 + i).days)
-        }
-    )
-}
-
-private fun previewModel(clusters: List<Cluster>): CartesianChartModel =
-    CartesianChartModel(
-        LineCartesianLayerModel.build {
-            clusters.filter { it.measurements.isNotEmpty() }.forEach { cluster ->
-                series(cluster.measurements.sortedBy { it.timestamp }.map { it.weightKg })
-            }
-        }
-    )
-
-private fun previewDates(clusters: List<Cluster>): List<LocalDate> =
-    clusters.firstOrNull()?.measurements
-        ?.sortedBy { it.timestamp }
-        ?.map { m -> m.timestamp.toLocalDateTime(TimeZone.currentSystemDefault()).date }
-        ?: emptyList()
-
-private fun previewMedian(clusters: List<Cluster>): Double {
-    val allWeights = clusters.flatMap { it.measurements }.map { it.weightKg }.sorted()
-    return if (allWeights.size % 2 == 0) (allWeights[allWeights.size / 2 - 1] + allWeights[allWeights.size / 2]) / 2.0
-    else allWeights[allWeights.size / 2]
-}
-
-private fun previewTrend(clusters: List<Cluster>): Double {
-    val now = Clock.System.now()
-    val oneWeekAgo = now - 7.days
-    val twoWeeksAgo = now - 14.days
-    val medianForRange = { from: kotlinx.datetime.Instant, to: kotlinx.datetime.Instant ->
-        val weights = clusters.flatMap { it.measurements }
-            .filter { it.timestamp >= from && it.timestamp <= to }
-            .map { it.weightKg }.sorted()
-        if (weights.isEmpty()) null
-        else if (weights.size % 2 == 0) (weights[weights.size / 2 - 1] + weights[weights.size / 2]) / 2.0
-        else weights[weights.size / 2]
-    }
-    val current = medianForRange(oneWeekAgo, now) ?: 0.0
-    val previous = medianForRange(twoWeeksAgo, oneWeekAgo) ?: 0.0
-    return current - previous
-}
-
-// — Previews —
-
-@Preview(showBackground = true, name = "Empty — no data")
-@Composable
-private fun EmptyPreview() {
-    EmberTheme {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("No data yet. Start by adding your weight on the Home screen.")
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Chart only — < 5 total, no median")
-@Composable
-private fun ChartOnlyPreview() {
-    val clusters = previewClustersChartOnly()
-    EmberTheme {
-        Column(modifier = Modifier.padding(16.dp)) {
-            ClusterChartContent(
-                nonEmpty = clusters,
-                referenceDates = previewDates(clusters),
-                median = null,
-                trend = null,
-                model = previewModel(clusters),
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Median — no trend")
-@Composable
-private fun MedianOnlyNoTrendPreview() {
-    EmberTheme {
-        Column(modifier = Modifier.padding(16.dp)) {
-            MedianDisplay(median = 80.0, trend = null, weightGoal = WeightGoal.Decrease)
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Median — decrease goal, trending down (green)")
-@Composable
-private fun MedianDecreaseGoalPositiveTrendPreview() {
-    EmberTheme {
-        Column(modifier = Modifier.padding(16.dp)) {
-            MedianDisplay(median = 79.5, trend = -0.8, weightGoal = WeightGoal.Decrease)
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Median — decrease goal, trending up (red)")
-@Composable
-private fun MedianDecreaseGoalNegativeTrendPreview() {
-    EmberTheme {
-        Column(modifier = Modifier.padding(16.dp)) {
-            MedianDisplay(median = 80.8, trend = +0.8, weightGoal = WeightGoal.Decrease)
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Median — increase goal, trending up (green)")
-@Composable
-private fun MedianIncreaseGoalPositiveTrendPreview() {
-    EmberTheme {
-        Column(modifier = Modifier.padding(16.dp)) {
-            MedianDisplay(median = 80.8, trend = +0.8, weightGoal = WeightGoal.Increase)
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Median — increase goal, trending down (red)")
-@Composable
-private fun MedianIncreaseGoalNegativeTrendPreview() {
-    EmberTheme {
-        Column(modifier = Modifier.padding(16.dp)) {
-            MedianDisplay(median = 79.5, trend = -0.8, weightGoal = WeightGoal.Increase)
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Chart + median — no trend")
-@Composable
-private fun ChartAndMedianNoTrendPreview() {
-    val clusters = previewClustersChartAndMedianNoTrend()
-    EmberTheme {
-        Column(modifier = Modifier.padding(16.dp)) {
-            ClusterChartContent(
-                nonEmpty = clusters,
-                referenceDates = previewDates(clusters),
-                median = previewMedian(clusters),
-                trend = null,
-                model = previewModel(clusters),
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Chart + median + trend — all clusters")
-@Composable
-private fun ChartAndMedianWithTrendAllClustersPreview() {
-    val clusters = previewClusters14Days(*DayCluster.entries.toTypedArray())
-    EmberTheme {
-        Column(modifier = Modifier.padding(16.dp)) {
-            ClusterChartContent(
-                nonEmpty = clusters,
-                referenceDates = previewDates(clusters),
-                median = previewMedian(clusters),
-                trend = previewTrend(clusters),
-                model = previewModel(clusters),
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Chart + median + trend — two clusters")
-@Composable
-private fun ChartAndMedianWithTrendTwoClustersPreview() {
-    val clusters = previewClusters14Days(DayCluster.Eos, DayCluster.Selene)
-    EmberTheme {
-        Column(modifier = Modifier.padding(16.dp)) {
-            ClusterChartContent(
-                nonEmpty = clusters,
-                referenceDates = previewDates(clusters),
-                median = previewMedian(clusters),
-                trend = previewTrend(clusters),
-                model = previewModel(clusters),
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Chart + median + trend — toward goal, all clusters")
-@Composable
-private fun ChartAndMedianTowardGoalAllClustersPreview() {
-    val clusters = previewClusters14DaysDecreasing(*DayCluster.entries.toTypedArray())
-    EmberTheme {
-        Column(modifier = Modifier.padding(16.dp)) {
-            ClusterChartContent(
-                nonEmpty = clusters,
-                referenceDates = previewDates(clusters),
-                median = previewMedian(clusters),
-                trend = previewTrend(clusters),
-                weightGoal = WeightGoal.Decrease,
-                model = previewModel(clusters),
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Chart + median + trend — toward goal, two clusters")
-@Composable
-private fun ChartAndMedianTowardGoalTwoClustersPreview() {
-    val clusters = previewClusters14DaysDecreasing(DayCluster.Eos, DayCluster.Selene)
-    EmberTheme {
-        Column(modifier = Modifier.padding(16.dp)) {
-            ClusterChartContent(
-                nonEmpty = clusters,
-                referenceDates = previewDates(clusters),
-                median = previewMedian(clusters),
-                trend = previewTrend(clusters),
-                weightGoal = WeightGoal.Decrease,
-                model = previewModel(clusters),
-            )
-        }
+        extras { it[yStepKey] = yStepFor(highs.max() - lows.min()) }
     }
 }
 
 @Composable
-private fun DailyAverageChart(dailyAverages: List<DailyAverage>, median: Double?, trend: Double?, weightGoal: WeightGoal, weightUnit: WeightUnit = WeightUnit.Kg) {
-    if (dailyAverages.isEmpty()) return
-
-    val modelProducer = remember(dailyAverages) { CartesianChartModelProducer() }
-    val displayMedian = median?.let { weightUnit.fromKg(it) }
-    val displayTrend = trend?.let { weightUnit.scaleDiff(it) }
-
-    LaunchedEffect(dailyAverages, median, trend, weightUnit) {
-        modelProducer.runTransaction {
-            lineSeries {
-                series(dailyAverages.map { weightUnit.fromKg(it.weightKg) })
-            }
-            extras {
-                if (displayMedian != null) it[medianKey] = displayMedian
-                if (displayTrend != null) it[trendKey] = displayTrend
-            }
-        }
-    }
-
-    val medianColor = when {
-        displayTrend == null -> Color(0xFFE53935)
-        (weightGoal == WeightGoal.Decrease && displayTrend <= 0) || (weightGoal == WeightGoal.Increase && displayTrend >= 0) -> Color(0xFF4CAF50)
-        else -> Color(0xFFE53935)
-    }
-    val medianLineComponent = rememberLineComponent(
-        fill = fill(medianColor),
-        thickness = 2.5.dp,
-    )
-    val medianLabelComponent = rememberTextComponent(color = medianColor)
-    val medianDecoration = if (displayMedian != null) {
-        remember(displayMedian, displayTrend, weightGoal, weightUnit) {
-            HorizontalLine(
-                y = { it.getOrNull(medianKey) ?: displayMedian },
-                line = medianLineComponent,
-                labelComponent = medianLabelComponent,
-                label = { extraStore ->
-                    val m = DecimalFormat("0.0").format(extraStore.getOrNull(medianKey) ?: displayMedian)
-                    val t = extraStore.getOrNull(trendKey) ?: displayTrend
-                    if (t != null) "$m ${weightUnit.label}, ${formatTrend(t)} vs prev. week" else "$m ${weightUnit.label}"
-                },
-                horizontalLabelPosition = Position.Horizontal.End,
-                verticalLabelPosition = Position.Vertical.Top,
-            )
-        }
-    } else null
-
-    val scrollState = rememberVicoScrollState(
-        initialScroll = Scroll.Absolute.End,
-        autoScroll = Scroll.Absolute.End,
-        autoScrollCondition = AutoScrollCondition.OnModelGrowth,
-    )
-    val zoomState = rememberVicoZoomState(
-        initialZoom = Zoom.max(Zoom.x(8.0), Zoom.Content),
-    )
-
+private fun CandleChartContent(
+    allDates: List<LocalDate>,
+    showMedianLine: Boolean,
+    weightGoal: WeightGoal,
+    modelProducer: CartesianChartModelProducer,
+) {
     CartesianChartHost(
         chart = rememberCartesianChart(
-            rememberLineCartesianLayer(
-                lineProvider = LineCartesianLayer.LineProvider.series(
-                    LineCartesianLayer.rememberLine(pointConnector = remember { LineCartesianLayer.PointConnector.cubic() })
-                ),
+            rememberCandlestickCartesianLayer(
+                candleProvider = rememberCandleProvider(weightGoal),
+                rangeProvider = weightRangeProvider,
             ),
-            startAxis = VerticalAxis.rememberStart(valueFormatter = weightValueFormatter),
+            rememberLineCartesianLayer(
+                lineProvider = LineCartesianLayer.LineProvider.series(rememberMedianLine(showMedianLine)),
+                rangeProvider = weightRangeProvider,
+            ),
+            startAxis = VerticalAxis.rememberStart(
+                valueFormatter = weightValueFormatter,
+                itemPlacer = VerticalAxis.ItemPlacer.step(step = { it.getOrNull(yStepKey) }),
+            ),
             bottomAxis = HorizontalAxis.rememberBottom(
                 label = rememberAxisLabelComponent(textSize = 10.sp),
-                itemPlacer = HorizontalAxis.ItemPlacer.aligned(shiftExtremeLines = false, spacing = { 1 }, addExtremeLabelPadding = false),
+                itemPlacer = HorizontalAxis.ItemPlacer.aligned(
+                    shiftExtremeLines = false,
+                    spacing = { 1 },
+                    addExtremeLabelPadding = false,
+                ),
                 valueFormatter = { _, x, _ ->
-                    val date = dailyAverages.getOrNull(x.toInt())?.date
-                    if (date != null) {
-                        val month = date.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }
-                        "$month ${date.dayOfMonth}"
-                    } else ""
-                }
+                    allDates.getOrNull(x.toInt())?.let { "${monthAbbr(it)} ${it.dayOfMonth}" } ?: ""
+                },
             ),
-            decorations = listOfNotNull(medianDecoration),
         ),
         modelProducer = modelProducer,
-        scrollState = scrollState,
-        zoomState = zoomState,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp),
+        scrollState = rememberVicoScrollState(
+            initialScroll = Scroll.Absolute.End,
+            autoScroll = Scroll.Absolute.End,
+            autoScrollCondition = AutoScrollCondition.OnModelGrowth,
+        ),
+        zoomState = rememberVicoZoomState(initialZoom = Zoom.max(Zoom.x(8.0), Zoom.Content)),
+        modifier = Modifier.fillMaxWidth().height(ChartHeight),
     )
+}
+
+@Composable
+private fun rememberCandleProvider(weightGoal: WeightGoal): CandlestickCartesianLayer.CandleProvider {
+    val (bullishColor, bearishColor) = when (weightGoal) {
+        WeightGoal.Decrease -> RegressColor to ProgressColor
+        WeightGoal.Increase -> ProgressColor to RegressColor
+    }
+    val bullishBody = rememberLineComponent(fill = fill(bullishColor), thickness = CandleBodyThickness)
+    val bearishBody = rememberLineComponent(fill = fill(bearishColor), thickness = CandleBodyThickness)
+    val neutralBody = rememberLineComponent(fill = fill(NeutralCandleColor), thickness = CandleBodyThickness)
+    return remember(bullishBody, bearishBody, neutralBody) {
+        CandlestickCartesianLayer.CandleProvider.absolute(
+            bullish = CandlestickCartesianLayer.Candle(bullishBody),
+            neutral = CandlestickCartesianLayer.Candle(neutralBody),
+            bearish = CandlestickCartesianLayer.Candle(bearishBody),
+        )
+    }
+}
+
+// The line series is always registered (it anchors Vico's x-range to the full window).
+// When the median should stay hidden, we render it transparent rather than omitting the layer.
+@Composable
+private fun rememberMedianLine(showMedianLine: Boolean): LineCartesianLayer.Line {
+    val color = if (showMedianLine) MedianLineColor else Color.Transparent
+    return LineCartesianLayer.rememberLine(
+        fill = LineCartesianLayer.LineFill.single(fill(color)),
+        pointConnector = remember { LineCartesianLayer.PointConnector.cubic() },
+    )
+}
+
+@Composable
+private fun WarmUpScreen(candles: List<DailyCandle>, recentCount: Int, weightUnit: WeightUnit) {
+    val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+    val motivational = when (recentCount) {
+        1 -> "One is done, two to go!"
+        2 -> "Only one more to go!"
+        else -> "Keep it up!"
+    }
+    val measurementText = candles
+        .sortedByDescending { it.date }
+        .take(3)
+        .sortedBy { it.date }
+        .joinToString(", ") { candle ->
+            val weight = oneDecimal.format(weightUnit.fromKg(candle.close))
+            "$weight ${dayLabel(today, candle.date)}"
+        }
+
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.padding(32.dp),
+        ) {
+            Text(
+                text = "The chart will appear after 3 check-ins. $motivational",
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                text = measurementText,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
+}
+
+private fun dayLabel(today: LocalDate, date: LocalDate): String = when (date) {
+    today -> "today"
+    today.minus(DatePeriod(days = 1)) -> "yesterday"
+    today.minus(DatePeriod(days = 2)) -> "two days ago"
+    else -> "${monthAbbr(date)} ${date.dayOfMonth}"
+}
+
+private fun previewCandles(days: Int, today: LocalDate): List<DailyCandle> {
+    val fluctuation = listOf(0.0, 0.3, -0.2, 0.5, -0.1, 0.4, -0.3)
+    return (days - 1 downTo 0).map { daysAgo ->
+        val base = 80.0 + fluctuation[daysAgo % fluctuation.size]
+        val prevBase = 80.0 + fluctuation[(daysAgo + 1) % fluctuation.size]
+        DailyCandle(
+            date = today.minus(DatePeriod(days = daysAgo)),
+            open = prevBase,
+            close = base,
+            high = maxOf(prevBase, base) + 0.2,
+            low = minOf(prevBase, base) - 0.2,
+            rollingMedian = base,
+        )
+    }
+}
+
+// Vico delivers the model by notifying already-subscribed observers.
+// CartesianChartHost subscribes after composition, so we must populate
+// the producer via LaunchedEffect (after the host subscribes), not before.
+// Use the ▶ interactive preview button to see the chart rendered.
+@Preview(showBackground = true, name = "Candle chart")
+@Composable
+private fun CandleChartPreview() {
+    EmberTheme {
+        val today = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
+        val allDates = remember { (LAST_INDEX downTo 0).map { today.minus(DatePeriod(days = it)) } }
+        val candles = remember { previewCandles(7, today) }
+        val dateToIndex = remember { allDates.withIndex().associate { (i, d) -> d to i } }
+        val modelProducer = remember { CartesianChartModelProducer() }
+
+        LaunchedEffect(Unit) {
+            val indexed = candles.mapNotNull { c -> dateToIndex[c.date]?.let { i -> i to c } }
+            if (indexed.isNotEmpty()) modelProducer.populateFrom(indexed, WeightUnit.Kg)
+        }
+
+        Column(modifier = Modifier.padding(16.dp)) {
+            CandleChartContent(
+                allDates = allDates,
+                showMedianLine = true,
+                weightGoal = WeightGoal.Decrease,
+                modelProducer = modelProducer,
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Warm-up (2 check-ins)")
+@Composable
+private fun WarmUpPreview() {
+    EmberTheme {
+        val today = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
+        Column(modifier = Modifier.padding(16.dp)) {
+            WarmUpScreen(candles = previewCandles(days = 2, today), recentCount = 2, weightUnit = WeightUnit.Kg)
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Median display")
+@Composable
+private fun MedianDisplayPreview() {
+    EmberTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            MedianDisplay(median = 80.0, trend = -0.5, weightGoal = WeightGoal.Decrease)
+        }
+    }
 }
