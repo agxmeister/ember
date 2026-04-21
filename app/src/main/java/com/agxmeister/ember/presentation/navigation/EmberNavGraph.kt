@@ -2,7 +2,6 @@ package com.agxmeister.ember.presentation.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShowChart
@@ -24,8 +23,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.agxmeister.ember.presentation.AppViewModel
-import com.agxmeister.ember.presentation.calendar.CalendarScreen
-import com.agxmeister.ember.presentation.chart.ChartScreen
+import com.agxmeister.ember.presentation.trends.TrendsScreen
 import com.agxmeister.ember.presentation.home.HomeScreen
 import com.agxmeister.ember.presentation.onboarding.OnboardingScreen
 import com.agxmeister.ember.presentation.settings.SettingsScreen
@@ -34,12 +32,11 @@ private const val ROUTE_ONBOARDING = "onboarding"
 
 sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
     data object Home : Screen("home", "Home", Icons.Default.Home)
-    data object Chart : Screen("chart", "Chart", Icons.Default.ShowChart)
-    data object Calendar : Screen("calendar", "Calendar", Icons.Default.CalendarMonth)
+    data object Trends : Screen("trends", "Trends", Icons.Default.ShowChart)
     data object Settings : Screen("settings", "Settings", Icons.Default.Settings)
 }
 
-private val screens = listOf(Screen.Home, Screen.Chart, Screen.Calendar, Screen.Settings)
+private val screens = listOf(Screen.Home, Screen.Trends, Screen.Settings)
 
 @Composable
 fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
@@ -92,8 +89,8 @@ fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
                 )
             }
             composable(Screen.Home.route) { HomeScreen() }
-            composable(Screen.Chart.route) {
-                ChartScreen(onNavigateToHome = {
+            composable(Screen.Trends.route) {
+                TrendsScreen(onNavigateToHome = {
                     navController.navigate(Screen.Home.route) {
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true
@@ -103,7 +100,6 @@ fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
                     }
                 })
             }
-            composable(Screen.Calendar.route) { CalendarScreen() }
             composable(Screen.Settings.route) { SettingsScreen() }
         }
     }

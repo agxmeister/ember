@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -122,7 +123,7 @@ fun ChartScreen(onNavigateToHome: () -> Unit = {}, viewModel: ChartViewModel = h
     when (val state = uiState) {
         is ChartUiState.Empty -> EmptyChartScreen(onNavigateToHome)
         is ChartUiState.Candle -> Column(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
         ) {
             when {
                 state.showChart -> CandleChart(
@@ -149,7 +150,7 @@ fun ChartScreen(onNavigateToHome: () -> Unit = {}, viewModel: ChartViewModel = h
 
 @Composable
 private fun EmptyChartScreen(onNavigateToHome: () -> Unit) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Box(modifier = Modifier.fillMaxWidth().heightIn(min = 256.dp), contentAlignment = Alignment.Center) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -339,7 +340,7 @@ private fun WarmUpScreen(candles: List<DailyCandle>, recentCount: Int, weightUni
             "$weight ${dayLabel(today, candle.date)}"
         }
 
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Box(modifier = Modifier.fillMaxWidth().heightIn(min = 256.dp), contentAlignment = Alignment.Center) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp),

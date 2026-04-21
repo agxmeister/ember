@@ -88,7 +88,7 @@ fun CalendarScreen(viewModel: CalendarViewModel = hiltViewModel()) {
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
     ) {
         Row(
