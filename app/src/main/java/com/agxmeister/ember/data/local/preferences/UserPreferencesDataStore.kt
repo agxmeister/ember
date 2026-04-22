@@ -27,6 +27,8 @@ class UserPreferencesDataStore @Inject constructor(
     private val initialWeightKey = doublePreferencesKey("initial_weight_kg")
     private val dayStartHourKey = intPreferencesKey("day_start_hour")
     private val dayStartMinuteKey = intPreferencesKey("day_start_minute")
+    private val notificationHourKey = intPreferencesKey("notification_hour")
+    private val notificationMinuteKey = intPreferencesKey("notification_minute")
     private val clusteringEnabledKey = booleanPreferencesKey("clustering_enabled")
     private val weightGoalKey = stringPreferencesKey("weight_goal")
     private val weightUnitKey = stringPreferencesKey("weight_unit")
@@ -42,6 +44,12 @@ class UserPreferencesDataStore @Inject constructor(
 
     val dayStartMinute: Flow<Int> =
         context.dataStore.data.map { it[dayStartMinuteKey] ?: 0 }
+
+    val notificationHour: Flow<Int> =
+        context.dataStore.data.map { it[notificationHourKey] ?: 8 }
+
+    val notificationMinute: Flow<Int> =
+        context.dataStore.data.map { it[notificationMinuteKey] ?: 15 }
 
     val clusteringEnabled: Flow<Boolean> =
         context.dataStore.data.map { it[clusteringEnabledKey] ?: true }
@@ -66,6 +74,8 @@ class UserPreferencesDataStore @Inject constructor(
         weightKg: Double,
         dayStartHour: Int,
         dayStartMinute: Int,
+        notificationHour: Int,
+        notificationMinute: Int,
         clusteringEnabled: Boolean,
         weightGoal: WeightGoal,
         weightUnit: WeightUnit,
@@ -74,10 +84,19 @@ class UserPreferencesDataStore @Inject constructor(
             prefs[initialWeightKey] = weightKg
             prefs[dayStartHourKey] = dayStartHour
             prefs[dayStartMinuteKey] = dayStartMinute
+            prefs[notificationHourKey] = notificationHour
+            prefs[notificationMinuteKey] = notificationMinute
             prefs[clusteringEnabledKey] = clusteringEnabled
             prefs[weightGoalKey] = weightGoal.name
             prefs[weightUnitKey] = weightUnit.name
             prefs[onboardingCompletedKey] = true
+        }
+    }
+
+    suspend fun setNotificationTime(hour: Int, minute: Int) {
+        context.dataStore.edit { prefs ->
+            prefs[notificationHourKey] = hour
+            prefs[notificationMinuteKey] = minute
         }
     }
 

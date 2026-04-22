@@ -18,7 +18,14 @@ class CompleteOnboardingUseCase @Inject constructor(
         weightGoal: WeightGoal,
         weightUnit: WeightUnit,
     ) {
-        preferencesRepository.saveOnboardingData(weightKg, dayStartHour, dayStartMinute, clusteringEnabled, weightGoal, weightUnit)
-        reminderScheduler.scheduleForTime(dayStartHour, dayStartMinute)
+        val notifyTotalMinutes = (dayStartHour * 60 + dayStartMinute + 15) % (24 * 60)
+        val notificationHour = notifyTotalMinutes / 60
+        val notificationMinute = notifyTotalMinutes % 60
+        preferencesRepository.saveOnboardingData(
+            weightKg, dayStartHour, dayStartMinute,
+            notificationHour, notificationMinute,
+            clusteringEnabled, weightGoal, weightUnit,
+        )
+        reminderScheduler.scheduleForTime(notificationHour, notificationMinute)
     }
 }

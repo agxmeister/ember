@@ -9,6 +9,8 @@ interface UserPreferencesRepository {
     val initialWeightKg: Flow<Double>
     val dayStartHour: Flow<Int>
     val dayStartMinute: Flow<Int>
+    val notificationHour: Flow<Int>
+    val notificationMinute: Flow<Int>
     val clusteringEnabled: Flow<Boolean>
     val weightGoal: Flow<WeightGoal>
     val weightUnit: Flow<WeightUnit>
@@ -16,6 +18,8 @@ interface UserPreferencesRepository {
         weightKg: Double,
         dayStartHour: Int,
         dayStartMinute: Int,
+        notificationHour: Int,
+        notificationMinute: Int,
         clusteringEnabled: Boolean,
         weightGoal: WeightGoal,
         weightUnit: WeightUnit,
@@ -23,4 +27,5 @@ interface UserPreferencesRepository {
     suspend fun setClusteringEnabled(enabled: Boolean)
     suspend fun setWeightGoal(goal: WeightGoal)
     suspend fun setWeightUnit(unit: WeightUnit)
+    suspend fun setNotificationTime(hour: Int, minute: Int)
 }

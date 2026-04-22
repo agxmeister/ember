@@ -14,6 +14,8 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     override val initialWeightKg: Flow<Double> = dataStore.initialWeightKg
     override val dayStartHour: Flow<Int> = dataStore.dayStartHour
     override val dayStartMinute: Flow<Int> = dataStore.dayStartMinute
+    override val notificationHour: Flow<Int> = dataStore.notificationHour
+    override val notificationMinute: Flow<Int> = dataStore.notificationMinute
     override val clusteringEnabled: Flow<Boolean> = dataStore.clusteringEnabled
     override val weightGoal: Flow<WeightGoal> = dataStore.weightGoal
     override val weightUnit: Flow<WeightUnit> = dataStore.weightUnit
@@ -22,11 +24,13 @@ class UserPreferencesRepositoryImpl @Inject constructor(
         weightKg: Double,
         dayStartHour: Int,
         dayStartMinute: Int,
+        notificationHour: Int,
+        notificationMinute: Int,
         clusteringEnabled: Boolean,
         weightGoal: WeightGoal,
         weightUnit: WeightUnit,
     ) {
-        dataStore.saveOnboardingData(weightKg, dayStartHour, dayStartMinute, clusteringEnabled, weightGoal, weightUnit)
+        dataStore.saveOnboardingData(weightKg, dayStartHour, dayStartMinute, notificationHour, notificationMinute, clusteringEnabled, weightGoal, weightUnit)
     }
 
     override suspend fun setClusteringEnabled(enabled: Boolean) {
@@ -39,5 +43,9 @@ class UserPreferencesRepositoryImpl @Inject constructor(
 
     override suspend fun setWeightUnit(unit: WeightUnit) {
         dataStore.setWeightUnit(unit)
+    }
+
+    override suspend fun setNotificationTime(hour: Int, minute: Int) {
+        dataStore.setNotificationTime(hour, minute)
     }
 }
