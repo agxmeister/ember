@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -254,8 +255,7 @@ private fun DayCell(
 ) {
     val primary = MaterialTheme.colorScheme.primary
     val onPrimary = MaterialTheme.colorScheme.onPrimary
-    val secondary = MaterialTheme.colorScheme.secondary
-    val onSecondary = MaterialTheme.colorScheme.onSecondary
+    val error = MaterialTheme.colorScheme.error
     val onSurface = MaterialTheme.colorScheme.onSurface
 
     Box(
@@ -267,25 +267,42 @@ private fun DayCell(
             .clickable(onClick = onClick)
             .then(
                 when {
-                    isVisualizationDate && hasRecord -> Modifier.background(primary).border(2.dp, secondary, CircleShape)
-                    isVisualizationDate -> Modifier.background(secondary)
+                    isVisualizationDate && hasRecord -> Modifier.background(primary).border(2.dp, error, CircleShape)
+                    isVisualizationDate -> Modifier.border(2.dp, error, CircleShape)
                     hasRecord -> Modifier.background(primary)
                     isToday -> Modifier.border(1.dp, primary, CircleShape)
                     else -> Modifier
                 }
             ),
     ) {
-        Text(
-            text = dayNumber.toString(),
-            style = MaterialTheme.typography.bodySmall,
-            color = when {
-                isVisualizationDate && hasRecord -> onPrimary
-                isVisualizationDate -> onSecondary
-                hasRecord -> onPrimary
-                isToday -> primary
-                else -> onSurface
-            },
-        )
+        if (isVisualizationDate) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    text = dayNumber.toString(),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (hasRecord) onPrimary else error,
+                )
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = null,
+                    tint = if (hasRecord) onPrimary else error,
+                    modifier = Modifier.size(8.dp),
+                )
+            }
+        } else {
+            Text(
+                text = dayNumber.toString(),
+                style = MaterialTheme.typography.bodySmall,
+                color = when {
+                    hasRecord -> onPrimary
+                    isToday -> primary
+                    else -> onSurface
+                },
+            )
+        }
     }
 }
 
