@@ -117,8 +117,16 @@ private fun anchoredMedianPoints(points: List<Pair<Int, Double>>): List<Pair<Int
 }
 
 @Composable
-fun ChartScreen(onNavigateToHome: () -> Unit = {}, viewModel: ChartViewModel = hiltViewModel()) {
+fun ChartScreen(
+    visualizationDate: LocalDate,
+    onNavigateToHome: () -> Unit = {},
+    viewModel: ChartViewModel = hiltViewModel(),
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(visualizationDate) {
+        viewModel.setVisualizationDate(visualizationDate)
+    }
 
     when (val state = uiState) {
         is ChartUiState.Empty -> EmptyChartScreen(onNavigateToHome)
@@ -131,6 +139,7 @@ fun ChartScreen(onNavigateToHome: () -> Unit = {}, viewModel: ChartViewModel = h
                     showMedianLine = state.showMedianLine,
                     weightGoal = state.weightGoal,
                     weightUnit = state.weightUnit,
+                    visualizationDate = state.visualizationDate,
                 )
                 state.median != null -> MedianDisplay(
                     median = state.median,
@@ -142,6 +151,7 @@ fun ChartScreen(onNavigateToHome: () -> Unit = {}, viewModel: ChartViewModel = h
                     candles = state.candles,
                     recentCount = state.recentCount,
                     weightUnit = state.weightUnit,
+                    visualizationDate = state.visualizationDate,
                 )
             }
         }
@@ -204,15 +214,15 @@ private fun CandleChart(
     showMedianLine: Boolean,
     weightGoal: WeightGoal,
     weightUnit: WeightUnit = WeightUnit.Kg,
+    visualizationDate: LocalDate,
 ) {
     if (candles.isEmpty()) return
 
-    val today = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
-    val allDates = remember(today) { (LAST_INDEX downTo 0).map { today.minus(DatePeriod(days = it)) } }
+    val allDates = remember(visualizationDate) { (LAST_INDEX downTo 0).map { visualizationDate.minus(DatePeriod(days = it)) } }
     val dateToIndex = remember(allDates) { allDates.withIndex().associate { (i, d) -> d to i } }
     val modelProducer = remember { CartesianChartModelProducer() }
 
-    LaunchedEffect(candles, weightUnit) {
+    LaunchedEffect(candles, weightUnit, visualizationDate) {
         val indexed = candles.mapNotNull { c -> dateToIndex[c.date]?.let { i -> i to c } }
         if (indexed.isEmpty()) return@LaunchedEffect
         modelProducer.populateFrom(indexed, weightUnit)
@@ -324,8 +334,7 @@ private fun rememberMedianLine(showMedianLine: Boolean): LineCartesianLayer.Line
 }
 
 @Composable
-private fun WarmUpScreen(candles: List<DailyCandle>, recentCount: Int, weightUnit: WeightUnit) {
-    val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+private fun WarmUpScreen(candles: List<DailyCandle>, recentCount: Int, weightUnit: WeightUnit, visualizationDate: LocalDate) {
     val motivational = when (recentCount) {
         1 -> "One is done, two to go!"
         2 -> "Only one more to go!"
@@ -337,7 +346,7 @@ private fun WarmUpScreen(candles: List<DailyCandle>, recentCount: Int, weightUni
         .sortedBy { it.date }
         .joinToString(", ") { candle ->
             val weight = oneDecimal.format(weightUnit.fromKg(candle.close))
-            "$weight ${dayLabel(today, candle.date)}"
+            "$weight ${dayLabel(visualizationDate, candle.date)}"
         }
 
     Box(modifier = Modifier.fillMaxWidth().heightIn(min = 256.dp), contentAlignment = Alignment.Center) {
@@ -420,7 +429,7 @@ private fun WarmUpPreview() {
     EmberTheme {
         val today = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
         Column(modifier = Modifier.padding(16.dp)) {
-            WarmUpScreen(candles = previewCandles(days = 2, today), recentCount = 2, weightUnit = WeightUnit.Kg)
+            WarmUpScreen(candles = previewCandles(days = 2, today), recentCount = 2, weightUnit = WeightUnit.Kg, visualizationDate = today)
         }
     }
 }

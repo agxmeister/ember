@@ -63,7 +63,11 @@ import kotlinx.datetime.toLocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CalendarScreen(viewModel: CalendarViewModel = hiltViewModel()) {
+fun CalendarScreen(
+    visualizationDate: LocalDate? = null,
+    onSetVisualizationDate: (LocalDate) -> Unit = {},
+    viewModel: CalendarViewModel = hiltViewModel(),
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val pendingReplace by viewModel.pendingReplace.collectAsStateWithLifecycle()
     val pendingDelete by viewModel.pendingDelete.collectAsStateWithLifecycle()
@@ -148,8 +152,12 @@ fun CalendarScreen(viewModel: CalendarViewModel = hiltViewModel()) {
                             dayNumber = dayNumber,
                             hasRecord = date in uiState.measurementDates,
                             isToday = date == today,
+                            isVisualizationDate = date == visualizationDate,
                             modifier = Modifier.weight(1f),
-                            onClick = { viewModel.selectDate(date) },
+                            onClick = {
+                                if (date == visualizationDate) viewModel.selectDate(date)
+                                else onSetVisualizationDate(date)
+                            },
                         )
                     }
                 }
@@ -240,11 +248,14 @@ private fun DayCell(
     dayNumber: Int,
     hasRecord: Boolean,
     isToday: Boolean,
+    isVisualizationDate: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val primary = MaterialTheme.colorScheme.primary
     val onPrimary = MaterialTheme.colorScheme.onPrimary
+    val secondary = MaterialTheme.colorScheme.secondary
+    val onSecondary = MaterialTheme.colorScheme.onSecondary
     val onSurface = MaterialTheme.colorScheme.onSurface
 
     Box(
@@ -256,6 +267,8 @@ private fun DayCell(
             .clickable(onClick = onClick)
             .then(
                 when {
+                    isVisualizationDate && hasRecord -> Modifier.background(primary).border(2.dp, secondary, CircleShape)
+                    isVisualizationDate -> Modifier.background(secondary)
                     hasRecord -> Modifier.background(primary)
                     isToday -> Modifier.border(1.dp, primary, CircleShape)
                     else -> Modifier
@@ -266,6 +279,8 @@ private fun DayCell(
             text = dayNumber.toString(),
             style = MaterialTheme.typography.bodySmall,
             color = when {
+                isVisualizationDate && hasRecord -> onPrimary
+                isVisualizationDate -> onSecondary
                 hasRecord -> onPrimary
                 isToday -> primary
                 else -> onSurface
