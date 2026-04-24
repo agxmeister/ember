@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -39,7 +38,6 @@ import com.agxmeister.ember.domain.model.WeightUnit
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
-    val clusters by viewModel.clusters.collectAsStateWithLifecycle()
     val clusteringEnabled by viewModel.clusteringEnabled.collectAsStateWithLifecycle()
     val weightGoal by viewModel.weightGoal.collectAsStateWithLifecycle()
     val weightUnit by viewModel.weightUnit.collectAsStateWithLifecycle()
@@ -109,31 +107,6 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                 onCheckedChange = viewModel::onClusteringEnabledChanged,
                 modifier = Modifier.padding(start = 16.dp),
             )
-        }
-
-        if (clusteringEnabled) {
-            Spacer(modifier = Modifier.height(24.dp))
-            HorizontalDivider()
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text("Detected clusters", style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.height(8.dp))
-
-            if (clusters.isEmpty()) {
-                Text(
-                    text = "No clusters detected yet. Add some measurements first.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            } else {
-                clusters.forEach { cluster ->
-                    ListItem(
-                        headlineContent = { Text(cluster.label) },
-                        supportingContent = { Text("${cluster.measurements.size} measurements") },
-                    )
-                    HorizontalDivider()
-                }
-            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
