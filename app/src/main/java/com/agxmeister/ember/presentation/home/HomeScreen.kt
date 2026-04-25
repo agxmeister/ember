@@ -40,7 +40,7 @@ import kotlinx.coroutines.launch
 fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedWeight by remember(state.defaultWeightKg) {
-        mutableDoubleStateOf(state.defaultWeightKg)
+        mutableDoubleStateOf(state.defaultWeightKg ?: 0.0)
     }
     val coroutineScope = rememberCoroutineScope()
     val checkmarkAlpha = remember { Animatable(0f) }
@@ -54,14 +54,12 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            state.currentCluster?.let { cluster ->
-                Text(
-                    text = cluster.label,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.secondary,
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
+            Text(
+                text = state.currentCluster?.label ?: "",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.secondary,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = "How much do you weigh?",
@@ -70,19 +68,23 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            key(state.defaultWeightKg, state.weightUnit) {
-                WeightWheelPicker(
-                    initialWeightKg = state.defaultWeightKg,
-                    unit = state.weightUnit,
-                    onWeightKgChanged = { selectedWeight = it },
-                    modifier = Modifier.fillMaxWidth(),
-                )
+            Box(modifier = Modifier.fillMaxWidth().height(WeightPickerHeight)) {
+                state.defaultWeightKg?.let { defaultWeight ->
+                    key(defaultWeight, state.weightUnit) {
+                        WeightWheelPicker(
+                            initialWeightKg = defaultWeight,
+                            unit = state.weightUnit,
+                            onWeightKgChanged = { selectedWeight = it },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(40.dp))
 
             Button(
-                enabled = checkmarkAlpha.value == 0f,
+                enabled = state.defaultWeightKg != null && checkmarkAlpha.value == 0f,
                 onClick = {
                     viewModel.save(selectedWeight)
                     coroutineScope.launch {

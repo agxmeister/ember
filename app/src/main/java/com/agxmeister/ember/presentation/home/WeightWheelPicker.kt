@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.agxmeister.ember.domain.model.WeightUnit
 
 private val ITEM_HEIGHT = 56.dp
+val WeightPickerHeight = ITEM_HEIGHT * 3
 private const val MIN_KG = 30.0
 private const val MAX_KG = 300.0
 

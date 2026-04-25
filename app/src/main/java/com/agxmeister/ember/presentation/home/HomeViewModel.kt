@@ -18,7 +18,7 @@ import javax.inject.Inject
 
 data class HomeUiState(
     val currentCluster: Cluster? = null,
-    val defaultWeightKg: Double = 70.0,
+    val defaultWeightKg: Double? = null,
     val weightUnit: WeightUnit = WeightUnit.Kg,
     val isRechecking: Boolean = false,
 )
