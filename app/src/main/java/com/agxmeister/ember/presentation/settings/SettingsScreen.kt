@@ -38,6 +38,7 @@ import com.agxmeister.ember.domain.model.WeightUnit
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
+    val notificationsEnabled by viewModel.notificationsEnabled.collectAsStateWithLifecycle()
     val clusteringEnabled by viewModel.clusteringEnabled.collectAsStateWithLifecycle()
     val weightGoal by viewModel.weightGoal.collectAsStateWithLifecycle()
     val weightUnit by viewModel.weightUnit.collectAsStateWithLifecycle()
@@ -115,21 +116,42 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
 
         Text("Reminder", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { showTimePicker = true }
-                .padding(vertical = 8.dp),
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                "Notification time is %02d:%02d".format(notificationHour, notificationMinute),
-                style = MaterialTheme.typography.bodyLarge,
+            Column(modifier = Modifier.weight(1f)) {
+                Text("Daily reminders", style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    if (notificationsEnabled) "On" else "Off",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Switch(
+                checked = notificationsEnabled,
+                onCheckedChange = viewModel::onNotificationsEnabledChanged,
+                modifier = Modifier.padding(start = 16.dp),
             )
-            Text(
-                "Tap to adjust",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+        }
+        if (notificationsEnabled) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showTimePicker = true }
+                    .padding(vertical = 8.dp),
+            ) {
+                Text(
+                    "Notification time is %02d:%02d".format(notificationHour, notificationMinute),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+                Text(
+                    "Tap to adjust",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
 
         if (showTimePicker) {

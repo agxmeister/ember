@@ -29,6 +29,7 @@ class UserPreferencesDataStore @Inject constructor(
     private val dayStartMinuteKey = intPreferencesKey("day_start_minute")
     private val notificationHourKey = intPreferencesKey("notification_hour")
     private val notificationMinuteKey = intPreferencesKey("notification_minute")
+    private val notificationsEnabledKey = booleanPreferencesKey("notifications_enabled")
     private val clusteringEnabledKey = booleanPreferencesKey("clustering_enabled")
     private val weightGoalKey = stringPreferencesKey("weight_goal")
     private val weightUnitKey = stringPreferencesKey("weight_unit")
@@ -50,6 +51,9 @@ class UserPreferencesDataStore @Inject constructor(
 
     val notificationMinute: Flow<Int> =
         context.dataStore.data.map { it[notificationMinuteKey] ?: 15 }
+
+    val notificationsEnabled: Flow<Boolean> =
+        context.dataStore.data.map { it[notificationsEnabledKey] ?: true }
 
     val clusteringEnabled: Flow<Boolean> =
         context.dataStore.data.map { it[clusteringEnabledKey] ?: true }
@@ -97,6 +101,12 @@ class UserPreferencesDataStore @Inject constructor(
         context.dataStore.edit { prefs ->
             prefs[notificationHourKey] = hour
             prefs[notificationMinuteKey] = minute
+        }
+    }
+
+    suspend fun setNotificationsEnabled(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[notificationsEnabledKey] = enabled
         }
     }
 

@@ -9,6 +9,7 @@ import com.agxmeister.ember.domain.repository.UserPreferencesRepository
 import com.agxmeister.ember.domain.usecase.GetClusterTrendsUseCase
 import com.agxmeister.ember.domain.usecase.SetClusteringEnabledUseCase
 import com.agxmeister.ember.domain.usecase.SetNotificationTimeUseCase
+import com.agxmeister.ember.domain.usecase.SetNotificationsEnabledUseCase
 import com.agxmeister.ember.domain.usecase.SetWeightGoalUseCase
 import com.agxmeister.ember.domain.usecase.SetWeightUnitUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,6 +28,7 @@ class SettingsViewModel @Inject constructor(
     private val setWeightGoal: SetWeightGoalUseCase,
     private val setWeightUnit: SetWeightUnitUseCase,
     private val setNotificationTime: SetNotificationTimeUseCase,
+    private val setNotificationsEnabled: SetNotificationsEnabledUseCase,
 ) : ViewModel() {
 
     val clusters: StateFlow<List<Cluster>> = getClusterTrends()
@@ -35,6 +37,13 @@ class SettingsViewModel @Inject constructor(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList(),
+        )
+
+    val notificationsEnabled: StateFlow<Boolean> = preferencesRepository.notificationsEnabled
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = true,
         )
 
     val clusteringEnabled: StateFlow<Boolean> = preferencesRepository.clusteringEnabled
@@ -82,6 +91,10 @@ class SettingsViewModel @Inject constructor(
 
     fun onWeightUnitChanged(unit: WeightUnit) {
         viewModelScope.launch { setWeightUnit(unit) }
+    }
+
+    fun onNotificationsEnabledChanged(enabled: Boolean) {
+        viewModelScope.launch { setNotificationsEnabled(enabled) }
     }
 
     fun onNotificationTimeChanged(hour: Int, minute: Int) {

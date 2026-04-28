@@ -37,9 +37,13 @@ class ReminderScheduler @Inject constructor(
             if (!after(now)) add(Calendar.DAY_OF_YEAR, 1)
         }
         val delayMs = target.timeInMillis - now.timeInMillis
-        val label = "%02d:%02d".format(notificationHour, notificationMinute)
+        cancelScheduled()
+        schedule(SCHEDULED_LABEL, delayMs)
+    }
+
+    fun cancelScheduled() {
         cancel(MORNING_REMINDER_LABEL)
-        schedule(label, delayMs)
+        cancel(SCHEDULED_LABEL)
     }
 
     fun cancel(clusterLabel: String) {
@@ -50,5 +54,6 @@ class ReminderScheduler @Inject constructor(
 
     companion object {
         const val MORNING_REMINDER_LABEL = "morning"
+        private const val SCHEDULED_LABEL = "scheduled"
     }
 }
