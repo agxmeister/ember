@@ -5,13 +5,16 @@ import androidx.lifecycle.viewModelScope
 import com.agxmeister.ember.domain.model.Cluster
 import com.agxmeister.ember.domain.model.WeightGoal
 import com.agxmeister.ember.domain.model.WeightUnit
+import com.agxmeister.ember.domain.model.WeighingFrequency
 import com.agxmeister.ember.domain.repository.UserPreferencesRepository
 import com.agxmeister.ember.domain.usecase.GetClusterTrendsUseCase
 import com.agxmeister.ember.domain.usecase.SetClusteringEnabledUseCase
+import com.agxmeister.ember.domain.usecase.SetNotificationDayOfWeekUseCase
 import com.agxmeister.ember.domain.usecase.SetNotificationTimeUseCase
 import com.agxmeister.ember.domain.usecase.SetNotificationsEnabledUseCase
 import com.agxmeister.ember.domain.usecase.SetWeightGoalUseCase
 import com.agxmeister.ember.domain.usecase.SetWeightUnitUseCase
+import com.agxmeister.ember.domain.usecase.SetWeighingFrequencyUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -29,6 +32,8 @@ class SettingsViewModel @Inject constructor(
     private val setWeightUnit: SetWeightUnitUseCase,
     private val setNotificationTime: SetNotificationTimeUseCase,
     private val setNotificationsEnabled: SetNotificationsEnabledUseCase,
+    private val setWeighingFrequency: SetWeighingFrequencyUseCase,
+    private val setNotificationDayOfWeek: SetNotificationDayOfWeekUseCase,
 ) : ViewModel() {
 
     val clusters: StateFlow<List<Cluster>> = getClusterTrends()
@@ -81,6 +86,20 @@ class SettingsViewModel @Inject constructor(
             initialValue = 15,
         )
 
+    val weighingFrequency: StateFlow<WeighingFrequency> = preferencesRepository.weighingFrequency
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = WeighingFrequency.Daily,
+        )
+
+    val notificationDayOfWeek: StateFlow<Int> = preferencesRepository.notificationDayOfWeek
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = 1,
+        )
+
     fun onClusteringEnabledChanged(enabled: Boolean) {
         viewModelScope.launch { setClusteringEnabled(enabled) }
     }
@@ -99,5 +118,13 @@ class SettingsViewModel @Inject constructor(
 
     fun onNotificationTimeChanged(hour: Int, minute: Int) {
         viewModelScope.launch { setNotificationTime(hour, minute) }
+    }
+
+    fun onWeighingFrequencyChanged(frequency: WeighingFrequency) {
+        viewModelScope.launch { setWeighingFrequency(frequency) }
+    }
+
+    fun onNotificationDayOfWeekChanged(dayOfWeek: Int) {
+        viewModelScope.launch { setNotificationDayOfWeek(dayOfWeek) }
     }
 }

@@ -34,6 +34,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.agxmeister.ember.domain.model.WeightGoal
 import com.agxmeister.ember.domain.model.WeightUnit
+import com.agxmeister.ember.domain.model.WeighingFrequency
+
+private val DAY_LABELS = listOf("Mo", "Tu", "We", "Th", "Fr", "Sa", "Su")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,6 +47,8 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     val weightUnit by viewModel.weightUnit.collectAsStateWithLifecycle()
     val notificationHour by viewModel.notificationHour.collectAsStateWithLifecycle()
     val notificationMinute by viewModel.notificationMinute.collectAsStateWithLifecycle()
+    val weighingFrequency by viewModel.weighingFrequency.collectAsStateWithLifecycle()
+    val notificationDayOfWeek by viewModel.notificationDayOfWeek.collectAsStateWithLifecycle()
 
     var showTimePicker by remember { mutableStateOf(false) }
 
@@ -114,6 +119,24 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
         HorizontalDivider()
         Spacer(modifier = Modifier.height(24.dp))
 
+        Text("Weighing frequency", style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            SegmentedButton(
+                selected = weighingFrequency == WeighingFrequency.Daily,
+                onClick = { viewModel.onWeighingFrequencyChanged(WeighingFrequency.Daily) },
+                shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+            ) { Text("Daily") }
+            SegmentedButton(
+                selected = weighingFrequency == WeighingFrequency.Weekly,
+                onClick = { viewModel.onWeighingFrequencyChanged(WeighingFrequency.Weekly) },
+                shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+            ) { Text("Weekly") }
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        HorizontalDivider()
+        Spacer(modifier = Modifier.height(24.dp))
+
         Text("Reminder", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
         Row(
@@ -121,7 +144,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text("Daily reminders", style = MaterialTheme.typography.bodyLarge)
+                Text("Reminders", style = MaterialTheme.typography.bodyLarge)
                 Text(
                     if (notificationsEnabled) "On" else "Off",
                     style = MaterialTheme.typography.bodySmall,
@@ -136,6 +159,24 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
         }
         if (notificationsEnabled) {
             Spacer(modifier = Modifier.height(8.dp))
+            if (weighingFrequency == WeighingFrequency.Weekly) {
+                Text(
+                    "Day",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                    DAY_LABELS.forEachIndexed { index, label ->
+                        SegmentedButton(
+                            selected = notificationDayOfWeek == index + 1,
+                            onClick = { viewModel.onNotificationDayOfWeekChanged(index + 1) },
+                            shape = SegmentedButtonDefaults.itemShape(index = index, count = DAY_LABELS.size),
+                        ) { Text(label) }
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
