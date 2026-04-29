@@ -3,6 +3,7 @@ package com.agxmeister.ember.data.repository
 import com.agxmeister.ember.data.local.preferences.UserPreferencesDataStore
 import com.agxmeister.ember.domain.model.WeightGoal
 import com.agxmeister.ember.domain.model.WeightUnit
+import com.agxmeister.ember.domain.model.WeighingFrequency
 import com.agxmeister.ember.domain.repository.UserPreferencesRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -20,6 +21,8 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     override val clusteringEnabled: Flow<Boolean> = dataStore.clusteringEnabled
     override val weightGoal: Flow<WeightGoal> = dataStore.weightGoal
     override val weightUnit: Flow<WeightUnit> = dataStore.weightUnit
+    override val weighingFrequency: Flow<WeighingFrequency> = dataStore.weighingFrequency
+    override val notificationDayOfWeek: Flow<Int> = dataStore.notificationDayOfWeek
 
     override suspend fun saveOnboardingData(
         weightKg: Double,
@@ -30,8 +33,15 @@ class UserPreferencesRepositoryImpl @Inject constructor(
         clusteringEnabled: Boolean,
         weightGoal: WeightGoal,
         weightUnit: WeightUnit,
+        weighingFrequency: WeighingFrequency,
+        notificationDayOfWeek: Int,
     ) {
-        dataStore.saveOnboardingData(weightKg, dayStartHour, dayStartMinute, notificationHour, notificationMinute, clusteringEnabled, weightGoal, weightUnit)
+        dataStore.saveOnboardingData(
+            weightKg, dayStartHour, dayStartMinute,
+            notificationHour, notificationMinute,
+            clusteringEnabled, weightGoal, weightUnit,
+            weighingFrequency, notificationDayOfWeek,
+        )
     }
 
     override suspend fun setNotificationsEnabled(enabled: Boolean) {
@@ -52,5 +62,13 @@ class UserPreferencesRepositoryImpl @Inject constructor(
 
     override suspend fun setNotificationTime(hour: Int, minute: Int) {
         dataStore.setNotificationTime(hour, minute)
+    }
+
+    override suspend fun setWeighingFrequency(frequency: WeighingFrequency) {
+        dataStore.setWeighingFrequency(frequency)
+    }
+
+    override suspend fun setNotificationDayOfWeek(dayOfWeek: Int) {
+        dataStore.setNotificationDayOfWeek(dayOfWeek)
     }
 }

@@ -2,6 +2,7 @@ package com.agxmeister.ember.domain.repository
 
 import com.agxmeister.ember.domain.model.WeightGoal
 import com.agxmeister.ember.domain.model.WeightUnit
+import com.agxmeister.ember.domain.model.WeighingFrequency
 import kotlinx.coroutines.flow.Flow
 
 interface UserPreferencesRepository {
@@ -15,6 +16,8 @@ interface UserPreferencesRepository {
     val clusteringEnabled: Flow<Boolean>
     val weightGoal: Flow<WeightGoal>
     val weightUnit: Flow<WeightUnit>
+    val weighingFrequency: Flow<WeighingFrequency>
+    val notificationDayOfWeek: Flow<Int>
     suspend fun saveOnboardingData(
         weightKg: Double,
         dayStartHour: Int,
@@ -24,10 +27,14 @@ interface UserPreferencesRepository {
         clusteringEnabled: Boolean,
         weightGoal: WeightGoal,
         weightUnit: WeightUnit,
+        weighingFrequency: WeighingFrequency,
+        notificationDayOfWeek: Int,
     )
     suspend fun setNotificationsEnabled(enabled: Boolean)
     suspend fun setClusteringEnabled(enabled: Boolean)
     suspend fun setWeightGoal(goal: WeightGoal)
     suspend fun setWeightUnit(unit: WeightUnit)
     suspend fun setNotificationTime(hour: Int, minute: Int)
+    suspend fun setWeighingFrequency(frequency: WeighingFrequency)
+    suspend fun setNotificationDayOfWeek(dayOfWeek: Int)
 }

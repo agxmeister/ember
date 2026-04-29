@@ -11,6 +11,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.agxmeister.ember.domain.model.WeightGoal
 import com.agxmeister.ember.domain.model.WeightUnit
+import com.agxmeister.ember.domain.model.WeighingFrequency
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -33,6 +34,8 @@ class UserPreferencesDataStore @Inject constructor(
     private val clusteringEnabledKey = booleanPreferencesKey("clustering_enabled")
     private val weightGoalKey = stringPreferencesKey("weight_goal")
     private val weightUnitKey = stringPreferencesKey("weight_unit")
+    private val weighingFrequencyKey = stringPreferencesKey("weighing_frequency")
+    private val notificationDayOfWeekKey = intPreferencesKey("notification_day_of_week")
 
     val isOnboardingCompleted: Flow<Boolean> =
         context.dataStore.data.map { it[onboardingCompletedKey] ?: false }
@@ -74,6 +77,17 @@ class UserPreferencesDataStore @Inject constructor(
             }
         }
 
+    val weighingFrequency: Flow<WeighingFrequency> =
+        context.dataStore.data.map { prefs ->
+            when (prefs[weighingFrequencyKey]) {
+                WeighingFrequency.Weekly.name -> WeighingFrequency.Weekly
+                else -> WeighingFrequency.Daily
+            }
+        }
+
+    val notificationDayOfWeek: Flow<Int> =
+        context.dataStore.data.map { it[notificationDayOfWeekKey] ?: 1 }
+
     suspend fun saveOnboardingData(
         weightKg: Double,
         dayStartHour: Int,
@@ -83,6 +97,8 @@ class UserPreferencesDataStore @Inject constructor(
         clusteringEnabled: Boolean,
         weightGoal: WeightGoal,
         weightUnit: WeightUnit,
+        weighingFrequency: WeighingFrequency,
+        notificationDayOfWeek: Int,
     ) {
         context.dataStore.edit { prefs ->
             prefs[initialWeightKey] = weightKg
@@ -93,6 +109,8 @@ class UserPreferencesDataStore @Inject constructor(
             prefs[clusteringEnabledKey] = clusteringEnabled
             prefs[weightGoalKey] = weightGoal.name
             prefs[weightUnitKey] = weightUnit.name
+            prefs[weighingFrequencyKey] = weighingFrequency.name
+            prefs[notificationDayOfWeekKey] = notificationDayOfWeek
             prefs[onboardingCompletedKey] = true
         }
     }
@@ -125,6 +143,18 @@ class UserPreferencesDataStore @Inject constructor(
     suspend fun setWeightUnit(unit: WeightUnit) {
         context.dataStore.edit { prefs ->
             prefs[weightUnitKey] = unit.name
+        }
+    }
+
+    suspend fun setWeighingFrequency(frequency: WeighingFrequency) {
+        context.dataStore.edit { prefs ->
+            prefs[weighingFrequencyKey] = frequency.name
+        }
+    }
+
+    suspend fun setNotificationDayOfWeek(dayOfWeek: Int) {
+        context.dataStore.edit { prefs ->
+            prefs[notificationDayOfWeekKey] = dayOfWeek
         }
     }
 }

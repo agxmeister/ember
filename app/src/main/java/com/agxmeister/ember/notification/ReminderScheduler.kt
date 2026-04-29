@@ -41,6 +41,30 @@ class ReminderScheduler @Inject constructor(
         schedule(SCHEDULED_LABEL, delayMs)
     }
 
+    // dayOfWeek: ISO 8601 — Monday=1 … Sunday=7
+    fun scheduleWeeklyForTime(dayOfWeek: Int, notificationHour: Int, notificationMinute: Int) {
+        val calendarDay = dayOfWeek % 7 + 1 // converts ISO to Calendar.DAY_OF_WEEK (Sun=1…Sat=7)
+        val now = Calendar.getInstance()
+        val target = Calendar.getInstance().apply {
+            set(Calendar.DAY_OF_WEEK, calendarDay)
+            set(Calendar.HOUR_OF_DAY, notificationHour)
+            set(Calendar.MINUTE, notificationMinute)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+            if (!after(now)) add(Calendar.WEEK_OF_YEAR, 1)
+        }
+        val delayMs = target.timeInMillis - now.timeInMillis
+        cancelScheduled()
+        val tag = workTagFor(SCHEDULED_LABEL)
+        val request = PeriodicWorkRequestBuilder<ReminderWorker>(7, TimeUnit.DAYS)
+            .setInitialDelay(delayMs, TimeUnit.MILLISECONDS)
+            .addTag(tag)
+            .setInputData(workDataOf(ReminderWorker.KEY_CLUSTER_LABEL to SCHEDULED_LABEL))
+            .build()
+        WorkManager.getInstance(context)
+            .enqueueUniquePeriodicWork(tag, ExistingPeriodicWorkPolicy.UPDATE, request)
+    }
+
     fun cancelScheduled() {
         cancel(MORNING_REMINDER_LABEL)
         cancel(SCHEDULED_LABEL)
