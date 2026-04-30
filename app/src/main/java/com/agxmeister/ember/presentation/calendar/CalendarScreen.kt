@@ -277,19 +277,20 @@ private fun DayCell(
     ) {
         if (isVisualizationDate) {
             Column(
+                modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
                 Text(
                     text = dayNumber.toString(),
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.labelSmall,
                     color = if (hasRecord) onPrimary else error,
                 )
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = null,
                     tint = if (hasRecord) onPrimary else error,
-                    modifier = Modifier.size(8.dp),
+                    modifier = Modifier.size(18.dp),
                 )
             }
         } else {
