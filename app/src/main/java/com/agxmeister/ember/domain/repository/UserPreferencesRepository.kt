@@ -18,8 +18,10 @@ interface UserPreferencesRepository {
     val weightUnit: Flow<WeightUnit>
     val weighingFrequency: Flow<WeighingFrequency>
     val notificationDayOfWeek: Flow<Int>
+    val goalTargetKg: Flow<Double>
     suspend fun saveOnboardingData(
         weightKg: Double,
+        goalTargetKg: Double,
         dayStartHour: Int,
         dayStartMinute: Int,
         notificationHour: Int,
@@ -37,4 +39,5 @@ interface UserPreferencesRepository {
     suspend fun setNotificationTime(hour: Int, minute: Int)
     suspend fun setWeighingFrequency(frequency: WeighingFrequency)
     suspend fun setNotificationDayOfWeek(dayOfWeek: Int)
+    suspend fun setGoalTargetKg(targetKg: Double)
 }

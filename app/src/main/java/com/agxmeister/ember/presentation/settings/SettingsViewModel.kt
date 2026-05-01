@@ -3,7 +3,6 @@ package com.agxmeister.ember.presentation.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.agxmeister.ember.domain.model.Cluster
-import com.agxmeister.ember.domain.model.WeightGoal
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.model.WeighingFrequency
 import com.agxmeister.ember.domain.repository.UserPreferencesRepository
@@ -12,7 +11,7 @@ import com.agxmeister.ember.domain.usecase.SetClusteringEnabledUseCase
 import com.agxmeister.ember.domain.usecase.SetNotificationDayOfWeekUseCase
 import com.agxmeister.ember.domain.usecase.SetNotificationTimeUseCase
 import com.agxmeister.ember.domain.usecase.SetNotificationsEnabledUseCase
-import com.agxmeister.ember.domain.usecase.SetWeightGoalUseCase
+import com.agxmeister.ember.domain.usecase.SetGoalTargetUseCase
 import com.agxmeister.ember.domain.usecase.SetWeightUnitUseCase
 import com.agxmeister.ember.domain.usecase.SetWeighingFrequencyUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,7 +27,7 @@ class SettingsViewModel @Inject constructor(
     getClusterTrends: GetClusterTrendsUseCase,
     preferencesRepository: UserPreferencesRepository,
     private val setClusteringEnabled: SetClusteringEnabledUseCase,
-    private val setWeightGoal: SetWeightGoalUseCase,
+    private val setGoalTarget: SetGoalTargetUseCase,
     private val setWeightUnit: SetWeightUnitUseCase,
     private val setNotificationTime: SetNotificationTimeUseCase,
     private val setNotificationsEnabled: SetNotificationsEnabledUseCase,
@@ -56,13 +55,6 @@ class SettingsViewModel @Inject constructor(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = true,
-        )
-
-    val weightGoal: StateFlow<WeightGoal> = preferencesRepository.weightGoal
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = WeightGoal.Decrease,
         )
 
     val weightUnit: StateFlow<WeightUnit> = preferencesRepository.weightUnit
@@ -100,12 +92,22 @@ class SettingsViewModel @Inject constructor(
             initialValue = 1,
         )
 
+    val initialWeightKg: StateFlow<Double> = preferencesRepository.initialWeightKg
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = 70.0,
+        )
+
+    val goalTargetKg: StateFlow<Double> = preferencesRepository.goalTargetKg
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = 0.0,
+        )
+
     fun onClusteringEnabledChanged(enabled: Boolean) {
         viewModelScope.launch { setClusteringEnabled(enabled) }
-    }
-
-    fun onWeightGoalChanged(goal: WeightGoal) {
-        viewModelScope.launch { setWeightGoal(goal) }
     }
 
     fun onWeightUnitChanged(unit: WeightUnit) {
@@ -126,5 +128,9 @@ class SettingsViewModel @Inject constructor(
 
     fun onNotificationDayOfWeekChanged(dayOfWeek: Int) {
         viewModelScope.launch { setNotificationDayOfWeek(dayOfWeek) }
+    }
+
+    fun onGoalTargetChanged(targetKg: Double) {
+        viewModelScope.launch { setGoalTarget(targetKg) }
     }
 }

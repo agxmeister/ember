@@ -23,9 +23,11 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     override val weightUnit: Flow<WeightUnit> = dataStore.weightUnit
     override val weighingFrequency: Flow<WeighingFrequency> = dataStore.weighingFrequency
     override val notificationDayOfWeek: Flow<Int> = dataStore.notificationDayOfWeek
+    override val goalTargetKg: Flow<Double> = dataStore.goalTargetKg
 
     override suspend fun saveOnboardingData(
         weightKg: Double,
+        goalTargetKg: Double,
         dayStartHour: Int,
         dayStartMinute: Int,
         notificationHour: Int,
@@ -37,7 +39,7 @@ class UserPreferencesRepositoryImpl @Inject constructor(
         notificationDayOfWeek: Int,
     ) {
         dataStore.saveOnboardingData(
-            weightKg, dayStartHour, dayStartMinute,
+            weightKg, goalTargetKg, dayStartHour, dayStartMinute,
             notificationHour, notificationMinute,
             clusteringEnabled, weightGoal, weightUnit,
             weighingFrequency, notificationDayOfWeek,
@@ -70,5 +72,9 @@ class UserPreferencesRepositoryImpl @Inject constructor(
 
     override suspend fun setNotificationDayOfWeek(dayOfWeek: Int) {
         dataStore.setNotificationDayOfWeek(dayOfWeek)
+    }
+
+    override suspend fun setGoalTargetKg(targetKg: Double) {
+        dataStore.setGoalTargetKg(targetKg)
     }
 }

@@ -26,6 +26,7 @@ class UserPreferencesDataStore @Inject constructor(
 ) {
     private val onboardingCompletedKey = booleanPreferencesKey("onboarding_completed")
     private val initialWeightKey = doublePreferencesKey("initial_weight_kg")
+    private val goalTargetKgKey = doublePreferencesKey("goal_target_kg")
     private val dayStartHourKey = intPreferencesKey("day_start_hour")
     private val dayStartMinuteKey = intPreferencesKey("day_start_minute")
     private val notificationHourKey = intPreferencesKey("notification_hour")
@@ -88,8 +89,12 @@ class UserPreferencesDataStore @Inject constructor(
     val notificationDayOfWeek: Flow<Int> =
         context.dataStore.data.map { it[notificationDayOfWeekKey] ?: 1 }
 
+    val goalTargetKg: Flow<Double> =
+        context.dataStore.data.map { it[goalTargetKgKey] ?: 0.0 }
+
     suspend fun saveOnboardingData(
         weightKg: Double,
+        goalTargetKg: Double,
         dayStartHour: Int,
         dayStartMinute: Int,
         notificationHour: Int,
@@ -102,6 +107,7 @@ class UserPreferencesDataStore @Inject constructor(
     ) {
         context.dataStore.edit { prefs ->
             prefs[initialWeightKey] = weightKg
+            prefs[goalTargetKgKey] = goalTargetKg
             prefs[dayStartHourKey] = dayStartHour
             prefs[dayStartMinuteKey] = dayStartMinute
             prefs[notificationHourKey] = notificationHour
@@ -155,6 +161,12 @@ class UserPreferencesDataStore @Inject constructor(
     suspend fun setNotificationDayOfWeek(dayOfWeek: Int) {
         context.dataStore.edit { prefs ->
             prefs[notificationDayOfWeekKey] = dayOfWeek
+        }
+    }
+
+    suspend fun setGoalTargetKg(targetKg: Double) {
+        context.dataStore.edit { prefs ->
+            prefs[goalTargetKgKey] = targetKg
         }
     }
 }

@@ -13,16 +13,17 @@ class CompleteOnboardingUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(
         weightKg: Double,
+        goalTargetKg: Double,
         dayStartHour: Int,
         dayStartMinute: Int,
         clusteringEnabled: Boolean,
-        weightGoal: WeightGoal,
         weightUnit: WeightUnit,
         weighingFrequency: WeighingFrequency,
         notificationDayOfWeek: Int,
         notificationHour: Int,
         notificationMinute: Int,
     ) {
+        val derivedGoal = if (goalTargetKg < weightKg) WeightGoal.Decrease else WeightGoal.Increase
         val (finalHour, finalMinute) = if (weighingFrequency == WeighingFrequency.Daily) {
             val totalMinutes = (dayStartHour * 60 + dayStartMinute + 15) % (24 * 60)
             totalMinutes / 60 to totalMinutes % 60
@@ -30,9 +31,9 @@ class CompleteOnboardingUseCase @Inject constructor(
             notificationHour to notificationMinute
         }
         preferencesRepository.saveOnboardingData(
-            weightKg, dayStartHour, dayStartMinute,
+            weightKg, goalTargetKg, dayStartHour, dayStartMinute,
             finalHour, finalMinute,
-            clusteringEnabled, weightGoal, weightUnit,
+            clusteringEnabled, derivedGoal, weightUnit,
             weighingFrequency, notificationDayOfWeek,
         )
         if (weighingFrequency == WeighingFrequency.Daily) {

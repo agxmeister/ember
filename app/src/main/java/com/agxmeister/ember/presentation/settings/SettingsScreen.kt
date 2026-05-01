@@ -32,9 +32,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.agxmeister.ember.domain.model.WeightGoal
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.model.WeighingFrequency
+import com.agxmeister.ember.presentation.common.IntWheelPicker
 
 private val DAY_LABELS = listOf("Mo", "Tu", "We", "Th", "Fr", "Sa", "Su")
 
@@ -43,14 +43,16 @@ private val DAY_LABELS = listOf("Mo", "Tu", "We", "Th", "Fr", "Sa", "Su")
 fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     val notificationsEnabled by viewModel.notificationsEnabled.collectAsStateWithLifecycle()
     val clusteringEnabled by viewModel.clusteringEnabled.collectAsStateWithLifecycle()
-    val weightGoal by viewModel.weightGoal.collectAsStateWithLifecycle()
     val weightUnit by viewModel.weightUnit.collectAsStateWithLifecycle()
+    val initialWeightKg by viewModel.initialWeightKg.collectAsStateWithLifecycle()
+    val goalTargetKg by viewModel.goalTargetKg.collectAsStateWithLifecycle()
     val notificationHour by viewModel.notificationHour.collectAsStateWithLifecycle()
     val notificationMinute by viewModel.notificationMinute.collectAsStateWithLifecycle()
     val weighingFrequency by viewModel.weighingFrequency.collectAsStateWithLifecycle()
     val notificationDayOfWeek by viewModel.notificationDayOfWeek.collectAsStateWithLifecycle()
 
     var showTimePicker by remember { mutableStateOf(false) }
+    var showTargetPicker by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -78,17 +80,22 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
 
         Text("Goal", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
-        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-            SegmentedButton(
-                selected = weightGoal == WeightGoal.Decrease,
-                onClick = { viewModel.onWeightGoalChanged(WeightGoal.Decrease) },
-                shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
-            ) { Text("Lose weight") }
-            SegmentedButton(
-                selected = weightGoal == WeightGoal.Increase,
-                onClick = { viewModel.onWeightGoalChanged(WeightGoal.Increase) },
-                shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
-            ) { Text("Gain weight") }
+        val effectiveTargetKg = if (goalTargetKg > 0) goalTargetKg else initialWeightKg
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { showTargetPicker = true }
+                .padding(vertical = 8.dp),
+        ) {
+            Text(
+                "Target weight is ${weightUnit.fromKg(effectiveTargetKg).toInt()} ${weightUnit.label}",
+                style = MaterialTheme.typography.bodyLarge,
+            )
+            Text(
+                "Tap to adjust",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
         Spacer(modifier = Modifier.height(24.dp))
         HorizontalDivider()
@@ -215,5 +222,30 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                 text = { TimePicker(state = timePickerState) },
             )
         }
+
+        if (showTargetPicker) {
+            var pendingTargetKg by remember { mutableStateOf(effectiveTargetKg) }
+            AlertDialog(
+                onDismissRequest = { showTargetPicker = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        viewModel.onGoalTargetChanged(pendingTargetKg)
+                        showTargetPicker = false
+                    }) { Text("OK") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showTargetPicker = false }) { Text("Cancel") }
+                },
+                text = {
+                    IntWheelPicker(
+                        initialValue = weightUnit.fromKg(effectiveTargetKg).toInt(),
+                        range = weightUnit.displayRange,
+                        label = { "$it ${weightUnit.label}" },
+                        onValueChanged = { pendingTargetKg = weightUnit.toKg(it.toDouble()) },
+                    )
+                },
+            )
+        }
     }
 }
+

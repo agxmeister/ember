@@ -1,6 +1,5 @@
 package com.agxmeister.ember.presentation.onboarding
 
-import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,8 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -25,13 +22,11 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import com.agxmeister.ember.domain.model.WeightGoal
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.model.WeighingFrequency
+import com.agxmeister.ember.presentation.common.IntWheelPicker
 import com.agxmeister.ember.presentation.theme.EmberTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,7 +40,6 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -71,9 +65,11 @@ fun OnboardingScreen(
                 onUnitChanged = viewModel::onWeightUnitChanged,
                 onNext = viewModel::onNextStep,
             )
-            1 -> GoalStep(
-                goal = state.weightGoal,
-                onGoalChanged = viewModel::onWeightGoalChanged,
+            1 -> GoalTargetStep(
+                weightKg = state.weightKg,
+                goalTargetKg = state.goalTargetKg,
+                weightUnit = state.weightUnit,
+                onGoalTargetChanged = viewModel::onGoalTargetChanged,
                 onNext = viewModel::onNextStep,
             )
             2 -> FrequencyStep(
@@ -174,34 +170,43 @@ private fun ColumnScope.WeightStep(
 }
 
 @Composable
-private fun ColumnScope.GoalStep(
-    goal: WeightGoal,
-    onGoalChanged: (WeightGoal) -> Unit,
+private fun ColumnScope.GoalTargetStep(
+    weightKg: Double,
+    goalTargetKg: Double,
+    weightUnit: WeightUnit,
+    onGoalTargetChanged: (Double) -> Unit,
     onNext: () -> Unit,
 ) {
-    Text("Your goal", style = MaterialTheme.typography.headlineSmall)
+    val currentDisplay = weightUnit.fromKg(weightKg).toInt()
+    val targetDisplay = weightUnit.fromKg(goalTargetKg).toInt()
+    val diffKg = goalTargetKg - weightKg
+    val diffDisplay = weightUnit.scaleDiff(kotlin.math.abs(diffKg)).toInt()
+
+    Text("Target weight", style = MaterialTheme.typography.headlineSmall)
     Spacer(Modifier.height(8.dp))
     Text(
-        "This lets Ember colour your trends correctly — green for progress, red for the wrong direction.",
+        "What weight do you want to reach?",
         style = MaterialTheme.typography.bodyLarge,
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
     )
+    if (diffDisplay > 0) {
+        val hint = if (diffKg < 0) "Lose $diffDisplay ${weightUnit.label}" else "Gain $diffDisplay ${weightUnit.label}"
+        Text(hint, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+    } else {
+        Text("Same as current weight", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
+    }
     Spacer(Modifier.weight(1f))
-    Column(
+    Row(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        GoalOption(
-            label = "Lose weight",
-            description = "I want to decrease my weight",
-            selected = goal == WeightGoal.Decrease,
-            onClick = { onGoalChanged(WeightGoal.Decrease) },
-        )
-        GoalOption(
-            label = "Gain weight",
-            description = "I want to increase my weight",
-            selected = goal == WeightGoal.Increase,
-            onClick = { onGoalChanged(WeightGoal.Increase) },
+        IntWheelPicker(
+            initialValue = targetDisplay,
+            range = weightUnit.displayRange,
+            label = { "$it ${weightUnit.label}" },
+            onValueChanged = { onGoalTargetChanged(weightUnit.toKg(it.toDouble())) },
+            modifier = Modifier.width(200.dp),
         )
     }
     Spacer(Modifier.weight(1f))
@@ -460,68 +465,3 @@ private fun WeightStepPreview() {
     }
 }
 
-private val ITEM_HEIGHT: Dp = 56.dp
-
-@Composable
-private fun IntWheelPicker(
-    initialValue: Int,
-    range: IntRange,
-    label: (Int) -> String,
-    onValueChanged: (Int) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val items = range.toList()
-    // Pad with one null sentinel at each end so every real value can occupy the center slot.
-    val paddedSize = items.size + 2
-    val initialScrollIndex = (initialValue - range.first)  // null sentinel at 0 shifts real items by 1
-    val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialScrollIndex.coerceIn(0, paddedSize - 1))
-    val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
-
-    val selectedIndex by remember { derivedStateOf { listState.firstVisibleItemIndex + 1 } }
-
-    LaunchedEffect(selectedIndex) {
-        val realIndex = selectedIndex - 1
-        val value = items.getOrNull(realIndex) ?: return@LaunchedEffect
-        onValueChanged(value)
-    }
-
-    Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        LazyColumn(
-            state = listState,
-            flingBehavior = flingBehavior,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(ITEM_HEIGHT * 3),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            items(paddedSize) { paddedIdx ->
-                val realIndex = paddedIdx - 1
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(ITEM_HEIGHT),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    val value = items.getOrNull(realIndex)
-                    if (value != null) {
-                        Text(
-                            text = label(value),
-                            style = if (paddedIdx == selectedIndex) {
-                                MaterialTheme.typography.headlineMedium
-                            } else {
-                                MaterialTheme.typography.bodyLarge
-                            },
-                            color = if (paddedIdx == selectedIndex) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
-                            },
-                        )
-                    }
-                }
-            }
-        }
-        HorizontalDivider(modifier = Modifier.padding(top = ITEM_HEIGHT))
-        HorizontalDivider(modifier = Modifier.padding(bottom = ITEM_HEIGHT))
-    }
-}

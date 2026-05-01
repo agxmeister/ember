@@ -2,7 +2,6 @@ package com.agxmeister.ember.presentation.onboarding
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.agxmeister.ember.domain.model.WeightGoal
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.model.WeighingFrequency
 import com.agxmeister.ember.domain.usecase.CompleteOnboardingUseCase
@@ -18,7 +17,7 @@ data class OnboardingUiState(
     val step: Int = 0,
     val weightKg: Double = 62.0,
     val weightUnit: WeightUnit = WeightUnit.Kg,
-    val weightGoal: WeightGoal = WeightGoal.Decrease,
+    val goalTargetKg: Double = 62.0,
     val weighingFrequency: WeighingFrequency = WeighingFrequency.Daily,
     val dayStartHour: Int = 8,
     val dayStartMinute: Int = 0,
@@ -36,9 +35,9 @@ class OnboardingViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(OnboardingUiState())
     val uiState: StateFlow<OnboardingUiState> = _uiState.asStateFlow()
 
-    fun onWeightChanged(weightKg: Double) = _uiState.update { it.copy(weightKg = weightKg) }
+    fun onWeightChanged(weightKg: Double) = _uiState.update { it.copy(weightKg = weightKg, goalTargetKg = weightKg) }
     fun onWeightUnitChanged(unit: WeightUnit) = _uiState.update { it.copy(weightUnit = unit) }
-    fun onWeightGoalChanged(goal: WeightGoal) = _uiState.update { it.copy(weightGoal = goal) }
+    fun onGoalTargetChanged(targetKg: Double) = _uiState.update { it.copy(goalTargetKg = targetKg) }
     fun onWeighingFrequencyChanged(frequency: WeighingFrequency) = _uiState.update { it.copy(weighingFrequency = frequency) }
     fun onDayStartHourChanged(hour: Int) = _uiState.update { it.copy(dayStartHour = hour) }
     fun onDayStartMinuteChanged(minute: Int) = _uiState.update { it.copy(dayStartMinute = minute) }
@@ -53,10 +52,10 @@ class OnboardingViewModel @Inject constructor(
         viewModelScope.launch {
             completeOnboarding(
                 weightKg = state.weightKg,
+                goalTargetKg = state.goalTargetKg,
                 dayStartHour = state.dayStartHour,
                 dayStartMinute = state.dayStartMinute,
                 clusteringEnabled = state.clusteringEnabled,
-                weightGoal = state.weightGoal,
                 weightUnit = state.weightUnit,
                 weighingFrequency = state.weighingFrequency,
                 notificationDayOfWeek = state.notificationDayOfWeek,
