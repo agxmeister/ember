@@ -86,7 +86,7 @@ fun WeightWheelPicker(
             }
         }
 
-        HorizontalDivider(modifier = Modifier.padding(top = ITEM_HEIGHT))
-        HorizontalDivider(modifier = Modifier.padding(bottom = ITEM_HEIGHT))
+        HorizontalDivider(modifier = Modifier.padding(top = ITEM_HEIGHT).padding(horizontal = 8.dp))
+        HorizontalDivider(modifier = Modifier.padding(bottom = ITEM_HEIGHT).padding(horizontal = 8.dp))
     }
 }

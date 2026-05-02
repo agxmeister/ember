@@ -29,6 +29,8 @@ fun IntWheelPicker(
     label: (Int) -> String,
     onValueChanged: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    dividerStartPadding: Dp = 8.dp,
+    dividerEndPadding: Dp = 8.dp,
 ) {
     val itemHeight: Dp = 56.dp
     val items = range.toList()
@@ -82,7 +84,7 @@ fun IntWheelPicker(
                 }
             }
         }
-        HorizontalDivider(modifier = Modifier.padding(top = itemHeight))
-        HorizontalDivider(modifier = Modifier.padding(bottom = itemHeight))
+        HorizontalDivider(modifier = Modifier.padding(top = itemHeight).padding(start = dividerStartPadding, end = dividerEndPadding))
+        HorizontalDivider(modifier = Modifier.padding(bottom = itemHeight).padding(start = dividerStartPadding, end = dividerEndPadding))
     }
 }
