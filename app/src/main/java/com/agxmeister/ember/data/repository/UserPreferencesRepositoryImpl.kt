@@ -77,4 +77,8 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     override suspend fun setGoalTargetKg(targetKg: Double) {
         dataStore.setGoalTargetKg(targetKg)
     }
+
+    override suspend fun setInitialWeightKg(weightKg: Double) {
+        dataStore.setInitialWeightKg(weightKg)
+    }
 }

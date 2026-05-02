@@ -12,6 +12,7 @@ import com.agxmeister.ember.domain.usecase.SetNotificationDayOfWeekUseCase
 import com.agxmeister.ember.domain.usecase.SetNotificationTimeUseCase
 import com.agxmeister.ember.domain.usecase.SetNotificationsEnabledUseCase
 import com.agxmeister.ember.domain.usecase.SetGoalTargetUseCase
+import com.agxmeister.ember.domain.usecase.SetGoalUseCase
 import com.agxmeister.ember.domain.usecase.SetWeightUnitUseCase
 import com.agxmeister.ember.domain.usecase.SetWeighingFrequencyUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,6 +29,7 @@ class SettingsViewModel @Inject constructor(
     preferencesRepository: UserPreferencesRepository,
     private val setClusteringEnabled: SetClusteringEnabledUseCase,
     private val setGoalTarget: SetGoalTargetUseCase,
+    private val setGoal: SetGoalUseCase,
     private val setWeightUnit: SetWeightUnitUseCase,
     private val setNotificationTime: SetNotificationTimeUseCase,
     private val setNotificationsEnabled: SetNotificationsEnabledUseCase,
@@ -132,5 +134,9 @@ class SettingsViewModel @Inject constructor(
 
     fun onGoalTargetChanged(targetKg: Double) {
         viewModelScope.launch { setGoalTarget(targetKg) }
+    }
+
+    fun onGoalChanged(initialWeightKg: Double, targetKg: Double) {
+        viewModelScope.launch { setGoal(initialWeightKg, targetKg) }
     }
 }

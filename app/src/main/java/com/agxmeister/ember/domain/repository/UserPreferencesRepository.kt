@@ -40,4 +40,5 @@ interface UserPreferencesRepository {
     suspend fun setWeighingFrequency(frequency: WeighingFrequency)
     suspend fun setNotificationDayOfWeek(dayOfWeek: Int)
     suspend fun setGoalTargetKg(targetKg: Double)
+    suspend fun setInitialWeightKg(weightKg: Double)
 }

@@ -169,4 +169,10 @@ class UserPreferencesDataStore @Inject constructor(
             prefs[goalTargetKgKey] = targetKg
         }
     }
+
+    suspend fun setInitialWeightKg(weightKg: Double) {
+        context.dataStore.edit { prefs ->
+            prefs[initialWeightKey] = weightKg
+        }
+    }
 }

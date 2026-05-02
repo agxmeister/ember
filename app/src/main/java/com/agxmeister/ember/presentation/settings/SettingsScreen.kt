@@ -10,10 +10,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -21,6 +27,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,12 +36,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.model.WeighingFrequency
-import com.agxmeister.ember.presentation.common.IntWheelPicker
 
 private val DAY_LABELS = listOf("Mo", "Tu", "We", "Th", "Fr", "Sa", "Su")
 
@@ -52,7 +63,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     val notificationDayOfWeek by viewModel.notificationDayOfWeek.collectAsStateWithLifecycle()
 
     var showTimePicker by remember { mutableStateOf(false) }
-    var showTargetPicker by remember { mutableStateOf(false) }
+    var showGoalSheet by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -84,11 +95,11 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { showTargetPicker = true }
+                .clickable { showGoalSheet = true }
                 .padding(vertical = 8.dp),
         ) {
             Text(
-                "Target weight is ${weightUnit.fromKg(effectiveTargetKg).toInt()} ${weightUnit.label}",
+                "Started at ${weightUnit.fromKg(initialWeightKg).toInt()} ${weightUnit.label}, target is ${weightUnit.fromKg(effectiveTargetKg).toInt()} ${weightUnit.label}",
                 style = MaterialTheme.typography.bodyLarge,
             )
             Text(
@@ -223,28 +234,107 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             )
         }
 
-        if (showTargetPicker) {
-            var pendingTargetKg by remember { mutableStateOf(effectiveTargetKg) }
-            AlertDialog(
-                onDismissRequest = { showTargetPicker = false },
-                confirmButton = {
-                    TextButton(onClick = {
-                        viewModel.onGoalTargetChanged(pendingTargetKg)
-                        showTargetPicker = false
-                    }) { Text("OK") }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showTargetPicker = false }) { Text("Cancel") }
-                },
-                text = {
-                    IntWheelPicker(
-                        initialValue = weightUnit.fromKg(effectiveTargetKg).toInt(),
-                        range = weightUnit.displayRange,
-                        label = { "$it ${weightUnit.label}" },
-                        onValueChanged = { pendingTargetKg = weightUnit.toKg(it.toDouble()) },
-                    )
-                },
-            )
+        if (showGoalSheet) {
+            var initialText by remember { mutableStateOf(weightUnit.fromKg(initialWeightKg).toInt().toString()) }
+            var targetText by remember { mutableStateOf(weightUnit.fromKg(effectiveTargetKg).toInt().toString()) }
+            val borderColor = MaterialTheme.colorScheme.outline
+            val initialInUnit = initialText.toIntOrNull()
+            val targetInUnit = targetText.toIntOrNull()
+            val isValid = initialInUnit?.let { it in weightUnit.displayRange } == true &&
+                targetInUnit?.let { it in weightUnit.displayRange } == true
+            ModalBottomSheet(
+                onDismissRequest = { showGoalSheet = false },
+                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .padding(bottom = 32.dp),
+                ) {
+                    Text("Adjust goal", style = MaterialTheme.typography.titleMedium)
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                "Initial weight",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            BasicTextField(
+                                value = initialText,
+                                onValueChange = { if (it.length <= 3 && it.all { c -> c.isDigit() }) initialText = it },
+                                textStyle = MaterialTheme.typography.displayMedium.copy(
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                ),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                singleLine = true,
+                                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                                modifier = Modifier
+                                    .width(120.dp)
+                                    .drawBehind {
+                                        drawLine(
+                                            color = borderColor,
+                                            start = Offset(0f, size.height),
+                                            end = Offset(size.width, size.height),
+                                            strokeWidth = 1.dp.toPx(),
+                                        )
+                                    },
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(weightUnit.label, style = MaterialTheme.typography.bodyMedium)
+                        }
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                "Target weight",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            BasicTextField(
+                                value = targetText,
+                                onValueChange = { if (it.length <= 3 && it.all { c -> c.isDigit() }) targetText = it },
+                                textStyle = MaterialTheme.typography.displayMedium.copy(
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                ),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                singleLine = true,
+                                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                                modifier = Modifier
+                                    .width(120.dp)
+                                    .drawBehind {
+                                        drawLine(
+                                            color = borderColor,
+                                            start = Offset(0f, size.height),
+                                            end = Offset(size.width, size.height),
+                                            strokeWidth = 1.dp.toPx(),
+                                        )
+                                    },
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(weightUnit.label, style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(32.dp))
+                    Button(
+                        onClick = {
+                            viewModel.onGoalChanged(
+                                weightUnit.toKg(initialInUnit!!.toDouble()),
+                                weightUnit.toKg(targetInUnit!!.toDouble()),
+                            )
+                            showGoalSheet = false
+                        },
+                        enabled = isValid,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) { Text("Save") }
+                }
+            }
         }
     }
 }
