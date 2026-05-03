@@ -18,10 +18,12 @@ import com.agxmeister.ember.domain.usecase.SetWeighingFrequencyUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.math.abs
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
@@ -107,6 +109,18 @@ class SettingsViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = 0.0,
         )
+
+    val accentCloseness: StateFlow<Float> = combine(clusters, initialWeightKg, goalTargetKg) { c, initialKg, targetKg ->
+        val lastWeight = c.flatMap { it.measurements }.maxByOrNull { it.timestamp }?.weightKg
+        if (lastWeight != null && targetKg > 0) {
+            val tolerance = abs(initialKg - targetKg).coerceAtLeast(0.1)
+            (1.0 - abs(lastWeight - targetKg) / tolerance).coerceIn(0.0, 1.0).toFloat()
+        } else 0f
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = 0f,
+    )
 
     fun onClusteringEnabledChanged(enabled: Boolean) {
         viewModelScope.launch { setClusteringEnabled(enabled) }

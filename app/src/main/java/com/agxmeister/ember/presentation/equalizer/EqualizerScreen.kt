@@ -53,6 +53,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.presentation.common.IntWheelPicker
 import com.agxmeister.ember.presentation.home.WeightWheelPicker
+import com.agxmeister.ember.presentation.theme.closenessColor
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -150,8 +151,6 @@ fun EqualizerScreen() {
     }
 }
 
-internal fun closenessColor(closeness: Float): Color =
-    Color.hsl(hue = 8f + closeness * 112f, saturation = 0.82f, lightness = 0.57f)
 
 @Composable
 private fun ReadoutBlock(

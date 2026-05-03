@@ -29,6 +29,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,6 +47,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.model.WeighingFrequency
+import com.agxmeister.ember.presentation.theme.closenessColor
 
 private val DAY_LABELS = listOf("Mo", "Tu", "We", "Th", "Fr", "Sa", "Su")
 
@@ -62,9 +64,21 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     val weighingFrequency by viewModel.weighingFrequency.collectAsStateWithLifecycle()
     val notificationDayOfWeek by viewModel.notificationDayOfWeek.collectAsStateWithLifecycle()
 
+    val accentCloseness by viewModel.accentCloseness.collectAsStateWithLifecycle()
+    val accentColor = closenessColor(accentCloseness)
+    val accentDim = Color.hsl(8f + accentCloseness * 112f, saturation = 0.60f, lightness = 0.15f)
+
     var showTimePicker by remember { mutableStateOf(false) }
     var showGoalSheet by remember { mutableStateOf(false) }
 
+    MaterialTheme(
+        colorScheme = MaterialTheme.colorScheme.copy(
+            primary = accentColor,
+            onPrimary = Color(0xFF0A0A0A),
+            secondaryContainer = accentDim,
+            onSecondaryContainer = accentColor,
+        ),
+    ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -336,6 +350,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                 }
             }
         }
+    }
     }
 }
 
