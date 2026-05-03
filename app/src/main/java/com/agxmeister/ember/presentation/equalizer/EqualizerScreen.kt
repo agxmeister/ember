@@ -76,13 +76,16 @@ fun EqualizerScreen() {
 
     val isFocused = state.selectedDate != null
     val displayDate = state.selectedDate ?: state.today
-    val displayDay = state.days.find { it.date == displayDate }
-    val displayWeight = displayDay?.weightKg
-    val closeness = displayWeight?.let { w ->
+    val todayWeight = state.days.find { it.date == state.today }?.weightKg
+    val readoutWeight = if (isFocused) state.days.find { it.date == displayDate }?.weightKg else state.weeklyAvg
+    val readoutLabel = state.selectedDate?.let {
+        "${it.dayOfWeek.name.take(3)} ${it.month.name.take(3)} ${it.dayOfMonth.toString().padStart(2, '0')} ${it.year}"
+    } ?: "7-DAY AVG"
+    val readoutCloseness = readoutWeight?.let { w ->
         (1.0 - abs(w - state.targetKg) / state.tolerance).coerceIn(0.0, 1.0).toFloat()
     } ?: 0f
-    val displayColor = closenessColor(closeness)
-    val score = displayWeight?.let { w ->
+    val readoutColor = closenessColor(readoutCloseness)
+    val score = state.weeklyAvg?.let { w ->
         val c = (1.0 - abs(w - state.targetKg) / state.tolerance).coerceIn(0.0, 1.0)
         (c * 100).roundToInt()
     }
@@ -94,9 +97,10 @@ fun EqualizerScreen() {
             .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         ReadoutBlock(
-            displayWeight = displayWeight,
+            displayWeight = readoutWeight,
+            label = readoutLabel,
             targetKg = state.targetKg,
-            displayColor = displayColor,
+            displayColor = readoutColor,
             weightUnit = state.weightUnit,
             isFocused = isFocused,
             onTap = { viewModel.openEdit(displayDate) },
@@ -114,13 +118,11 @@ fun EqualizerScreen() {
             selectedDate = state.selectedDate,
             onDayToggle = viewModel::toggleDay,
         )
-        Spacer(modifier = Modifier.height(6.dp))
-        ContextStrip(state.selectedDate, state.today)
         Spacer(modifier = Modifier.height(12.dp))
         StatsRow(
             streak = state.streak,
+            todayWeight = todayWeight,
             weeklyTrend = state.weeklyTrend,
-            weeklyAvg = state.weeklyAvg,
             trendCloserToTarget = state.trendCloserToTarget,
             score = score,
             weightUnit = state.weightUnit,
@@ -152,6 +154,7 @@ internal fun closenessColor(closeness: Float): Color =
 @Composable
 private fun ReadoutBlock(
     displayWeight: Double?,
+    label: String,
     targetKg: Double,
     displayColor: Color,
     weightUnit: WeightUnit,
@@ -190,7 +193,7 @@ private fun ReadoutBlock(
     ) {
         Row(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = "TODAY${if (status.isNotEmpty()) " · $status" else ""}",
+                text = label,
                 style = labelStyle,
                 modifier = Modifier.weight(1f),
             )
@@ -601,8 +604,8 @@ private fun EqualizerEditDrawer(
 @Composable
 private fun StatsRow(
     streak: Int,
+    todayWeight: Double?,
     weeklyTrend: Double?,
-    weeklyAvg: Double?,
     trendCloserToTarget: Boolean?,
     score: Int?,
     weightUnit: WeightUnit,
@@ -639,7 +642,7 @@ private fun StatsRow(
 
         StatPill(
             modifier = Modifier.weight(1f),
-            label = if (weeklyTrend != null) "7-DAY TREND" else "7-DAY AVG",
+            label = if (weeklyTrend != null) "7-DAY TREND" else "TODAY",
         ) {
             if (weeklyTrend != null) {
                 val trendColor = if (trendCloserToTarget == true) Color(0xFF4BB543) else Color(0xFFD9534F)
@@ -667,9 +670,9 @@ private fun StatsRow(
                     )
                 }
             } else {
-                val avgDisplay = weeklyAvg?.let { weightUnit.fromKg(it) }
+                val todayDisplay = todayWeight?.let { weightUnit.fromKg(it) }
                 Text(
-                    text = avgDisplay?.let { "%.1f".format(it) } ?: "−",
+                    text = todayDisplay?.let { "%.1f".format(it) } ?: "−",
                     style = TextStyle(
                         fontFamily = FontFamily.Monospace,
                         fontSize = 28.sp,
