@@ -118,6 +118,8 @@ fun EqualizerScreen() {
             selectedDate = state.selectedDate,
             onDayToggle = viewModel::toggleDay,
         )
+        Spacer(modifier = Modifier.height(6.dp))
+        ContextStrip(state.selectedDate)
         Spacer(modifier = Modifier.height(12.dp))
         StatsRow(
             streak = state.streak,
@@ -420,18 +422,14 @@ private fun EqualizerCard(
 }
 
 @Composable
-private fun ContextStrip(selectedDate: LocalDate?, today: LocalDate) {
-    val displayDate = selectedDate ?: today
-    val dow = displayDate.dayOfWeek.name.take(3)
-    val mon = displayDate.month.name.take(3)
-    val day = displayDate.dayOfMonth.toString().padStart(2, '0')
+private fun ContextStrip(selectedDate: LocalDate?) {
     Text(
-        text = "$dow $mon $day ${displayDate.year} · TAP AGAIN TO CLEAR",
+        text = if (selectedDate != null) "TAP AGAIN TO CLEAR" else "TAP A DAY TO OPEN",
         style = TextStyle(
             fontFamily = FontFamily.Monospace,
             fontSize = 11.sp,
             letterSpacing = 0.5.sp,
-            color = if (selectedDate != null) Color.White.copy(alpha = 0.50f) else Color.Transparent,
+            color = Color.White.copy(alpha = 0.50f),
         ),
         textAlign = TextAlign.Center,
         modifier = Modifier.fillMaxWidth(),
