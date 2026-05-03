@@ -22,6 +22,7 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.Color
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.model.WeighingFrequency
 import com.agxmeister.ember.presentation.common.IntWheelPicker
@@ -51,6 +52,14 @@ fun OnboardingScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
+    MaterialTheme(
+        colorScheme = MaterialTheme.colorScheme.copy(
+            primary = Color.White,
+            onPrimary = Color(0xFF0A0A0A),
+            secondaryContainer = Color(0xFF282828),
+            onSecondaryContainer = Color.White,
+        ),
+    ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -100,6 +109,7 @@ fun OnboardingScreen(
                 },
             )
         }
+    }
     }
 }
 
