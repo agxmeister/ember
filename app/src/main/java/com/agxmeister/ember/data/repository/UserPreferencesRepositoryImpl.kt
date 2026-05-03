@@ -1,6 +1,7 @@
 package com.agxmeister.ember.data.repository
 
 import com.agxmeister.ember.data.local.preferences.UserPreferencesDataStore
+import com.agxmeister.ember.domain.model.ThemeMode
 import com.agxmeister.ember.domain.model.WeightGoal
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.model.WeighingFrequency
@@ -24,6 +25,7 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     override val weighingFrequency: Flow<WeighingFrequency> = dataStore.weighingFrequency
     override val notificationDayOfWeek: Flow<Int> = dataStore.notificationDayOfWeek
     override val goalTargetKg: Flow<Double> = dataStore.goalTargetKg
+    override val themeMode: Flow<ThemeMode> = dataStore.themeMode
 
     override suspend fun saveOnboardingData(
         weightKg: Double,
@@ -80,5 +82,9 @@ class UserPreferencesRepositoryImpl @Inject constructor(
 
     override suspend fun setInitialWeightKg(weightKg: Double) {
         dataStore.setInitialWeightKg(weightKg)
+    }
+
+    override suspend fun setThemeMode(mode: ThemeMode) {
+        dataStore.setThemeMode(mode)
     }
 }

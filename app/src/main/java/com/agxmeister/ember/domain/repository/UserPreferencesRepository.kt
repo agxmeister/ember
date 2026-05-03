@@ -1,5 +1,6 @@
 package com.agxmeister.ember.domain.repository
 
+import com.agxmeister.ember.domain.model.ThemeMode
 import com.agxmeister.ember.domain.model.WeightGoal
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.model.WeighingFrequency
@@ -19,6 +20,7 @@ interface UserPreferencesRepository {
     val weighingFrequency: Flow<WeighingFrequency>
     val notificationDayOfWeek: Flow<Int>
     val goalTargetKg: Flow<Double>
+    val themeMode: Flow<ThemeMode>
     suspend fun saveOnboardingData(
         weightKg: Double,
         goalTargetKg: Double,
@@ -41,4 +43,5 @@ interface UserPreferencesRepository {
     suspend fun setNotificationDayOfWeek(dayOfWeek: Int)
     suspend fun setGoalTargetKg(targetKg: Double)
     suspend fun setInitialWeightKg(weightKg: Double)
+    suspend fun setThemeMode(mode: ThemeMode)
 }

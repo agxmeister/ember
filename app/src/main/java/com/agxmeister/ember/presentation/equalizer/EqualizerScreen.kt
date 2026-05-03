@@ -94,7 +94,7 @@ fun EqualizerScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0A0A0A))
+            .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         ReadoutBlock(
@@ -140,7 +140,7 @@ fun EqualizerScreen() {
         ModalBottomSheet(
             onDismissRequest = viewModel::closeEdit,
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            containerColor = Color(0xFF1C1C1C),
+            containerColor = MaterialTheme.colorScheme.surface,
         ) {
             EqualizerEditDrawer(
                 editState = es,
@@ -178,8 +178,9 @@ private fun ReadoutBlock(
         else -> "±0.0"
     }
 
+    val onBg = MaterialTheme.colorScheme.onBackground
     val glow = Shadow(color = displayColor.copy(alpha = 0.65f), blurRadius = 22f)
-    val dimColor = Color.White.copy(alpha = 0.45f)
+    val dimColor = onBg.copy(alpha = 0.45f)
     val labelStyle = TextStyle(
         fontFamily = FontFamily.Monospace,
         fontSize = 11.sp,
@@ -246,7 +247,7 @@ private fun ReadoutBlock(
                 fontFamily = FontFamily.Monospace,
                 fontSize = 11.sp,
                 letterSpacing = 0.5.sp,
-                color = if (isFocused) Color.White.copy(alpha = 0.50f) else Color.Transparent,
+                color = if (isFocused) onBg.copy(alpha = 0.50f) else Color.Transparent,
             ),
         )
     }
@@ -275,9 +276,13 @@ private fun EqualizerCard(
     val density = LocalDensity.current
     val textMeasurer = rememberTextMeasurer()
 
+    val cardBg = MaterialTheme.colorScheme.surfaceContainer
+    val onCard = MaterialTheme.colorScheme.onSurface
+    val dimColor = onCard.copy(alpha = 0.18f)
+
     Card(
         modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF141414)),
+        colors = CardDefaults.cardColors(containerColor = cardBg),
         shape = RoundedCornerShape(12.dp),
     ) {
         Canvas(
@@ -310,14 +315,12 @@ private fun EqualizerCard(
             val dashAreaBottom = size.height - bottomPad
             val dashAreaTop = dashAreaBottom - innerHeight
 
-            val dimColor = Color(0xFF282828)
-
             val targetFrac = ((targetKg - yMin) / (yMax - yMin)).coerceIn(0.0, 1.0).toFloat()
             val targetY = dashAreaBottom - targetFrac * innerHeight
             val tgtLabelText = "TGT %.1f".format(weightUnit.fromKg(targetKg))
             val tgtLayout = textMeasurer.measure(
                 tgtLabelText,
-                TextStyle(fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = Color.White.copy(alpha = 0.60f)),
+                TextStyle(fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = onCard.copy(alpha = 0.60f)),
             )
             val tgtLabelW = tgtLayout.size.width.toFloat() + 8.dp.toPx()
             val lineEndX = size.width - rightPad - tgtLabelW
@@ -341,7 +344,7 @@ private fun EqualizerCard(
 
                 if (isSelected && !isToday) {
                     drawRect(
-                        color = Color.White.copy(alpha = 0.04f),
+                        color = onCard.copy(alpha = 0.04f),
                         topLeft = Offset(colLeft + 1.dp.toPx(), dashAreaTop - 4.dp.toPx()),
                         size = Size(colWidth - 2.dp.toPx(), innerHeight + 8.dp.toPx()),
                     )
@@ -378,7 +381,7 @@ private fun EqualizerCard(
                             lineTo(colCenterX - r, glyphY)
                             close()
                         }
-                        drawPath(path, color = Color.White.copy(alpha = 0.75f))
+                        drawPath(path, color = onCard.copy(alpha = 0.75f))
                     }
                     isToday -> {
                         val todayGreen = Color(0xFF4BB543)
@@ -393,7 +396,7 @@ private fun EqualizerCard(
                     TextStyle(
                         fontFamily = FontFamily.Monospace,
                         fontSize = 10.sp,
-                        color = if (isToday || isSelected) Color.White.copy(alpha = 0.90f) else Color.White.copy(alpha = 0.28f),
+                        color = if (isToday || isSelected) onCard.copy(alpha = 0.90f) else onCard.copy(alpha = 0.28f),
                         fontWeight = if (isToday || isSelected) FontWeight.Bold else FontWeight.Normal,
                     ),
                 )
@@ -401,14 +404,14 @@ private fun EqualizerCard(
             }
 
             drawLine(
-                color = Color.White.copy(alpha = 0.45f),
+                color = onCard.copy(alpha = 0.45f),
                 start = Offset(leftPad, targetY),
                 end = Offset(lineEndX, targetY),
                 strokeWidth = 1.dp.toPx(),
                 pathEffect = PathEffect.dashPathEffect(floatArrayOf(5.dp.toPx(), 4.dp.toPx())),
             )
             drawRect(
-                color = Color(0xFF141414),
+                color = cardBg,
                 topLeft = Offset(lineEndX, targetY - tgtLayout.size.height / 2f - 2.dp.toPx()),
                 size = Size(tgtLabelW, tgtLayout.size.height.toFloat() + 4.dp.toPx()),
             )
@@ -428,7 +431,7 @@ private fun ContextStrip(selectedDate: LocalDate?) {
             fontFamily = FontFamily.Monospace,
             fontSize = 11.sp,
             letterSpacing = 0.5.sp,
-            color = Color.White.copy(alpha = 0.50f),
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.50f),
         ),
         textAlign = TextAlign.Center,
         modifier = Modifier.fillMaxWidth(),
@@ -459,6 +462,8 @@ private fun EqualizerEditDrawer(
     val day = date.dayOfMonth.toString().padStart(2, '0')
     val pickerHeight = 168.dp
 
+    val onSurface = MaterialTheme.colorScheme.onSurface
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -471,7 +476,7 @@ private fun EqualizerEditDrawer(
                 fontFamily = FontFamily.Monospace,
                 fontSize = 13.sp,
                 letterSpacing = 1.5.sp,
-                color = Color.White.copy(alpha = 0.80f),
+                color = onSurface.copy(alpha = 0.80f),
                 fontWeight = FontWeight.Bold,
             ),
             modifier = Modifier.padding(bottom = 20.dp),
@@ -479,9 +484,9 @@ private fun EqualizerEditDrawer(
 
         MaterialTheme(
             colorScheme = MaterialTheme.colorScheme.copy(
-                primary = Color.White,
-                onPrimary = Color(0xFF1C1C1C),
-                onSurface = Color.White,
+                primary = onSurface,
+                onPrimary = MaterialTheme.colorScheme.surface,
+                onSurface = onSurface,
             ),
         ) {
             Row(
@@ -499,7 +504,7 @@ private fun EqualizerEditDrawer(
                     modifier = Modifier
                         .width(1.dp)
                         .height(pickerHeight)
-                        .background(Color.White.copy(alpha = 0.12f)),
+                        .background(onSurface.copy(alpha = 0.12f)),
                 )
 
                 if (!timeEditing) {
@@ -517,14 +522,14 @@ private fun EqualizerEditDrawer(
                                 fontFamily = FontFamily.Monospace,
                                 fontSize = 9.sp,
                                 letterSpacing = 0.5.sp,
-                                color = Color.White.copy(alpha = 0.40f),
+                                color = onSurface.copy(alpha = 0.40f),
                             ),
                         )
                         Spacer(Modifier.height(6.dp))
                         Text(
                             text = "%02d:%02d".format(selectedHour, selectedMinute),
                             style = MaterialTheme.typography.headlineMedium,
-                            color = Color.White,
+                            color = onSurface,
                         )
                         Spacer(Modifier.height(6.dp))
                         Text(
@@ -533,7 +538,7 @@ private fun EqualizerEditDrawer(
                                 fontFamily = FontFamily.Monospace,
                                 fontSize = 9.sp,
                                 letterSpacing = 0.5.sp,
-                                color = Color.White.copy(alpha = 0.35f),
+                                color = onSurface.copy(alpha = 0.35f),
                             ),
                         )
                     }
@@ -553,7 +558,7 @@ private fun EqualizerEditDrawer(
                         Text(
                             text = ":",
                             style = MaterialTheme.typography.headlineMedium,
-                            color = Color.White.copy(alpha = 0.60f),
+                            color = onSurface.copy(alpha = 0.60f),
                         )
                         IntWheelPicker(
                             initialValue = initialTime.minute,
@@ -614,7 +619,8 @@ private fun StatsRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         StatPill(modifier = Modifier.weight(1f), label = "STREAK") {
-            val streakColor = if (streak >= 5) Color(0xFF4BB543) else Color.White
+            val onSurface = MaterialTheme.colorScheme.onSurface
+            val streakColor = if (streak >= 5) Color(0xFF4BB543) else onSurface
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
                     text = streak.toString(),
@@ -641,6 +647,7 @@ private fun StatsRow(
             modifier = Modifier.weight(1f),
             label = if (weeklyTrend != null) "7-DAY TREND" else "TODAY",
         ) {
+            val onSurface = MaterialTheme.colorScheme.onSurface
             if (weeklyTrend != null) {
                 val trendColor = if (trendCloserToTarget == true) Color(0xFF4BB543) else Color(0xFFD9534F)
                 val trendDisplay = weightUnit.scaleDiff(weeklyTrend)
@@ -674,7 +681,7 @@ private fun StatsRow(
                         fontFamily = FontFamily.Monospace,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White,
+                        color = onSurface,
                     ),
                 )
             }
@@ -704,7 +711,7 @@ private fun StatPill(
 ) {
     Card(
         modifier = modifier.fillMaxHeight(),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1C)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         shape = RoundedCornerShape(10.dp),
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
@@ -714,7 +721,7 @@ private fun StatPill(
                     fontFamily = FontFamily.Monospace,
                     fontSize = 9.sp,
                     letterSpacing = 0.8.sp,
-                    color = Color.White.copy(alpha = 0.35f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f),
                 ),
             )
             Spacer(modifier = Modifier.height(4.dp))

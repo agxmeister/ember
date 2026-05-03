@@ -17,7 +17,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.outlined.BrightnessAuto
+import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.HelpOutline
+import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -48,12 +52,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.agxmeister.ember.domain.model.ThemeMode
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.math.abs
+
+private fun ThemeMode.next() = when (this) {
+    ThemeMode.Light -> ThemeMode.Dark
+    ThemeMode.Dark -> ThemeMode.Auto
+    ThemeMode.Auto -> ThemeMode.Light
+}
+
+private fun ThemeMode.icon(): ImageVector = when (this) {
+    ThemeMode.Light -> Icons.Outlined.LightMode
+    ThemeMode.Dark -> Icons.Outlined.DarkMode
+    ThemeMode.Auto -> Icons.Outlined.BrightnessAuto
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,7 +94,9 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
         .coerceIn(0.0, 1.0).toFloat()
     val accentColor = Color.hsl(hue = 8f + closeness * 112f, saturation = 0.82f, lightness = 0.57f)
 
-    Box(modifier = Modifier.fillMaxSize().background(Color(0xFF1C1C1C))) {
+    val onBg = MaterialTheme.colorScheme.onBackground
+
+    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         // Date + cluster pinned to top-left
         Column(
             modifier = Modifier
@@ -91,7 +110,7 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
                     fontFamily = FontFamily.Monospace,
                     fontSize = 13.sp,
                     letterSpacing = 1.5.sp,
-                    color = Color.White.copy(alpha = 0.80f),
+                    color = onBg.copy(alpha = 0.80f),
                     fontWeight = FontWeight.Bold,
                 ),
             )
@@ -102,7 +121,7 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
                         fontFamily = FontFamily.Monospace,
                         fontSize = 13.sp,
                         letterSpacing = 1.sp,
-                        color = Color.White.copy(alpha = 0.55f),
+                        color = onBg.copy(alpha = 0.55f),
                     ),
                 )
                 state.currentCluster?.let { cluster ->
@@ -121,12 +140,27 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
                                 imageVector = Icons.Outlined.HelpOutline,
                                 contentDescription = "What is ${cluster.label}?",
                                 modifier = Modifier.size(16.dp),
-                                tint = Color.White.copy(alpha = 0.30f),
+                                tint = onBg.copy(alpha = 0.30f),
                             )
                         }
                     }
                 }
             }
+        }
+
+        // Theme switcher pinned to top-right
+        IconButton(
+            onClick = { viewModel.setThemeMode(state.themeMode.next()) },
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(8.dp)
+                .blur(radius = (checkmarkAlpha.value * 16).dp),
+        ) {
+            Icon(
+                imageVector = state.themeMode.icon(),
+                contentDescription = state.themeMode.name,
+                tint = onBg.copy(alpha = 0.55f),
+            )
         }
 
         // Centered content + bottom button
@@ -145,7 +179,7 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
                     fontFamily = FontFamily.Monospace,
                     fontSize = 18.sp,
                     letterSpacing = 0.5.sp,
-                    color = Color.White.copy(alpha = 0.90f),
+                    color = onBg.copy(alpha = 0.90f),
                     fontWeight = FontWeight.Bold,
                 ),
             )
@@ -153,8 +187,8 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
 
             MaterialTheme(
                 colorScheme = MaterialTheme.colorScheme.copy(
-                    primary = Color.White,
-                    onSurface = Color.White,
+                    primary = onBg,
+                    onSurface = onBg,
                 ),
             ) {
                 key(defaultWeight, state.weightUnit) {

@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.agxmeister.ember.domain.model.ThemeMode
 import com.agxmeister.ember.domain.model.WeightGoal
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.model.WeighingFrequency
@@ -37,6 +38,7 @@ class UserPreferencesDataStore @Inject constructor(
     private val weightUnitKey = stringPreferencesKey("weight_unit")
     private val weighingFrequencyKey = stringPreferencesKey("weighing_frequency")
     private val notificationDayOfWeekKey = intPreferencesKey("notification_day_of_week")
+    private val themeModeKey = stringPreferencesKey("theme_mode")
 
     val isOnboardingCompleted: Flow<Boolean> =
         context.dataStore.data.map { it[onboardingCompletedKey] ?: false }
@@ -91,6 +93,14 @@ class UserPreferencesDataStore @Inject constructor(
 
     val goalTargetKg: Flow<Double> =
         context.dataStore.data.map { it[goalTargetKgKey] ?: 0.0 }
+
+    val themeMode: Flow<ThemeMode> = context.dataStore.data.map { prefs ->
+        when (prefs[themeModeKey]) {
+            ThemeMode.Light.name -> ThemeMode.Light
+            ThemeMode.Dark.name -> ThemeMode.Dark
+            else -> ThemeMode.Auto
+        }
+    }
 
     suspend fun saveOnboardingData(
         weightKg: Double,
@@ -173,6 +183,12 @@ class UserPreferencesDataStore @Inject constructor(
     suspend fun setInitialWeightKg(weightKg: Double) {
         context.dataStore.edit { prefs ->
             prefs[initialWeightKey] = weightKg
+        }
+    }
+
+    suspend fun setThemeMode(mode: ThemeMode) {
+        context.dataStore.edit { prefs ->
+            prefs[themeModeKey] = mode.name
         }
     }
 }

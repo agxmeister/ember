@@ -3,6 +3,7 @@ package com.agxmeister.ember.presentation.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.agxmeister.ember.domain.model.Cluster
+import com.agxmeister.ember.domain.model.ThemeMode
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.repository.UserPreferencesRepository
 import com.agxmeister.ember.domain.usecase.AddMeasurementUseCase
@@ -29,6 +30,7 @@ data class HomeUiState(
     val isRechecking: Boolean = false,
     val targetKg: Double = 70.0,
     val tolerance: Double = 10.0,
+    val themeMode: ThemeMode = ThemeMode.Auto,
 )
 
 @HiltViewModel
@@ -37,7 +39,7 @@ class HomeViewModel @Inject constructor(
     private val addMeasurement: AddMeasurementUseCase,
     private val hasRecentMeasurement: HasRecentMeasurementUseCase,
     private val getDailyCandles: GetDailyCandlesUseCase,
-    preferencesRepository: UserPreferencesRepository,
+    private val preferencesRepository: UserPreferencesRepository,
 ) : ViewModel() {
 
     private val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
@@ -64,13 +66,15 @@ class HomeViewModel @Inject constructor(
             )
         },
         getDailyCandles(),
-    ) { state, candles ->
+        preferencesRepository.themeMode,
+    ) { state, candles, themeMode ->
         val previousWeight = if (state.currentCluster?.measurements.isNullOrEmpty()) {
             candles.filter { it.date < today }.maxByOrNull { it.date }?.close
         } else null
         state.copy(
             todayWeightKg = candles.find { it.date == today }?.close,
             defaultWeightKg = previousWeight ?: state.defaultWeightKg,
+            themeMode = themeMode,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -81,6 +85,12 @@ class HomeViewModel @Inject constructor(
     fun save(weightKg: Double) {
         viewModelScope.launch {
             addMeasurement(weightKg)
+        }
+    }
+
+    fun setThemeMode(mode: ThemeMode) {
+        viewModelScope.launch {
+            preferencesRepository.setThemeMode(mode)
         }
     }
 }
