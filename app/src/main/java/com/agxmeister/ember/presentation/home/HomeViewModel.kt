@@ -65,7 +65,13 @@ class HomeViewModel @Inject constructor(
         },
         getDailyCandles(),
     ) { state, candles ->
-        state.copy(todayWeightKg = candles.find { it.date == today }?.close)
+        val previousWeight = if (state.currentCluster?.measurements.isNullOrEmpty()) {
+            candles.filter { it.date < today }.maxByOrNull { it.date }?.close
+        } else null
+        state.copy(
+            todayWeightKg = candles.find { it.date == today }?.close,
+            defaultWeightKg = previousWeight ?: state.defaultWeightKg,
+        )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),

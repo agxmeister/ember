@@ -57,7 +57,7 @@ data class EqualizerEditState(
 
 @HiltViewModel
 class EqualizerViewModel @Inject constructor(
-    getDailyCandles: GetDailyCandlesUseCase,
+    private val getDailyCandles: GetDailyCandlesUseCase,
     private val getMeasurementsForDate: GetMeasurementsForDateUseCase,
     private val saveMeasurementUseCase: SaveMeasurementUseCase,
     private val preferencesRepository: UserPreferencesRepository,
@@ -78,7 +78,10 @@ class EqualizerViewModel @Inject constructor(
             val existing = measurements.maxByOrNull { it.timestamp }
             val current = uiState.value
             val defaultWeight = existing?.weightKg
-                ?: current.days.find { it.date == date }?.weightKg
+                ?: getDailyCandles().first()
+                    .filter { it.date < date }
+                    .maxByOrNull { it.date }
+                    ?.close
                 ?: current.targetKg
             _editState.value = EqualizerEditState(
                 date = date,
