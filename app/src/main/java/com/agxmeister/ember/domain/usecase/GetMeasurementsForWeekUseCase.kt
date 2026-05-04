@@ -1,0 +1,22 @@
+package com.agxmeister.ember.domain.usecase
+
+import com.agxmeister.ember.domain.model.Measurement
+import com.agxmeister.ember.domain.repository.MeasurementRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.plus
+import javax.inject.Inject
+
+class GetMeasurementsForWeekUseCase @Inject constructor(
+    private val repository: MeasurementRepository,
+) {
+    operator fun invoke(weekStart: LocalDate): Flow<List<Measurement>> {
+        val tz = TimeZone.currentSystemDefault()
+        val fromMs = weekStart.atStartOfDayIn(tz).toEpochMilliseconds()
+        val toMs = weekStart.plus(DatePeriod(days = 7)).atStartOfDayIn(tz).toEpochMilliseconds()
+        return repository.getForDateRange(fromMs, toMs)
+    }
+}

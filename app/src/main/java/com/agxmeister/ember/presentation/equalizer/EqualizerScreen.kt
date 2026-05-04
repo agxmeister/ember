@@ -54,11 +54,13 @@ import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.presentation.common.IntWheelPicker
 import com.agxmeister.ember.presentation.home.WeightWheelPicker
 import com.agxmeister.ember.presentation.theme.closenessColor
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import kotlin.math.abs
@@ -80,8 +82,12 @@ fun EqualizerScreen() {
     val todayWeight = state.days.find { it.date == state.today }?.weightKg
     val readoutWeight = if (isFocused) state.days.find { it.date == displayDate }?.weightKg else state.weeklyAvg
     val readoutLabel = state.selectedDate?.let {
-        "${it.dayOfWeek.name.take(3)} ${it.month.name.take(3)} ${it.dayOfMonth.toString().padStart(2, '0')} ${it.year}"
-    } ?: "7-DAY AVG"
+        if (state.isWeekly) {
+            "WK ${it.month.name.take(3)} ${it.dayOfMonth.toString().padStart(2, '0')} ${it.year}"
+        } else {
+            "${it.dayOfWeek.name.take(3)} ${it.month.name.take(3)} ${it.dayOfMonth.toString().padStart(2, '0')} ${it.year}"
+        }
+    } ?: if (state.isWeekly) "7-WK AVG" else "7-DAY AVG"
     val readoutCloseness = readoutWeight?.let { w ->
         (1.0 - abs(w - state.targetKg) / state.tolerance).coerceIn(0.0, 1.0).toFloat()
     } ?: 0f
@@ -117,10 +123,11 @@ fun EqualizerScreen() {
             weightUnit = state.weightUnit,
             today = state.today,
             selectedDate = state.selectedDate,
+            isWeekly = state.isWeekly,
             onDayToggle = viewModel::toggleDay,
         )
         Spacer(modifier = Modifier.height(6.dp))
-        ContextStrip(state.selectedDate)
+        ContextStrip(state.selectedDate, state.isWeekly)
         Spacer(modifier = Modifier.height(12.dp))
         StatsRow(
             streak = state.streak,
@@ -129,6 +136,7 @@ fun EqualizerScreen() {
             trendCloserToTarget = state.trendCloserToTarget,
             score = score,
             weightUnit = state.weightUnit,
+            isWeekly = state.isWeekly,
         )
     }
 
@@ -262,6 +270,7 @@ private fun EqualizerCard(
     weightUnit: WeightUnit,
     today: LocalDate,
     selectedDate: LocalDate?,
+    isWeekly: Boolean,
     onDayToggle: (LocalDate) -> Unit,
 ) {
     val weights = days.mapNotNull { it.weightKg }
@@ -390,7 +399,11 @@ private fun EqualizerCard(
                     }
                 }
 
-                val dayLabel = day.date.dayOfMonth.toString().padStart(2, '0')
+                val dayLabel = if (isWeekly) {
+                    day.date.month.name.take(1) + day.date.dayOfMonth.toString().padStart(2, '0')
+                } else {
+                    day.date.dayOfMonth.toString().padStart(2, '0')
+                }
                 val labelLayout = textMeasurer.measure(
                     dayLabel,
                     TextStyle(
@@ -424,9 +437,10 @@ private fun EqualizerCard(
 }
 
 @Composable
-private fun ContextStrip(selectedDate: LocalDate?) {
+private fun ContextStrip(selectedDate: LocalDate?, isWeekly: Boolean) {
+    val unit = if (isWeekly) "WEEK" else "DAY"
     Text(
-        text = if (selectedDate != null) "TAP AGAIN TO CLEAR" else "TAP A DAY TO OPEN",
+        text = if (selectedDate != null) "TAP AGAIN TO CLEAR" else "TAP A $unit TO OPEN",
         style = TextStyle(
             fontFamily = FontFamily.Monospace,
             fontSize = 11.sp,
@@ -447,19 +461,21 @@ private fun EqualizerEditDrawer(
     val tz = TimeZone.currentSystemDefault()
     val initialTime = editState.existingMeasurement?.timestamp?.let {
         it.toLocalDateTime(tz).time
-    } ?: run {
-        val totalMinutes = editState.dayStartHour * 60 + editState.dayStartMinute + 15
-        LocalTime(totalMinutes / 60 % 24, totalMinutes % 60)
-    }
+    } ?: LocalTime(editState.defaultHour, editState.defaultMinute)
     var selectedWeightKg by remember { mutableStateOf(editState.defaultWeightKg) }
     var selectedHour by remember { mutableStateOf(initialTime.hour) }
     var selectedMinute by remember { mutableStateOf(initialTime.minute) }
+    var selectedDow by remember { mutableStateOf(editState.date.dayOfWeek.value) }
     var timeEditing by remember { mutableStateOf(false) }
 
-    val date = editState.date
-    val dow = date.dayOfWeek.name.take(3)
-    val mon = date.month.name.take(3)
-    val day = date.dayOfMonth.toString().padStart(2, '0')
+    val displayDate = if (editState.isWeekly && editState.weekStart != null) {
+        editState.weekStart.plus(DatePeriod(days = selectedDow - 1))
+    } else {
+        editState.date
+    }
+    val dow = displayDate.dayOfWeek.name.take(3)
+    val mon = displayDate.month.name.take(3)
+    val day = displayDate.dayOfMonth.toString().padStart(2, '0')
     val pickerHeight = 168.dp
 
     val onSurface = MaterialTheme.colorScheme.onSurface
@@ -471,7 +487,7 @@ private fun EqualizerEditDrawer(
             .padding(bottom = 32.dp),
     ) {
         Text(
-            text = "$dow  $mon $day  ${date.year}",
+            text = "$dow  $mon $day  ${displayDate.year}",
             style = TextStyle(
                 fontFamily = FontFamily.Monospace,
                 fontSize = 13.sp,
@@ -481,6 +497,8 @@ private fun EqualizerEditDrawer(
             ),
             modifier = Modifier.padding(bottom = 20.dp),
         )
+
+        val dowNames = listOf("MO", "TU", "WE", "TH", "FR", "SA", "SU")
 
         MaterialTheme(
             colorScheme = MaterialTheme.colorScheme.copy(
@@ -507,7 +525,83 @@ private fun EqualizerEditDrawer(
                         .background(onSurface.copy(alpha = 0.12f)),
                 )
 
-                if (!timeEditing) {
+                if (editState.isWeekly && !timeEditing) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(pickerHeight)
+                            .clickable { timeEditing = true },
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        Text(
+                            text = "day & time",
+                            style = TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 9.sp,
+                                letterSpacing = 0.5.sp,
+                                color = onSurface.copy(alpha = 0.40f),
+                            ),
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            text = "${dowNames[selectedDow - 1]}  %02d:%02d".format(selectedHour, selectedMinute),
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = onSurface,
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            text = "tap to change",
+                            style = TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 9.sp,
+                                letterSpacing = 0.5.sp,
+                                color = onSurface.copy(alpha = 0.35f),
+                            ),
+                        )
+                    }
+                } else if (editState.isWeekly) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        IntWheelPicker(
+                            initialValue = editState.date.dayOfWeek.value,
+                            range = 1..7,
+                            label = { dowNames[it - 1] },
+                            onValueChanged = { selectedDow = it },
+                            modifier = Modifier.weight(1f),
+                            dividerEndPadding = 0.dp,
+                        )
+                        Text(
+                            text = " ",
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = onSurface.copy(alpha = 0.60f),
+                        )
+                        IntWheelPicker(
+                            initialValue = initialTime.hour,
+                            range = 0..23,
+                            label = { "%02d".format(it) },
+                            onValueChanged = { selectedHour = it },
+                            modifier = Modifier.weight(1f),
+                            dividerEndPadding = 0.dp,
+                            dividerStartPadding = 0.dp,
+                        )
+                        Text(
+                            text = ":",
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = onSurface.copy(alpha = 0.60f),
+                        )
+                        IntWheelPicker(
+                            initialValue = initialTime.minute,
+                            range = 0..59,
+                            label = { "%02d".format(it) },
+                            onValueChanged = { selectedMinute = it },
+                            modifier = Modifier.weight(1f),
+                            dividerStartPadding = 0.dp,
+                        )
+                    }
+                } else if (!timeEditing) {
                     Column(
                         modifier = Modifier
                             .weight(1f)
@@ -576,7 +670,7 @@ private fun EqualizerEditDrawer(
         Spacer(Modifier.height(24.dp))
         Button(
             onClick = {
-                val dateTime = LocalDateTime(date, LocalTime(selectedHour, selectedMinute))
+                val dateTime = LocalDateTime(displayDate, LocalTime(selectedHour, selectedMinute))
                 onSave(
                     editState.existingMeasurement?.id ?: 0L,
                     selectedWeightKg,
@@ -611,6 +705,7 @@ private fun StatsRow(
     trendCloserToTarget: Boolean?,
     score: Int?,
     weightUnit: WeightUnit,
+    isWeekly: Boolean,
 ) {
     Row(
         modifier = Modifier
@@ -632,7 +727,7 @@ private fun StatsRow(
                     ),
                 )
                 Text(
-                    text = " days",
+                    text = if (isWeekly) " wks" else " days",
                     style = TextStyle(
                         fontFamily = FontFamily.Monospace,
                         fontSize = 12.sp,
@@ -643,47 +738,62 @@ private fun StatsRow(
             }
         }
 
-        StatPill(
-            modifier = Modifier.weight(1f),
-            label = if (weeklyTrend != null) "7-DAY TREND" else "TODAY",
-        ) {
-            val onSurface = MaterialTheme.colorScheme.onSurface
-            if (weeklyTrend != null) {
-                val trendColor = if (trendCloserToTarget == true) Color(0xFF4BB543) else Color(0xFFD9534F)
-                val trendDisplay = weightUnit.scaleDiff(weeklyTrend)
-                val trendStr = if (trendDisplay >= 0) "+%.1f".format(trendDisplay) else "−%.1f".format(abs(trendDisplay))
-                Row(verticalAlignment = Alignment.Bottom) {
-                    Text(
-                        text = if (weeklyTrend >= 0) "▲" else "▼",
-                        style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 16.sp, color = trendColor),
-                        modifier = Modifier.padding(bottom = 4.dp, end = 2.dp),
-                    )
-                    Text(
-                        text = trendStr,
-                        style = TextStyle(
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = trendColor,
-                        ),
-                    )
-                    Text(
-                        text = " ${weightUnit.label}",
-                        style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp, color = trendColor.copy(alpha = 0.75f)),
-                        modifier = Modifier.padding(bottom = 6.dp),
-                    )
-                }
-            } else {
-                val todayDisplay = todayWeight?.let { weightUnit.fromKg(it) }
+        if (isWeekly) {
+            StatPill(modifier = Modifier.weight(1f), label = "THIS WEEK") {
+                val displayNum = todayWeight?.let { weightUnit.fromKg(it) }
                 Text(
-                    text = todayDisplay?.let { "%.1f".format(it) } ?: "−",
+                    text = displayNum?.let { "%.1f".format(it) } ?: "−",
                     style = TextStyle(
                         fontFamily = FontFamily.Monospace,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
-                        color = onSurface,
+                        color = MaterialTheme.colorScheme.onSurface,
                     ),
                 )
+            }
+        } else {
+            StatPill(
+                modifier = Modifier.weight(1f),
+                label = if (weeklyTrend != null) "7-DAY TREND" else "TODAY",
+            ) {
+                val onSurface = MaterialTheme.colorScheme.onSurface
+                if (weeklyTrend != null) {
+                    val trendColor = if (trendCloserToTarget == true) Color(0xFF4BB543) else Color(0xFFD9534F)
+                    val trendDisplay = weightUnit.scaleDiff(weeklyTrend)
+                    val trendStr = if (trendDisplay >= 0) "+%.1f".format(trendDisplay) else "−%.1f".format(abs(trendDisplay))
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(
+                            text = if (weeklyTrend >= 0) "▲" else "▼",
+                            style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 16.sp, color = trendColor),
+                            modifier = Modifier.padding(bottom = 4.dp, end = 2.dp),
+                        )
+                        Text(
+                            text = trendStr,
+                            style = TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 28.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = trendColor,
+                            ),
+                        )
+                        Text(
+                            text = " ${weightUnit.label}",
+                            style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp, color = trendColor.copy(alpha = 0.75f)),
+                            modifier = Modifier.padding(bottom = 6.dp),
+                        )
+                    }
+                } else {
+                    val displayNum = todayWeight?.let { weightUnit.fromKg(it) }
+                    Text(
+                        text = displayNum?.let { "%.1f".format(it) } ?: "−",
+                        style = TextStyle(
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = onSurface,
+                        ),
+                    )
+                }
             }
         }
 
