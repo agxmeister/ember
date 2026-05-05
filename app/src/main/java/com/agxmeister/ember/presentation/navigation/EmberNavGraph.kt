@@ -94,7 +94,17 @@ fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
                     }
                 )
             }
-            composable(Screen.Home.route) { HomeScreen() }
+            composable(Screen.Home.route) {
+                HomeScreen(onNavigateToTrends = {
+                    navController.navigate(Screen.Trends.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                })
+            }
             composable(Screen.Trends.route) {
                 TrendsScreen(onNavigateToHome = {
                     navController.navigate(Screen.Home.route) {

@@ -7,10 +7,13 @@ import com.agxmeister.ember.domain.repository.UserPreferencesRepository
 import com.agxmeister.ember.domain.usecase.HasRecentMeasurementUseCase
 import com.agxmeister.ember.domain.usecase.IsOnboardingCompletedUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -27,9 +30,14 @@ class AppViewModel @Inject constructor(
         .map { it as Boolean? }
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
-    val hasCheckedIn: StateFlow<Boolean?> = hasRecentMeasurement()
-        .map { it as Boolean? }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+    private val _hasCheckedIn = MutableStateFlow<Boolean?>(null)
+    val hasCheckedIn: StateFlow<Boolean?> = _hasCheckedIn
+
+    init {
+        viewModelScope.launch {
+            _hasCheckedIn.value = hasRecentMeasurement().first()
+        }
+    }
 
     val isDarkTheme: StateFlow<Boolean> = preferencesRepository.themeMode
         .map { mode ->

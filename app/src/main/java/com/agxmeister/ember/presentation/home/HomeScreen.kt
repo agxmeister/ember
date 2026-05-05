@@ -74,7 +74,10 @@ private fun ThemeMode.icon(): ImageVector = when (this) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
+fun HomeScreen(
+    viewModel: HomeViewModel = hiltViewModel(),
+    onNavigateToTrends: () -> Unit = {},
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val defaultWeight = state.defaultWeightKg ?: return
 
@@ -213,7 +216,6 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
                 Button(
                     enabled = checkmarkAlpha.value == 0f,
                     onClick = {
-                        viewModel.save(selectedWeight)
                         coroutineScope.launch {
                             val toneGen = ToneGenerator(AudioManager.STREAM_MUSIC, ToneGenerator.MAX_VOLUME)
                             toneGen.startTone(ToneGenerator.TONE_PROP_ACK, 300)
@@ -221,6 +223,8 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
                             delay(400)
                             checkmarkAlpha.animateTo(0f, animationSpec = tween(700))
                             toneGen.release()
+                            viewModel.save(selectedWeight)
+                            onNavigateToTrends()
                         }
                     },
                     modifier = Modifier
