@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.agxmeister.ember.domain.model.ThemeMode
 import com.agxmeister.ember.domain.repository.UserPreferencesRepository
+import com.agxmeister.ember.domain.usecase.HasRecentMeasurementUseCase
 import com.agxmeister.ember.domain.usecase.IsOnboardingCompletedUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,10 +19,15 @@ import javax.inject.Inject
 @HiltViewModel
 class AppViewModel @Inject constructor(
     isOnboardingCompleted: IsOnboardingCompletedUseCase,
+    hasRecentMeasurement: HasRecentMeasurementUseCase,
     preferencesRepository: UserPreferencesRepository,
 ) : ViewModel() {
 
     val isOnboardingCompleted: StateFlow<Boolean?> = isOnboardingCompleted()
+        .map { it as Boolean? }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    val hasCheckedIn: StateFlow<Boolean?> = hasRecentMeasurement()
         .map { it as Boolean? }
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 

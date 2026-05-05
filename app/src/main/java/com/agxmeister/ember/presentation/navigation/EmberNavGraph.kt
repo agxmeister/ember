@@ -41,9 +41,11 @@ private val screens = listOf(Screen.Home, Screen.Trends, Screen.Settings)
 @Composable
 fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
     val onboardingCompleted by viewModel.isOnboardingCompleted.collectAsStateWithLifecycle()
+    val hasCheckedIn by viewModel.hasCheckedIn.collectAsStateWithLifecycle()
 
-    // Don't render until we know the onboarding state (DataStore read is near-instant)
+    // Don't render until both states are known (DataStore + DB reads are near-instant)
     onboardingCompleted ?: return
+    hasCheckedIn ?: return
 
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -76,7 +78,11 @@ fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = if (onboardingCompleted == true) Screen.Home.route else ROUTE_ONBOARDING,
+            startDestination = when {
+                onboardingCompleted != true -> ROUTE_ONBOARDING
+                hasCheckedIn == true -> Screen.Trends.route
+                else -> Screen.Home.route
+            },
             modifier = Modifier.padding(innerPadding),
         ) {
             composable(ROUTE_ONBOARDING) {
