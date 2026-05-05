@@ -14,13 +14,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -154,6 +159,7 @@ fun EqualizerScreen() {
                 editState = es,
                 accentColor = accentColor,
                 onSave = viewModel::saveMeasurement,
+                onDelete = viewModel::deleteMeasurements,
             )
         }
     }
@@ -457,6 +463,7 @@ private fun EqualizerEditDrawer(
     editState: EqualizerEditState,
     accentColor: Color,
     onSave: (id: Long, weightKg: Double, timestamp: Instant) -> Unit,
+    onDelete: () -> Unit,
 ) {
     val tz = TimeZone.currentSystemDefault()
     val initialTime = editState.existingMeasurement?.timestamp?.let {
@@ -486,17 +493,32 @@ private fun EqualizerEditDrawer(
             .padding(horizontal = 20.dp)
             .padding(bottom = 32.dp),
     ) {
-        Text(
-            text = "$dow  $mon $day  ${displayDate.year}",
-            style = TextStyle(
-                fontFamily = FontFamily.Monospace,
-                fontSize = 13.sp,
-                letterSpacing = 1.5.sp,
-                color = onSurface.copy(alpha = 0.80f),
-                fontWeight = FontWeight.Bold,
-            ),
-            modifier = Modifier.padding(bottom = 20.dp),
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "$dow  $mon $day  ${displayDate.year}",
+                style = TextStyle(
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 13.sp,
+                    letterSpacing = 1.5.sp,
+                    color = onSurface.copy(alpha = 0.80f),
+                    fontWeight = FontWeight.Bold,
+                ),
+                modifier = Modifier.weight(1f),
+            )
+            if (editState.existingMeasurement != null) {
+                IconButton(onClick = onDelete, modifier = Modifier.size(36.dp)) {
+                    Icon(
+                        imageVector = Icons.Outlined.Delete,
+                        contentDescription = "Delete",
+                        tint = onSurface.copy(alpha = 0.50f),
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+            }
+        }
 
         val dowNames = listOf("MO", "TU", "WE", "TH", "FR", "SA", "SU")
 

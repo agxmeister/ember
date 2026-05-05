@@ -8,6 +8,7 @@ import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.repository.UserPreferencesRepository
 import com.agxmeister.ember.domain.usecase.GetDailyCandlesUseCase
 import com.agxmeister.ember.domain.usecase.GetMeasurementsForDateUseCase
+import com.agxmeister.ember.domain.usecase.DeleteMeasurementUseCase
 import com.agxmeister.ember.domain.usecase.GetMeasurementsForWeekUseCase
 import com.agxmeister.ember.domain.usecase.GetWeeklyDataUseCase
 import com.agxmeister.ember.domain.usecase.SaveMeasurementUseCase
@@ -69,6 +70,7 @@ class EqualizerViewModel @Inject constructor(
     private val getMeasurementsForDate: GetMeasurementsForDateUseCase,
     private val getMeasurementsForWeek: GetMeasurementsForWeekUseCase,
     private val saveMeasurementUseCase: SaveMeasurementUseCase,
+    private val deleteMeasurementUseCase: DeleteMeasurementUseCase,
     private val preferencesRepository: UserPreferencesRepository,
 ) : ViewModel() {
 
@@ -137,6 +139,19 @@ class EqualizerViewModel @Inject constructor(
     fun saveMeasurement(id: Long, weightKg: Double, timestamp: Instant) {
         viewModelScope.launch {
             saveMeasurementUseCase(id, weightKg, timestamp)
+            closeEdit()
+        }
+    }
+
+    fun deleteMeasurements() {
+        val es = _editState.value ?: return
+        viewModelScope.launch {
+            val measurements = if (es.isWeekly && es.weekStart != null) {
+                getMeasurementsForWeek(es.weekStart).first()
+            } else {
+                getMeasurementsForDate(es.date).first()
+            }
+            measurements.forEach { deleteMeasurementUseCase(it.id) }
             closeEdit()
         }
     }
