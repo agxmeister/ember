@@ -163,78 +163,86 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
             )
         }
 
-        // Centered content + bottom button
-        Column(
+        // Picker centered on screen
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 20.dp)
                 .blur(radius = (checkmarkAlpha.value * 16).dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(Modifier.weight(1f))
-
-            Text(
-                text = "How much do you weigh?",
-                style = TextStyle(
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 18.sp,
-                    letterSpacing = 0.5.sp,
-                    color = onBg.copy(alpha = 0.90f),
-                    fontWeight = FontWeight.Bold,
-                ),
-            )
-            Spacer(Modifier.height(24.dp))
-
-            MaterialTheme(
-                colorScheme = MaterialTheme.colorScheme.copy(
-                    primary = onBg,
-                    onSurface = onBg,
-                ),
+            Column(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(horizontal = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                key(defaultWeight, state.weightUnit) {
-                    WeightWheelPicker(
-                        initialWeightKg = defaultWeight,
-                        unit = state.weightUnit,
-                        onWeightKgChanged = { selectedWeight = it },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
+                Text(
+                    text = "How much do you weigh?",
+                    style = TextStyle(
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 18.sp,
+                        letterSpacing = 0.5.sp,
+                        color = onBg.copy(alpha = 0.90f),
+                        fontWeight = FontWeight.Bold,
+                    ),
+                )
+                Spacer(Modifier.height(24.dp))
+
+                MaterialTheme(
+                    colorScheme = MaterialTheme.colorScheme.copy(
+                        primary = onBg,
+                        onSurface = onBg,
+                    ),
+                ) {
+                    key(defaultWeight, state.weightUnit) {
+                        WeightWheelPicker(
+                            initialWeightKg = defaultWeight,
+                            unit = state.weightUnit,
+                            onWeightKgChanged = { selectedWeight = it },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
                 }
             }
 
-            Spacer(Modifier.weight(1f))
-
-            Button(
-                enabled = checkmarkAlpha.value == 0f,
-                onClick = {
-                    viewModel.save(selectedWeight)
-                    coroutineScope.launch {
-                        val toneGen = ToneGenerator(AudioManager.STREAM_MUSIC, ToneGenerator.MAX_VOLUME)
-                        toneGen.startTone(ToneGenerator.TONE_PROP_ACK, 300)
-                        checkmarkAlpha.snapTo(1f)
-                        delay(400)
-                        checkmarkAlpha.animateTo(0f, animationSpec = tween(700))
-                        toneGen.release()
-                    }
-                },
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                shape = RoundedCornerShape(26.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = accentColor),
+                    .align(Alignment.BottomCenter)
+                    .padding(horizontal = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(
-                    text = if (state.isRechecking) "RE-CHECK" else "CHECK-IN",
-                    style = TextStyle(
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 14.sp,
-                        letterSpacing = 2.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF0A0A0A),
-                    ),
-                )
-            }
+                Button(
+                    enabled = checkmarkAlpha.value == 0f,
+                    onClick = {
+                        viewModel.save(selectedWeight)
+                        coroutineScope.launch {
+                            val toneGen = ToneGenerator(AudioManager.STREAM_MUSIC, ToneGenerator.MAX_VOLUME)
+                            toneGen.startTone(ToneGenerator.TONE_PROP_ACK, 300)
+                            checkmarkAlpha.snapTo(1f)
+                            delay(400)
+                            checkmarkAlpha.animateTo(0f, animationSpec = tween(700))
+                            toneGen.release()
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    shape = RoundedCornerShape(26.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = accentColor),
+                ) {
+                    Text(
+                        text = if (state.isRechecking) "RE-CHECK" else "CHECK-IN",
+                        style = TextStyle(
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 14.sp,
+                            letterSpacing = 2.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF0A0A0A),
+                        ),
+                    )
+                }
 
-            Spacer(Modifier.height(32.dp))
+                Spacer(Modifier.height(32.dp))
+            }
         }
 
         Icon(
