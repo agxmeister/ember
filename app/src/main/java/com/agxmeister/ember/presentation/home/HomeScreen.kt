@@ -178,8 +178,19 @@ fun HomeScreen(
                     .padding(horizontal = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+                val prompt = remember {
+                    listOf(
+                        "How much do you weigh?",
+                        "Step on the scale.",
+                        "Time to check in.",
+                        "What's the number today?",
+                        "Ready to weigh in?",
+                        "Let's see where you're at.",
+                        "Your daily check-in awaits.",
+                    ).random()
+                }
                 Text(
-                    text = "How much do you weigh?",
+                    text = prompt,
                     style = TextStyle(
                         fontFamily = FontFamily.Monospace,
                         fontSize = 18.sp,
