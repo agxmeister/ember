@@ -2,6 +2,7 @@ package com.agxmeister.ember.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.agxmeister.ember.domain.model.Language
 import com.agxmeister.ember.domain.model.ThemeMode
 import com.agxmeister.ember.domain.repository.UserPreferencesRepository
 import com.agxmeister.ember.domain.usecase.HasRecentMeasurementUseCase
@@ -38,6 +39,9 @@ class AppViewModel @Inject constructor(
             _hasCheckedIn.value = hasRecentMeasurement().first()
         }
     }
+
+    val language: StateFlow<Language> = preferencesRepository.language
+        .stateIn(viewModelScope, SharingStarted.Eagerly, Language.En)
 
     val isDarkTheme: StateFlow<Boolean> = preferencesRepository.themeMode
         .map { mode ->

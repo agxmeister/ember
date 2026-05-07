@@ -1,4 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Ember</string>
+    <string name="notification_channel_name">Weigh-in reminders</string>
+
+    <!-- Home prompts -->
+    <string name="prompt_how_much_do_you_weigh">How much do you weigh?</string>
+    <string name="prompt_step_on_scale">Step on the scale.</string>
+    <string name="prompt_time_to_check_in">Time to check in.</string>
+    <string name="prompt_whats_the_number">What\'s the number today?</string>
+    <string name="prompt_ready_to_weigh_in">Ready to weigh in?</string>
+    <string name="prompt_lets_see_where_you_are">Let\'s see where you\'re at.</string>
+    <string name="prompt_daily_check_in_awaits">Your daily check-in awaits.</string>
+    <string name="action_check_in">CHECK-IN</string>
+    <string name="action_re_check">RE-CHECK</string>
+    <string name="cd_what_is_cluster">What is %1$s?</string>
+
+    <!-- Shared labels -->
+    <string name="label_daily">Daily</string>
+    <string name="label_weekly">Weekly</string>
+    <string name="label_on">On</string>
+    <string name="label_off">Off</string>
+    <string name="label_tap_to_adjust">Tap to adjust</string>
+    <string name="label_save">Save</string>
+    <string name="label_ok">OK</string>
+    <string name="label_cancel">Cancel</string>
+    <string name="label_next">Next</string>
+    <string name="label_day">Day</string>
+    <string name="label_clustering">Time-of-day clustering</string>
+    <string name="label_clustering_on">On — trends shown per time slot</string>
+    <string name="label_clustering_off">Off — daily averages shown</string>
+
+    <!-- Day abbreviations -->
+    <string name="day_mon">Mo</string>
+    <string name="day_tue">Tu</string>
+    <string name="day_wed">We</string>
+    <string name="day_thu">Th</string>
+    <string name="day_fri">Fr</string>
+    <string name="day_sat">Sa</string>
+    <string name="day_sun">Su</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_unit">Unit</string>
+    <string name="settings_goal">Goal</string>
+    <string name="settings_goal_summary">Started at %1$d %2$s, target is %3$d %4$s</string>
+    <string name="settings_tracking_mode">Tracking mode</string>
+    <string name="settings_weighing_frequency">Weighing frequency</string>
+    <string name="settings_reminder">Reminder</string>
+    <string name="settings_reminders">Reminders</string>
+    <string name="settings_notification_time">Notification time is %1$02d:%2$02d</string>
+    <string name="settings_adjust_goal">Adjust goal</string>
+    <string name="settings_initial_weight">Initial weight</string>
+    <string name="settings_target_weight">Target weight</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_welcome">Welcome to Ember</string>
+    <string name="onboarding_current_weight_question">What\'s your current weight, roughly?</string>
+    <string name="onboarding_target_weight_title">Target weight</string>
+    <string name="onboarding_goal_question">What weight do you want to reach?</string>
+    <string name="onboarding_lose">Lose %1$d %2$s</string>
+    <string name="onboarding_gain">Gain %1$d %2$s</string>
+    <string name="onboarding_same_weight">Same as current weight</string>
+    <string name="onboarding_how_often">How often will you weigh in?</string>
+    <string name="onboarding_frequency_description">Daily tracking gives the clearest trend, but weekly works well too if that fits your routine better.</string>
+    <string name="onboarding_daily_description">I\'ll weigh myself every day</string>
+    <string name="onboarding_weekly_description">I\'ll weigh myself once a week</string>
+    <string name="onboarding_weekly_reminder_title">Weekly reminder</string>
+    <string name="onboarding_weekly_day_time">Pick the day and time for your weekly weigh-in reminder.</string>
+    <string name="onboarding_morning_reminder_title">Morning reminder</string>
+    <string name="onboarding_day_start_question">When do you usually start your day?</string>
+    <string name="onboarding_reminder_15_min">You\'ll be reminded to weigh in 15 minutes later.</string>
+    <string name="onboarding_smart_tracking">Smart tracking</string>
+    <string name="onboarding_clustering_description">Ember can group your measurements by time of day — morning, midday, evening, and night. This lets you compare like with like, giving you a clearer picture of your actual trend rather than natural daily fluctuations.</string>
+    <string name="onboarding_get_started">Get started</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_trends">Trends</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Cluster descriptions -->
+    <string name="cluster_eos_description">You usually weigh yourself in the early morning. Eos is the goddess of dawn.</string>
+    <string name="cluster_helios_description">You usually weigh yourself in the late morning. Helios is the god of the sun.</string>
+    <string name="cluster_hesperus_description">You usually weigh yourself in the afternoon or evening. Hesperus is the evening star.</string>
+    <string name="cluster_selene_description">You usually weigh yourself at night. Selene is the goddess of the moon.</string>
+
+    <!-- Trends / Equalizer -->
+    <string name="trends_tgt_prefix">TGT</string>
+    <string name="trends_delta_target">Δ TARGET</string>
+    <string name="trends_tap_to_edit">TAP TO EDIT</string>
+    <string name="trends_tap_again_to_clear">TAP AGAIN TO CLEAR</string>
+    <string name="trends_tap_a_day">TAP A DAY TO OPEN</string>
+    <string name="trends_tap_a_week">TAP A WEEK TO OPEN</string>
+    <string name="trends_readout_day_avg">7-DAY AVG</string>
+    <string name="trends_readout_week_avg">7-WK AVG</string>
+    <string name="trends_readout_wk_prefix">WK</string>
+    <string name="trends_day_and_time">day &amp; time</string>
+    <string name="trends_tap_to_change">tap to change</string>
+    <string name="trends_taken_at">taken at</string>
+    <string name="trends_streak">STREAK</string>
+    <string name="trends_days">days</string>
+    <string name="trends_wks">wks</string>
+    <string name="trends_this_week">THIS WEEK</string>
+    <string name="trends_7_day_trend">7-DAY TREND</string>
+    <string name="stat_today">TODAY</string>
+    <string name="trends_score">SCORE</string>
+    <string name="cd_delete">Delete</string>
+
+    <!-- Notifications -->
+    <string name="notification_title">Time to weigh in</string>
+    <string name="notification_text">Don\'t forget your %1$s measurement.</string>
 </resources>

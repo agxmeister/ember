@@ -21,8 +21,8 @@ class ReminderWorker(
 
         val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle("Time to weigh in")
-            .setContentText("Don't forget your $clusterLabel measurement.")
+            .setContentTitle(context.getString(com.agxmeister.ember.R.string.notification_title))
+            .setContentText(context.getString(com.agxmeister.ember.R.string.notification_text, clusterLabel))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
             .build()

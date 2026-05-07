@@ -1,5 +1,6 @@
 package com.agxmeister.ember.presentation.navigation
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -14,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.agxmeister.ember.presentation.appString
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -22,6 +24,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.agxmeister.ember.R
 import com.agxmeister.ember.presentation.AppViewModel
 import com.agxmeister.ember.presentation.trends.TrendsScreen
 import com.agxmeister.ember.presentation.home.HomeScreen
@@ -30,10 +33,10 @@ import com.agxmeister.ember.presentation.settings.SettingsScreen
 
 private const val ROUTE_ONBOARDING = "onboarding"
 
-sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
-    data object Home : Screen("home", "Home", Icons.Default.Home)
-    data object Trends : Screen("trends", "Trends", Icons.Default.ShowChart)
-    data object Settings : Screen("settings", "Settings", Icons.Default.Settings)
+sealed class Screen(val route: String, @StringRes val labelRes: Int, val icon: ImageVector) {
+    data object Home : Screen("home", R.string.nav_home, Icons.Default.Home)
+    data object Trends : Screen("trends", R.string.nav_trends, Icons.Default.ShowChart)
+    data object Settings : Screen("settings", R.string.nav_settings, Icons.Default.Settings)
 }
 
 private val screens = listOf(Screen.Home, Screen.Trends, Screen.Settings)
@@ -57,9 +60,10 @@ fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
             if (showBottomBar) {
                 NavigationBar {
                     screens.forEach { screen ->
+                        val label = appString(screen.labelRes)
                         NavigationBarItem(
-                            icon = { Icon(screen.icon, contentDescription = screen.label) },
-                            label = { Text(screen.label) },
+                            icon = { Icon(screen.icon, contentDescription = label) },
+                            label = { Text(label) },
                             selected = navBackStackEntry?.destination?.hierarchy?.any { it.route == screen.route } == true,
                             onClick = {
                                 navController.navigate(screen.route) {

@@ -40,16 +40,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.SolidColor
+import com.agxmeister.ember.presentation.appString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.agxmeister.ember.R
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.model.WeighingFrequency
 import com.agxmeister.ember.presentation.theme.closenessColor
-
-private val DAY_LABELS = listOf("Mo", "Tu", "We", "Th", "Fr", "Sa", "Su")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,6 +71,16 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     var showTimePicker by remember { mutableStateOf(false) }
     var showGoalSheet by remember { mutableStateOf(false) }
 
+    val dayLabels = listOf(
+        appString(R.string.day_mon),
+        appString(R.string.day_tue),
+        appString(R.string.day_wed),
+        appString(R.string.day_thu),
+        appString(R.string.day_fri),
+        appString(R.string.day_sat),
+        appString(R.string.day_sun),
+    )
+
     MaterialTheme(
         colorScheme = MaterialTheme.colorScheme.copy(
             primary = accentColor,
@@ -85,10 +95,10 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
     ) {
-        Text("Settings", style = MaterialTheme.typography.headlineSmall)
+        Text(appString(R.string.settings_title), style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text("Unit", style = MaterialTheme.typography.titleMedium)
+        Text(appString(R.string.settings_unit), style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
         SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
             WeightUnit.entries.forEachIndexed { index, unit ->
@@ -103,7 +113,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
         HorizontalDivider()
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text("Goal", style = MaterialTheme.typography.titleMedium)
+        Text(appString(R.string.settings_goal), style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
         val effectiveTargetKg = if (goalTargetKg > 0) goalTargetKg else initialWeightKg
         Column(
@@ -113,11 +123,17 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                 .padding(vertical = 8.dp),
         ) {
             Text(
-                "Started at ${weightUnit.fromKg(initialWeightKg).toInt()} ${weightUnit.label}, target is ${weightUnit.fromKg(effectiveTargetKg).toInt()} ${weightUnit.label}",
+                appString(
+                    R.string.settings_goal_summary,
+                    weightUnit.fromKg(initialWeightKg).toInt(),
+                    weightUnit.label,
+                    weightUnit.fromKg(effectiveTargetKg).toInt(),
+                    weightUnit.label,
+                ),
                 style = MaterialTheme.typography.bodyLarge,
             )
             Text(
-                "Tap to adjust",
+                appString(R.string.label_tap_to_adjust),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -126,16 +142,16 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
         HorizontalDivider()
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text("Tracking mode", style = MaterialTheme.typography.titleMedium)
+        Text(appString(R.string.settings_tracking_mode), style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text("Time-of-day clustering", style = MaterialTheme.typography.bodyLarge)
+                Text(appString(R.string.label_clustering), style = MaterialTheme.typography.bodyLarge)
                 Text(
-                    if (clusteringEnabled) "On — trends shown per time slot" else "Off — daily averages shown",
+                    if (clusteringEnabled) appString(R.string.label_clustering_on) else appString(R.string.label_clustering_off),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -151,34 +167,34 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
         HorizontalDivider()
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text("Weighing frequency", style = MaterialTheme.typography.titleMedium)
+        Text(appString(R.string.settings_weighing_frequency), style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
         SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
             SegmentedButton(
                 selected = weighingFrequency == WeighingFrequency.Daily,
                 onClick = { viewModel.onWeighingFrequencyChanged(WeighingFrequency.Daily) },
                 shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
-            ) { Text("Daily") }
+            ) { Text(appString(R.string.label_daily)) }
             SegmentedButton(
                 selected = weighingFrequency == WeighingFrequency.Weekly,
                 onClick = { viewModel.onWeighingFrequencyChanged(WeighingFrequency.Weekly) },
                 shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
-            ) { Text("Weekly") }
+            ) { Text(appString(R.string.label_weekly)) }
         }
         Spacer(modifier = Modifier.height(24.dp))
         HorizontalDivider()
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text("Reminder", style = MaterialTheme.typography.titleMedium)
+        Text(appString(R.string.settings_reminder), style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text("Reminders", style = MaterialTheme.typography.bodyLarge)
+                Text(appString(R.string.settings_reminders), style = MaterialTheme.typography.bodyLarge)
                 Text(
-                    if (notificationsEnabled) "On" else "Off",
+                    if (notificationsEnabled) appString(R.string.label_on) else appString(R.string.label_off),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -193,17 +209,17 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             Spacer(modifier = Modifier.height(8.dp))
             if (weighingFrequency == WeighingFrequency.Weekly) {
                 Text(
-                    "Day",
+                    appString(R.string.label_day),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                    DAY_LABELS.forEachIndexed { index, label ->
+                    dayLabels.forEachIndexed { index, label ->
                         SegmentedButton(
                             selected = notificationDayOfWeek == index + 1,
                             onClick = { viewModel.onNotificationDayOfWeekChanged(index + 1) },
-                            shape = SegmentedButtonDefaults.itemShape(index = index, count = DAY_LABELS.size),
+                            shape = SegmentedButtonDefaults.itemShape(index = index, count = dayLabels.size),
                         ) { Text(label) }
                     }
                 }
@@ -216,11 +232,11 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                     .padding(vertical = 8.dp),
             ) {
                 Text(
-                    "Notification time is %02d:%02d".format(notificationHour, notificationMinute),
+                    appString(R.string.settings_notification_time, notificationHour, notificationMinute),
                     style = MaterialTheme.typography.bodyLarge,
                 )
                 Text(
-                    "Tap to adjust",
+                    appString(R.string.label_tap_to_adjust),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -239,10 +255,10 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                     TextButton(onClick = {
                         viewModel.onNotificationTimeChanged(timePickerState.hour, timePickerState.minute)
                         showTimePicker = false
-                    }) { Text("OK") }
+                    }) { Text(appString(R.string.label_ok)) }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showTimePicker = false }) { Text("Cancel") }
+                    TextButton(onClick = { showTimePicker = false }) { Text(appString(R.string.label_cancel)) }
                 },
                 text = { TimePicker(state = timePickerState) },
             )
@@ -266,7 +282,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                         .padding(horizontal = 24.dp)
                         .padding(bottom = 32.dp),
                 ) {
-                    Text("Adjust goal", style = MaterialTheme.typography.titleMedium)
+                    Text(appString(R.string.settings_adjust_goal), style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(24.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -274,7 +290,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                "Initial weight",
+                                appString(R.string.settings_initial_weight),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -305,7 +321,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                         }
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                "Target weight",
+                                appString(R.string.settings_target_weight),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -346,11 +362,10 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                         },
                         enabled = isValid,
                         modifier = Modifier.fillMaxWidth(),
-                    ) { Text("Save") }
+                    ) { Text(appString(R.string.label_save)) }
                 }
             }
         }
     }
     }
 }
-

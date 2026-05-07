@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ember</string>
+    <string name="notification_channel_name">Rappels de pesée</string>
+
+    <string name="prompt_how_much_do_you_weigh">Combien pesez-vous ?</string>
+    <string name="prompt_step_on_scale">Montez sur la balance.</string>
+    <string name="prompt_time_to_check_in">Il est temps de vous peser.</string>
+    <string name="prompt_whats_the_number">Quel est le chiffre aujourd\'hui ?</string>
+    <string name="prompt_ready_to_weigh_in">Prêt à vous peser ?</string>
+    <string name="prompt_lets_see_where_you_are">Voyons où vous en êtes.</string>
+    <string name="prompt_daily_check_in_awaits">Votre check-in quotidien vous attend.</string>
+    <string name="action_check_in">ENREGISTRER</string>
+    <string name="action_re_check">RE-VÉRIFIER</string>
+    <string name="cd_what_is_cluster">Qu\'est-ce que %1$s ?</string>
+
+    <string name="label_daily">Quotidien</string>
+    <string name="label_weekly">Hebdomadaire</string>
+    <string name="label_on">Activé</string>
+    <string name="label_off">Désactivé</string>
+    <string name="label_tap_to_adjust">Appuyer pour modifier</string>
+    <string name="label_save">Enregistrer</string>
+    <string name="label_ok">OK</string>
+    <string name="label_cancel">Annuler</string>
+    <string name="label_next">Suivant</string>
+    <string name="label_day">Jour</string>
+    <string name="label_clustering">Regroupement par heure</string>
+    <string name="label_clustering_on">Activé — tendances par créneau</string>
+    <string name="label_clustering_off">Désactivé — moyennes journalières</string>
+
+    <string name="day_mon">Lu</string>
+    <string name="day_tue">Ma</string>
+    <string name="day_wed">Me</string>
+    <string name="day_thu">Je</string>
+    <string name="day_fri">Ve</string>
+    <string name="day_sat">Sa</string>
+    <string name="day_sun">Di</string>
+
+    <string name="settings_title">Paramètres</string>
+    <string name="settings_unit">Unité</string>
+    <string name="settings_goal">Objectif</string>
+    <string name="settings_goal_summary">Départ %1$d %2$s, objectif %3$d %4$s</string>
+    <string name="settings_tracking_mode">Mode de suivi</string>
+    <string name="settings_weighing_frequency">Fréquence de pesée</string>
+    <string name="settings_reminder">Rappel</string>
+    <string name="settings_reminders">Rappels</string>
+    <string name="settings_notification_time">Heure de rappel : %1$02d:%2$02d</string>
+    <string name="settings_adjust_goal">Modifier l\'objectif</string>
+    <string name="settings_initial_weight">Poids initial</string>
+    <string name="settings_target_weight">Poids cible</string>
+
+    <string name="onboarding_welcome">Bienvenue sur Ember</string>
+    <string name="onboarding_current_weight_question">Quel est votre poids actuel, approximativement ?</string>
+    <string name="onboarding_target_weight_title">Poids cible</string>
+    <string name="onboarding_goal_question">Quel poids voulez-vous atteindre ?</string>
+    <string name="onboarding_lose">Perdre %1$d %2$s</string>
+    <string name="onboarding_gain">Prendre %1$d %2$s</string>
+    <string name="onboarding_same_weight">Même que le poids actuel</string>
+    <string name="onboarding_how_often">À quelle fréquence vous peserez-vous ?</string>
+    <string name="onboarding_frequency_description">Un suivi quotidien donne la tendance la plus claire, mais hebdomadaire fonctionne aussi très bien si cela correspond mieux à votre routine.</string>
+    <string name="onboarding_daily_description">Je me pèserai chaque jour</string>
+    <string name="onboarding_weekly_description">Je me pèserai une fois par semaine</string>
+    <string name="onboarding_weekly_reminder_title">Rappel hebdomadaire</string>
+    <string name="onboarding_weekly_day_time">Choisissez le jour et l\'heure de votre rappel hebdomadaire.</string>
+    <string name="onboarding_morning_reminder_title">Rappel matinal</string>
+    <string name="onboarding_day_start_question">À quelle heure commencez-vous habituellement votre journée ?</string>
+    <string name="onboarding_reminder_15_min">Vous serez rappelé de vous peser 15 minutes plus tard.</string>
+    <string name="onboarding_smart_tracking">Suivi intelligent</string>
+    <string name="onboarding_clustering_description">Ember peut regrouper vos mesures par heure de la journée — matin, midi, soir et nuit. Cela vous permet de comparer des mesures similaires pour une meilleure vision de votre tendance réelle.</string>
+    <string name="onboarding_get_started">Commencer</string>
+
+    <string name="nav_home">Accueil</string>
+    <string name="nav_trends">Tendances</string>
+    <string name="nav_settings">Paramètres</string>
+
+    <string name="cluster_eos_description">Vous vous pesez généralement tôt le matin. Éos est la déesse de l\'aurore.</string>
+    <string name="cluster_helios_description">Vous vous pesez généralement en fin de matinée. Hélios est le dieu du soleil.</string>
+    <string name="cluster_hesperus_description">Vous vous pesez généralement l\'après-midi ou le soir. Hespérus est l\'étoile du soir.</string>
+    <string name="cluster_selene_description">Vous vous pesez généralement la nuit. Séléné est la déesse de la lune.</string>
+
+    <string name="notification_title">Il est temps de vous peser</string>
+    <string name="notification_text">N\'oubliez pas votre mesure %1$s.</string>
+
+    <string name="trends_tgt_prefix">OBJ</string>
+    <string name="trends_delta_target">Δ OBJECTIF</string>
+    <string name="trends_tap_to_edit">APPUYER POUR MODIFIER</string>
+    <string name="trends_tap_again_to_clear">APPUYER À NOUVEAU POUR EFFACER</string>
+    <string name="trends_tap_a_day">APPUYER SUR UN JOUR</string>
+    <string name="trends_tap_a_week">APPUYER SUR UNE SEMAINE</string>
+    <string name="trends_readout_day_avg">MOY. 7 JOURS</string>
+    <string name="trends_readout_week_avg">MOY. 7 SEM.</string>
+    <string name="trends_readout_wk_prefix">SEM.</string>
+    <string name="trends_day_and_time">jour &amp; heure</string>
+    <string name="trends_tap_to_change">appuyer pour modifier</string>
+    <string name="trends_taken_at">pris à</string>
+    <string name="trends_streak">SÉRIE</string>
+    <string name="trends_days">jours</string>
+    <string name="trends_wks">sem.</string>
+    <string name="trends_this_week">CETTE SEMAINE</string>
+    <string name="trends_7_day_trend">TENDANCE 7 J.</string>
+    <string name="stat_today">AUJOURD\'HUI</string>
+    <string name="trends_score">SCORE</string>
+    <string name="cd_delete">Supprimer</string>
+</resources>

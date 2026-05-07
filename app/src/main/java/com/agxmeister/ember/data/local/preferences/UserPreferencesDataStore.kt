@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.agxmeister.ember.domain.model.Language
 import com.agxmeister.ember.domain.model.ThemeMode
 import com.agxmeister.ember.domain.model.WeightGoal
 import com.agxmeister.ember.domain.model.WeightUnit
@@ -39,6 +40,7 @@ class UserPreferencesDataStore @Inject constructor(
     private val weighingFrequencyKey = stringPreferencesKey("weighing_frequency")
     private val notificationDayOfWeekKey = intPreferencesKey("notification_day_of_week")
     private val themeModeKey = stringPreferencesKey("theme_mode")
+    private val languageKey = stringPreferencesKey("language")
 
     val isOnboardingCompleted: Flow<Boolean> =
         context.dataStore.data.map { it[onboardingCompletedKey] ?: false }
@@ -99,6 +101,14 @@ class UserPreferencesDataStore @Inject constructor(
             ThemeMode.Light.name -> ThemeMode.Light
             ThemeMode.Dark.name -> ThemeMode.Dark
             else -> ThemeMode.Auto
+        }
+    }
+
+    val language: Flow<Language> = context.dataStore.data.map { prefs ->
+        when (prefs[languageKey]) {
+            Language.De.name -> Language.De
+            Language.Fr.name -> Language.Fr
+            else -> Language.En
         }
     }
 
@@ -189,6 +199,12 @@ class UserPreferencesDataStore @Inject constructor(
     suspend fun setThemeMode(mode: ThemeMode) {
         context.dataStore.edit { prefs ->
             prefs[themeModeKey] = mode.name
+        }
+    }
+
+    suspend fun setLanguage(language: Language) {
+        context.dataStore.edit { prefs ->
+            prefs[languageKey] = language.name
         }
     }
 }

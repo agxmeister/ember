@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ember</string>
+    <string name="notification_channel_name">Wiegeerinnerungen</string>
+
+    <string name="prompt_how_much_do_you_weigh">Wie viel wiegst du?</string>
+    <string name="prompt_step_on_scale">Stell dich auf die Waage.</string>
+    <string name="prompt_time_to_check_in">Zeit zum Wiegen.</string>
+    <string name="prompt_whats_the_number">Was zeigt die Waage heute?</string>
+    <string name="prompt_ready_to_weigh_in">Bereit zum Wiegen?</string>
+    <string name="prompt_lets_see_where_you_are">Schauen wir, wo du stehst.</string>
+    <string name="prompt_daily_check_in_awaits">Dein tägliches Check-in wartet.</string>
+    <string name="action_check_in">EINCHECKEN</string>
+    <string name="action_re_check">NOCHMAL</string>
+    <string name="cd_what_is_cluster">Was ist %1$s?</string>
+
+    <string name="label_daily">Täglich</string>
+    <string name="label_weekly">Wöchentlich</string>
+    <string name="label_on">An</string>
+    <string name="label_off">Aus</string>
+    <string name="label_tap_to_adjust">Zum Anpassen tippen</string>
+    <string name="label_save">Speichern</string>
+    <string name="label_ok">OK</string>
+    <string name="label_cancel">Abbrechen</string>
+    <string name="label_next">Weiter</string>
+    <string name="label_day">Tag</string>
+    <string name="label_clustering">Tageszeit-Gruppierung</string>
+    <string name="label_clustering_on">An — Trends nach Zeitfenster</string>
+    <string name="label_clustering_off">Aus — Tagesdurchschnitte angezeigt</string>
+
+    <string name="day_mon">Mo</string>
+    <string name="day_tue">Di</string>
+    <string name="day_wed">Mi</string>
+    <string name="day_thu">Do</string>
+    <string name="day_fri">Fr</string>
+    <string name="day_sat">Sa</string>
+    <string name="day_sun">So</string>
+
+    <string name="settings_title">Einstellungen</string>
+    <string name="settings_unit">Einheit</string>
+    <string name="settings_goal">Ziel</string>
+    <string name="settings_goal_summary">Startgewicht %1$d %2$s, Zielgewicht %3$d %4$s</string>
+    <string name="settings_tracking_mode">Tracking-Modus</string>
+    <string name="settings_weighing_frequency">Wiege-Häufigkeit</string>
+    <string name="settings_reminder">Erinnerung</string>
+    <string name="settings_reminders">Erinnerungen</string>
+    <string name="settings_notification_time">Erinnerungszeit: %1$02d:%2$02d</string>
+    <string name="settings_adjust_goal">Ziel anpassen</string>
+    <string name="settings_initial_weight">Startgewicht</string>
+    <string name="settings_target_weight">Zielgewicht</string>
+
+    <string name="onboarding_welcome">Willkommen bei Ember</string>
+    <string name="onboarding_current_weight_question">Wie viel wiegst du ungefähr?</string>
+    <string name="onboarding_target_weight_title">Zielgewicht</string>
+    <string name="onboarding_goal_question">Welches Gewicht möchtest du erreichen?</string>
+    <string name="onboarding_lose">%1$d %2$s abnehmen</string>
+    <string name="onboarding_gain">%1$d %2$s zunehmen</string>
+    <string name="onboarding_same_weight">Gleich wie aktuelles Gewicht</string>
+    <string name="onboarding_how_often">Wie oft wiegst du dich?</string>
+    <string name="onboarding_frequency_description">Tägliches Wiegen zeigt den klarsten Trend, aber wöchentlich funktioniert auch gut, wenn es besser zu deinem Alltag passt.</string>
+    <string name="onboarding_daily_description">Ich wiege mich jeden Tag</string>
+    <string name="onboarding_weekly_description">Ich wiege mich einmal pro Woche</string>
+    <string name="onboarding_weekly_reminder_title">Wöchentliche Erinnerung</string>
+    <string name="onboarding_weekly_day_time">Wähle Tag und Uhrzeit für deine wöchentliche Wiegeerinnerung.</string>
+    <string name="onboarding_morning_reminder_title">Morgenerinnerung</string>
+    <string name="onboarding_day_start_question">Wann beginnt dein Tag normalerweise?</string>
+    <string name="onboarding_reminder_15_min">Du wirst 15 Minuten später an das Wiegen erinnert.</string>
+    <string name="onboarding_smart_tracking">Intelligentes Tracking</string>
+    <string name="onboarding_clustering_description">Ember kann deine Messungen nach Tageszeit gruppieren — Morgen, Mittag, Abend und Nacht. So vergleichst du Gleiches mit Gleichem und siehst deinen tatsächlichen Trend klarer.</string>
+    <string name="onboarding_get_started">Loslegen</string>
+
+    <string name="nav_home">Start</string>
+    <string name="nav_trends">Trends</string>
+    <string name="nav_settings">Einstellungen</string>
+
+    <string name="cluster_eos_description">Du wiegst dich normalerweise früh morgens. Eos ist die Göttin der Morgenröte.</string>
+    <string name="cluster_helios_description">Du wiegst dich normalerweise spätvormittags. Helios ist der Gott der Sonne.</string>
+    <string name="cluster_hesperus_description">Du wiegst dich normalerweise nachmittags oder abends. Hesperus ist der Abendstern.</string>
+    <string name="cluster_selene_description">Du wiegst dich normalerweise nachts. Selene ist die Göttin des Mondes.</string>
+
+    <string name="notification_title">Zeit zum Wiegen</string>
+    <string name="notification_text">Vergiss deine %1$s-Messung nicht.</string>
+
+    <string name="trends_tgt_prefix">ZIEL</string>
+    <string name="trends_delta_target">Δ ZIEL</string>
+    <string name="trends_tap_to_edit">ZUM BEARBEITEN TIPPEN</string>
+    <string name="trends_tap_again_to_clear">NOCHMAL TIPPEN ZUM ENTFERNEN</string>
+    <string name="trends_tap_a_day">TAG ANTIPPEN ZUM ÖFFNEN</string>
+    <string name="trends_tap_a_week">WOCHE ANTIPPEN ZUM ÖFFNEN</string>
+    <string name="trends_readout_day_avg">7-TAGE Ø</string>
+    <string name="trends_readout_week_avg">7-WO Ø</string>
+    <string name="trends_readout_wk_prefix">WO</string>
+    <string name="trends_day_and_time">Tag &amp; Uhrzeit</string>
+    <string name="trends_tap_to_change">tippen zum ändern</string>
+    <string name="trends_taken_at">aufgenommen um</string>
+    <string name="trends_streak">SERIE</string>
+    <string name="trends_days">Tage</string>
+    <string name="trends_wks">Wo</string>
+    <string name="trends_this_week">DIESE WOCHE</string>
+    <string name="trends_7_day_trend">7-TAGE-TREND</string>
+    <string name="stat_today">HEUTE</string>
+    <string name="trends_score">WERT</string>
+    <string name="cd_delete">Löschen</string>
+</resources>

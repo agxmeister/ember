@@ -23,6 +23,7 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.ui.graphics.Color
+import com.agxmeister.ember.R
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.model.WeighingFrequency
 import com.agxmeister.ember.presentation.common.IntWheelPicker
@@ -38,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.SolidColor
+import com.agxmeister.ember.presentation.appString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -127,10 +129,10 @@ private fun ColumnScope.WeightStep(
     val isValid = text.isNotEmpty() && text.toIntOrNull()?.let { it in weightUnit.displayRange } == true
     val borderColor = MaterialTheme.colorScheme.outline
 
-    Text("Welcome to Ember", style = MaterialTheme.typography.headlineSmall)
+    Text(appString(R.string.onboarding_welcome), style = MaterialTheme.typography.headlineSmall)
     Spacer(Modifier.height(8.dp))
     Text(
-        "What's your current weight, roughly?",
+        appString(R.string.onboarding_current_weight_question),
         style = MaterialTheme.typography.bodyLarge,
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
     )
@@ -175,7 +177,7 @@ private fun ColumnScope.WeightStep(
     }
     Spacer(Modifier.weight(1f))
     Button(onClick = onNext, enabled = isValid, modifier = Modifier.fillMaxWidth()) {
-        Text("Next")
+        Text(appString(R.string.label_next))
     }
 }
 
@@ -192,18 +194,23 @@ private fun ColumnScope.GoalTargetStep(
     val diffKg = goalTargetKg - weightKg
     val diffDisplay = weightUnit.scaleDiff(kotlin.math.abs(diffKg)).toInt()
 
-    Text("Target weight", style = MaterialTheme.typography.headlineSmall)
+    Text(appString(R.string.onboarding_target_weight_title), style = MaterialTheme.typography.headlineSmall)
     Spacer(Modifier.height(8.dp))
     Text(
-        "What weight do you want to reach?",
+        appString(R.string.onboarding_goal_question),
         style = MaterialTheme.typography.bodyLarge,
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
     )
     if (diffDisplay > 0) {
-        val hint = if (diffKg < 0) "Lose $diffDisplay ${weightUnit.label}" else "Gain $diffDisplay ${weightUnit.label}"
+        val hint = if (diffKg < 0) appString(R.string.onboarding_lose, diffDisplay, weightUnit.label)
+                   else appString(R.string.onboarding_gain, diffDisplay, weightUnit.label)
         Text(hint, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
     } else {
-        Text("Same as current weight", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
+        Text(
+            appString(R.string.onboarding_same_weight),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+        )
     }
     Spacer(Modifier.weight(1f))
     Row(
@@ -221,7 +228,7 @@ private fun ColumnScope.GoalTargetStep(
     }
     Spacer(Modifier.weight(1f))
     Button(onClick = onNext, modifier = Modifier.fillMaxWidth()) {
-        Text("Next")
+        Text(appString(R.string.label_next))
     }
 }
 
@@ -275,10 +282,10 @@ private fun ColumnScope.FrequencyStep(
     onFrequencyChanged: (WeighingFrequency) -> Unit,
     onNext: () -> Unit,
 ) {
-    Text("How often will you weigh in?", style = MaterialTheme.typography.headlineSmall)
+    Text(appString(R.string.onboarding_how_often), style = MaterialTheme.typography.headlineSmall)
     Spacer(Modifier.height(8.dp))
     Text(
-        "Daily tracking gives the clearest trend, but weekly works well too if that fits your routine better.",
+        appString(R.string.onboarding_frequency_description),
         style = MaterialTheme.typography.bodyLarge,
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
     )
@@ -288,25 +295,23 @@ private fun ColumnScope.FrequencyStep(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         GoalOption(
-            label = "Daily",
-            description = "I'll weigh myself every day",
+            label = appString(R.string.label_daily),
+            description = appString(R.string.onboarding_daily_description),
             selected = frequency == WeighingFrequency.Daily,
             onClick = { onFrequencyChanged(WeighingFrequency.Daily) },
         )
         GoalOption(
-            label = "Weekly",
-            description = "I'll weigh myself once a week",
+            label = appString(R.string.label_weekly),
+            description = appString(R.string.onboarding_weekly_description),
             selected = frequency == WeighingFrequency.Weekly,
             onClick = { onFrequencyChanged(WeighingFrequency.Weekly) },
         )
     }
     Spacer(Modifier.weight(1f))
     Button(onClick = onNext, modifier = Modifier.fillMaxWidth()) {
-        Text("Next")
+        Text(appString(R.string.label_next))
     }
 }
-
-private val DAY_LABELS = listOf("Mo", "Tu", "We", "Th", "Fr", "Sa", "Su")
 
 @Composable
 private fun ColumnScope.TimeStep(
@@ -323,21 +328,31 @@ private fun ColumnScope.TimeStep(
     onNotificationMinuteChanged: (Int) -> Unit,
     onNext: () -> Unit,
 ) {
+    val dayLabels = listOf(
+        appString(R.string.day_mon),
+        appString(R.string.day_tue),
+        appString(R.string.day_wed),
+        appString(R.string.day_thu),
+        appString(R.string.day_fri),
+        appString(R.string.day_sat),
+        appString(R.string.day_sun),
+    )
+
     if (frequency == WeighingFrequency.Weekly) {
-        Text("Weekly reminder", style = MaterialTheme.typography.headlineSmall)
+        Text(appString(R.string.onboarding_weekly_reminder_title), style = MaterialTheme.typography.headlineSmall)
         Spacer(Modifier.height(8.dp))
         Text(
-            "Pick the day and time for your weekly weigh-in reminder.",
+            appString(R.string.onboarding_weekly_day_time),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
         )
         Spacer(Modifier.height(32.dp))
         SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-            DAY_LABELS.forEachIndexed { index, label ->
+            dayLabels.forEachIndexed { index, label ->
                 SegmentedButton(
                     selected = notificationDayOfWeek == index + 1,
                     onClick = { onNotificationDayOfWeekChanged(index + 1) },
-                    shape = SegmentedButtonDefaults.itemShape(index = index, count = DAY_LABELS.size),
+                    shape = SegmentedButtonDefaults.itemShape(index = index, count = dayLabels.size),
                 ) { Text(label) }
             }
         }
@@ -368,15 +383,15 @@ private fun ColumnScope.TimeStep(
             )
         }
     } else {
-        Text("Morning reminder", style = MaterialTheme.typography.headlineSmall)
+        Text(appString(R.string.onboarding_morning_reminder_title), style = MaterialTheme.typography.headlineSmall)
         Spacer(Modifier.height(8.dp))
         Text(
-            "When do you usually start your day?",
+            appString(R.string.onboarding_day_start_question),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
         )
         Text(
-            "You'll be reminded to weigh in 15 minutes later.",
+            appString(R.string.onboarding_reminder_15_min),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
         )
@@ -409,7 +424,7 @@ private fun ColumnScope.TimeStep(
     }
     Spacer(Modifier.weight(1f))
     Button(onClick = onNext, modifier = Modifier.fillMaxWidth()) {
-        Text("Next")
+        Text(appString(R.string.label_next))
     }
 }
 
@@ -419,12 +434,10 @@ private fun ColumnScope.ClusteringStep(
     onClusteringEnabledChanged: (Boolean) -> Unit,
     onDone: () -> Unit,
 ) {
-    Text("Smart tracking", style = MaterialTheme.typography.headlineSmall)
+    Text(appString(R.string.onboarding_smart_tracking), style = MaterialTheme.typography.headlineSmall)
     Spacer(Modifier.height(8.dp))
     Text(
-        "Ember can group your measurements by time of day — morning, midday, evening, and night. " +
-            "This lets you compare like with like, giving you a clearer picture of your actual trend " +
-            "rather than natural daily fluctuations.",
+        appString(R.string.onboarding_clustering_description),
         style = MaterialTheme.typography.bodyLarge,
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
     )
@@ -435,9 +448,9 @@ private fun ColumnScope.ClusteringStep(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text("Time-of-day clustering", style = MaterialTheme.typography.bodyLarge)
+            Text(appString(R.string.label_clustering), style = MaterialTheme.typography.bodyLarge)
             Text(
-                if (clusteringEnabled) "On — trends shown per time slot" else "Off — daily averages shown",
+                if (clusteringEnabled) appString(R.string.label_clustering_on) else appString(R.string.label_clustering_off),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
             )
@@ -450,7 +463,7 @@ private fun ColumnScope.ClusteringStep(
     }
     Spacer(Modifier.weight(1f))
     Button(onClick = onDone, modifier = Modifier.fillMaxWidth()) {
-        Text("Get started")
+        Text(appString(R.string.onboarding_get_started))
     }
 }
 
@@ -474,4 +487,3 @@ private fun WeightStepPreview() {
         }
     }
 }
-

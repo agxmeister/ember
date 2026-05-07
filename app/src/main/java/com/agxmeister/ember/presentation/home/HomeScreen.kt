@@ -52,7 +52,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.agxmeister.ember.R
+import com.agxmeister.ember.domain.model.DayCluster
+import com.agxmeister.ember.domain.model.Language
 import com.agxmeister.ember.domain.model.ThemeMode
+import com.agxmeister.ember.presentation.LocalAppResources
+import com.agxmeister.ember.presentation.appString
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -71,6 +76,22 @@ private fun ThemeMode.icon(): ImageVector = when (this) {
     ThemeMode.Dark -> Icons.Outlined.DarkMode
     ThemeMode.Auto -> Icons.Outlined.BrightnessAuto
 }
+
+private fun Language.next() = when (this) {
+    Language.En -> Language.De
+    Language.De -> Language.Fr
+    Language.Fr -> Language.En
+}
+
+@Composable
+private fun DayCluster.localizedDescription() = appString(
+    when (this) {
+        DayCluster.Eos -> R.string.cluster_eos_description
+        DayCluster.Helios -> R.string.cluster_helios_description
+        DayCluster.Hesperus -> R.string.cluster_hesperus_description
+        DayCluster.Selene -> R.string.cluster_selene_description
+    }
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -98,6 +119,19 @@ fun HomeScreen(
     val accentColor = Color.hsl(hue = 8f + closeness * 112f, saturation = 0.82f, lightness = 0.57f)
 
     val onBg = MaterialTheme.colorScheme.onBackground
+
+    val appResources = LocalAppResources.current
+    val prompt = remember(state.language) {
+        listOf(
+            R.string.prompt_how_much_do_you_weigh,
+            R.string.prompt_step_on_scale,
+            R.string.prompt_time_to_check_in,
+            R.string.prompt_whats_the_number,
+            R.string.prompt_ready_to_weigh_in,
+            R.string.prompt_lets_see_where_you_are,
+            R.string.prompt_daily_check_in_awaits,
+        ).random().let { appResources.getString(it) }
+    }
 
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         // Date + cluster pinned to top-left
@@ -132,7 +166,7 @@ fun HomeScreen(
                     val scope = rememberCoroutineScope()
                     TooltipBox(
                         positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                        tooltip = { PlainTooltip { Text(cluster.dayCluster.description) } },
+                        tooltip = { PlainTooltip { Text(cluster.dayCluster.localizedDescription()) } },
                         state = tooltipState,
                     ) {
                         IconButton(
@@ -141,7 +175,7 @@ fun HomeScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.HelpOutline,
-                                contentDescription = "What is ${cluster.label}?",
+                                contentDescription = appString(R.string.cd_what_is_cluster, cluster.label),
                                 modifier = Modifier.size(16.dp),
                                 tint = onBg.copy(alpha = 0.30f),
                             )
@@ -151,19 +185,33 @@ fun HomeScreen(
             }
         }
 
-        // Theme switcher pinned to top-right
-        IconButton(
-            onClick = { viewModel.setThemeMode(state.themeMode.next()) },
+        // Language + theme switcher pinned to top-right
+        Row(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(8.dp)
                 .blur(radius = (checkmarkAlpha.value * 16).dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(
-                imageVector = state.themeMode.icon(),
-                contentDescription = state.themeMode.name,
-                tint = onBg.copy(alpha = 0.55f),
-            )
+            IconButton(onClick = { viewModel.setLanguage(state.language.next()) }) {
+                Text(
+                    text = state.language.displayCode,
+                    style = TextStyle(
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp,
+                        color = onBg.copy(alpha = 0.55f),
+                    ),
+                )
+            }
+            IconButton(onClick = { viewModel.setThemeMode(state.themeMode.next()) }) {
+                Icon(
+                    imageVector = state.themeMode.icon(),
+                    contentDescription = state.themeMode.name,
+                    tint = onBg.copy(alpha = 0.55f),
+                )
+            }
         }
 
         // Picker centered on screen
@@ -178,17 +226,6 @@ fun HomeScreen(
                     .padding(horizontal = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                val prompt = remember {
-                    listOf(
-                        "How much do you weigh?",
-                        "Step on the scale.",
-                        "Time to check in.",
-                        "What's the number today?",
-                        "Ready to weigh in?",
-                        "Let's see where you're at.",
-                        "Your daily check-in awaits.",
-                    ).random()
-                }
                 Text(
                     text = prompt,
                     style = TextStyle(
@@ -245,7 +282,7 @@ fun HomeScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = accentColor),
                 ) {
                     Text(
-                        text = if (state.isRechecking) "RE-CHECK" else "CHECK-IN",
+                        text = if (state.isRechecking) appString(R.string.action_re_check) else appString(R.string.action_check_in),
                         style = TextStyle(
                             fontFamily = FontFamily.Monospace,
                             fontSize = 14.sp,

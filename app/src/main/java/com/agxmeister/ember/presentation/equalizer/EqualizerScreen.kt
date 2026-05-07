@@ -55,7 +55,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.agxmeister.ember.R
 import com.agxmeister.ember.domain.model.WeightUnit
+import com.agxmeister.ember.presentation.appString
 import com.agxmeister.ember.presentation.common.IntWheelPicker
 import com.agxmeister.ember.presentation.home.WeightWheelPicker
 import com.agxmeister.ember.presentation.theme.closenessColor
@@ -86,13 +88,14 @@ fun EqualizerScreen() {
     val displayDate = state.selectedDate ?: state.today
     val todayWeight = state.days.find { it.date == state.today }?.weightKg
     val readoutWeight = if (isFocused) state.days.find { it.date == displayDate }?.weightKg else state.weeklyAvg
+    val wkPrefix = appString(R.string.trends_readout_wk_prefix)
     val readoutLabel = state.selectedDate?.let {
         if (state.isWeekly) {
-            "WK ${it.month.name.take(3)} ${it.dayOfMonth.toString().padStart(2, '0')} ${it.year}"
+            "$wkPrefix ${it.month.name.take(3)} ${it.dayOfMonth.toString().padStart(2, '0')} ${it.year}"
         } else {
             "${it.dayOfWeek.name.take(3)} ${it.month.name.take(3)} ${it.dayOfMonth.toString().padStart(2, '0')} ${it.year}"
         }
-    } ?: if (state.isWeekly) "7-WK AVG" else "7-DAY AVG"
+    } ?: if (state.isWeekly) appString(R.string.trends_readout_week_avg) else appString(R.string.trends_readout_day_avg)
     val readoutCloseness = readoutWeight?.let { w ->
         (1.0 - abs(w - state.targetKg) / state.tolerance).coerceIn(0.0, 1.0).toFloat()
     } ?: 0f
@@ -213,7 +216,7 @@ private fun ReadoutBlock(
                 style = labelStyle,
                 modifier = Modifier.weight(1f),
             )
-            Text(text = "Δ TARGET", style = labelStyle)
+            Text(text = appString(R.string.trends_delta_target), style = labelStyle)
         }
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -256,7 +259,7 @@ private fun ReadoutBlock(
             )
         }
         Text(
-            text = "TAP TO EDIT",
+            text = appString(R.string.trends_tap_to_edit),
             style = TextStyle(
                 fontFamily = FontFamily.Monospace,
                 fontSize = 11.sp,
@@ -291,6 +294,7 @@ private fun EqualizerCard(
     val density = LocalDensity.current
     val textMeasurer = rememberTextMeasurer()
 
+    val tgtPrefix = appString(R.string.trends_tgt_prefix)
     val cardBg = MaterialTheme.colorScheme.surfaceContainer
     val onCard = MaterialTheme.colorScheme.onSurface
     val dimColor = onCard.copy(alpha = 0.18f)
@@ -332,7 +336,7 @@ private fun EqualizerCard(
 
             val targetFrac = ((targetKg - yMin) / (yMax - yMin)).coerceIn(0.0, 1.0).toFloat()
             val targetY = dashAreaBottom - targetFrac * innerHeight
-            val tgtLabelText = "TGT %.1f".format(weightUnit.fromKg(targetKg))
+            val tgtLabelText = "$tgtPrefix %.1f".format(weightUnit.fromKg(targetKg))
             val tgtLayout = textMeasurer.measure(
                 tgtLabelText,
                 TextStyle(fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = onCard.copy(alpha = 0.60f)),
@@ -444,9 +448,9 @@ private fun EqualizerCard(
 
 @Composable
 private fun ContextStrip(selectedDate: LocalDate?, isWeekly: Boolean) {
-    val unit = if (isWeekly) "WEEK" else "DAY"
     Text(
-        text = if (selectedDate != null) "TAP AGAIN TO CLEAR" else "TAP A $unit TO OPEN",
+        text = if (selectedDate != null) appString(R.string.trends_tap_again_to_clear)
+               else appString(if (isWeekly) R.string.trends_tap_a_week else R.string.trends_tap_a_day),
         style = TextStyle(
             fontFamily = FontFamily.Monospace,
             fontSize = 11.sp,
@@ -512,7 +516,7 @@ private fun EqualizerEditDrawer(
                 IconButton(onClick = onDelete, modifier = Modifier.size(36.dp)) {
                     Icon(
                         imageVector = Icons.Outlined.Delete,
-                        contentDescription = "Delete",
+                        contentDescription = appString(R.string.cd_delete),
                         tint = onSurface.copy(alpha = 0.50f),
                         modifier = Modifier.size(20.dp),
                     )
@@ -520,7 +524,15 @@ private fun EqualizerEditDrawer(
             }
         }
 
-        val dowNames = listOf("MO", "TU", "WE", "TH", "FR", "SA", "SU")
+        val dowNames = listOf(
+            appString(R.string.day_mon),
+            appString(R.string.day_tue),
+            appString(R.string.day_wed),
+            appString(R.string.day_thu),
+            appString(R.string.day_fri),
+            appString(R.string.day_sat),
+            appString(R.string.day_sun),
+        )
 
         MaterialTheme(
             colorScheme = MaterialTheme.colorScheme.copy(
@@ -557,7 +569,7 @@ private fun EqualizerEditDrawer(
                         verticalArrangement = Arrangement.Center,
                     ) {
                         Text(
-                            text = "day & time",
+                            text = appString(R.string.trends_day_and_time),
                             style = TextStyle(
                                 fontFamily = FontFamily.Monospace,
                                 fontSize = 9.sp,
@@ -573,7 +585,7 @@ private fun EqualizerEditDrawer(
                         )
                         Spacer(Modifier.height(6.dp))
                         Text(
-                            text = "tap to change",
+                            text = appString(R.string.trends_tap_to_change),
                             style = TextStyle(
                                 fontFamily = FontFamily.Monospace,
                                 fontSize = 9.sp,
@@ -633,7 +645,7 @@ private fun EqualizerEditDrawer(
                         verticalArrangement = Arrangement.Center,
                     ) {
                         Text(
-                            text = "taken at",
+                            text = appString(R.string.trends_taken_at),
                             style = TextStyle(
                                 fontFamily = FontFamily.Monospace,
                                 fontSize = 9.sp,
@@ -649,7 +661,7 @@ private fun EqualizerEditDrawer(
                         )
                         Spacer(Modifier.height(6.dp))
                         Text(
-                            text = "tap to change",
+                            text = appString(R.string.trends_tap_to_change),
                             style = TextStyle(
                                 fontFamily = FontFamily.Monospace,
                                 fontSize = 9.sp,
@@ -706,7 +718,7 @@ private fun EqualizerEditDrawer(
             colors = ButtonDefaults.buttonColors(containerColor = accentColor),
         ) {
             Text(
-                text = "SAVE",
+                text = appString(R.string.label_save),
                 style = TextStyle(
                     fontFamily = FontFamily.Monospace,
                     fontSize = 14.sp,
@@ -735,7 +747,7 @@ private fun StatsRow(
             .height(IntrinsicSize.Max),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        StatPill(modifier = Modifier.weight(1f), label = "STREAK") {
+        StatPill(modifier = Modifier.weight(1f), label = appString(R.string.trends_streak)) {
             val onSurface = MaterialTheme.colorScheme.onSurface
             val streakColor = if (streak >= 5) Color(0xFF4BB543) else onSurface
             Row(verticalAlignment = Alignment.Bottom) {
@@ -749,7 +761,7 @@ private fun StatsRow(
                     ),
                 )
                 Text(
-                    text = if (isWeekly) " wks" else " days",
+                    text = " ${appString(if (isWeekly) R.string.trends_wks else R.string.trends_days)}",
                     style = TextStyle(
                         fontFamily = FontFamily.Monospace,
                         fontSize = 12.sp,
@@ -761,7 +773,7 @@ private fun StatsRow(
         }
 
         if (isWeekly) {
-            StatPill(modifier = Modifier.weight(1f), label = "THIS WEEK") {
+            StatPill(modifier = Modifier.weight(1f), label = appString(R.string.trends_this_week)) {
                 val displayNum = todayWeight?.let { weightUnit.fromKg(it) }
                 Text(
                     text = displayNum?.let { "%.1f".format(it) } ?: "−",
@@ -776,7 +788,7 @@ private fun StatsRow(
         } else {
             StatPill(
                 modifier = Modifier.weight(1f),
-                label = if (weeklyTrend != null) "7-DAY TREND" else "TODAY",
+                label = if (weeklyTrend != null) appString(R.string.trends_7_day_trend) else appString(R.string.stat_today),
             ) {
                 val onSurface = MaterialTheme.colorScheme.onSurface
                 if (weeklyTrend != null) {
@@ -819,7 +831,7 @@ private fun StatsRow(
             }
         }
 
-        StatPill(modifier = Modifier.weight(1f), label = "SCORE") {
+        StatPill(modifier = Modifier.weight(1f), label = appString(R.string.trends_score)) {
             val scoreColor = closenessColor((score ?: 0) / 100f)
             Text(
                 text = score?.toString() ?: "−",
