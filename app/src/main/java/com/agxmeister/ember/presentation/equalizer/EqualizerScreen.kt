@@ -132,6 +132,7 @@ fun EqualizerScreen() {
             today = state.today,
             selectedDate = state.selectedDate,
             isWeekly = state.isWeekly,
+            trendLine = state.trendLine,
             onDayToggle = viewModel::toggleDay,
         )
         Spacer(modifier = Modifier.height(6.dp))
@@ -280,6 +281,7 @@ private fun EqualizerCard(
     today: LocalDate,
     selectedDate: LocalDate?,
     isWeekly: Boolean,
+    trendLine: TrendLineData?,
     onDayToggle: (LocalDate) -> Unit,
 ) {
     val weights = days.mapNotNull { it.weightKg }
@@ -442,6 +444,41 @@ private fun EqualizerCard(
                 tgtLayout,
                 topLeft = Offset(lineEndX + 4.dp.toPx(), targetY - tgtLayout.size.height / 2f),
             )
+
+            trendLine?.let { tl ->
+                val diffDisplay = weightUnit.scaleDiff(tl.diffKg)
+                val diffStr = if (diffDisplay >= 0) "+%.1f".format(diffDisplay) else "%.1f".format(diffDisplay)
+                val trendLabelText = "DLT $diffStr"
+                val trendLabelStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = Color.Red.copy(alpha = 0.85f))
+                val trendLayout = textMeasurer.measure(trendLabelText, trendLabelStyle)
+                val trendLabelW = trendLayout.size.width.toFloat() + 8.dp.toPx()
+
+                val startFrac = ((tl.startKg - yMin) / (yMax - yMin)).coerceIn(0.0, 1.0).toFloat()
+                val endFrac = ((tl.endKg - yMin) / (yMax - yMin)).coerceIn(0.0, 1.0).toFloat()
+                val startY = dashAreaBottom - startFrac * innerHeight
+                val endY = dashAreaBottom - endFrac * innerHeight
+
+                val totalSpan = size.width - rightPad - leftPad
+                val lineStartX = leftPad + trendLabelW
+                val lineStartY = startY + (endY - startY) * trendLabelW / totalSpan
+
+                drawLine(
+                    color = Color.Red.copy(alpha = 0.75f),
+                    start = Offset(lineStartX, lineStartY),
+                    end = Offset(size.width - rightPad, endY),
+                    strokeWidth = 1.dp.toPx(),
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5.dp.toPx(), 4.dp.toPx())),
+                )
+                drawRect(
+                    color = cardBg,
+                    topLeft = Offset(leftPad, startY - trendLayout.size.height / 2f - 2.dp.toPx()),
+                    size = Size(trendLabelW, trendLayout.size.height.toFloat() + 4.dp.toPx()),
+                )
+                drawText(
+                    trendLayout,
+                    topLeft = Offset(leftPad, startY - trendLayout.size.height / 2f),
+                )
+            }
         }
     }
 }

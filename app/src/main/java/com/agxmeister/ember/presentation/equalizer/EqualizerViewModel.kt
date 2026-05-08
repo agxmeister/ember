@@ -38,6 +38,8 @@ data class EqualizerDayData(
     val weightKg: Double?,
 )
 
+data class TrendLineData(val startKg: Double, val endKg: Double, val diffKg: Double)
+
 data class EqualizerUiState(
     val days: List<EqualizerDayData>,
     val targetKg: Double,
@@ -50,6 +52,7 @@ data class EqualizerUiState(
     val weeklyAvg: Double?,
     val trendCloserToTarget: Boolean?,
     val isWeekly: Boolean,
+    val trendLine: TrendLineData?,
 )
 
 data class EqualizerEditState(
@@ -174,6 +177,7 @@ class EqualizerViewModel @Inject constructor(
         val weeklyTrend: Double?
         val weeklyAvg: Double?
         val trendCloserToTarget: Boolean?
+        val trendLine: TrendLineData?
 
         if (isWeekly) {
             val currentWeekStart = todayDate.isoWeekStart()
@@ -185,6 +189,8 @@ class EqualizerViewModel @Inject constructor(
                 val weekStart = windowStart.plus(DatePeriod(days = offset * 7))
                 EqualizerDayData(date = weekStart, weightKg = weeklyMap[weekStart]?.median)
             }
+
+            trendLine = computeTrendLine(days)
 
             var s = 0
             var expected = currentWeekStart
@@ -218,6 +224,8 @@ class EqualizerViewModel @Inject constructor(
                 val date = windowStart.plus(DatePeriod(days = offset))
                 EqualizerDayData(date = date, weightKg = candleMap[date]?.close)
             }
+
+            trendLine = computeTrendLine(days)
 
             var s = 0
             var expected = todayDate
@@ -259,6 +267,7 @@ class EqualizerViewModel @Inject constructor(
             weeklyAvg = weeklyAvg,
             trendCloserToTarget = trendCloserToTarget,
             isWeekly = isWeekly,
+            trendLine = trendLine,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -275,11 +284,38 @@ class EqualizerViewModel @Inject constructor(
             weeklyAvg = null,
             trendCloserToTarget = null,
             isWeekly = false,
+            trendLine = null,
         ),
     )
+}
+
+private fun computeTrendLine(days: List<EqualizerDayData>): TrendLineData? {
+    val measured = days.mapIndexedNotNull { idx, day ->
+        day.weightKg?.let { Pair(idx.toDouble(), it) }
+    }
+    if (measured.size < 2) return null
+    val xs = measured.map { it.first }
+    val ys = measured.map { it.second }
+    val (slope, intercept) = linearRegression(xs, ys) ?: return null
+    val startKg = intercept
+    val endKg = slope * (days.size - 1) + intercept
+    return TrendLineData(startKg = startKg, endKg = endKg, diffKg = endKg - startKg)
 }
 
 private fun List<Double>.median(): Double {
     val s = sorted()
     return if (s.size % 2 == 0) (s[s.size / 2 - 1] + s[s.size / 2]) / 2.0 else s[s.size / 2]
+}
+
+private fun linearRegression(xs: List<Double>, ys: List<Double>): Pair<Double, Double>? {
+    val n = xs.size.toDouble()
+    val sumX = xs.sum()
+    val sumY = ys.sum()
+    val sumXY = xs.zip(ys).sumOf { (x, y) -> x * y }
+    val sumX2 = xs.sumOf { x -> x * x }
+    val denom = n * sumX2 - sumX * sumX
+    if (denom == 0.0) return null
+    val slope = (n * sumXY - sumX * sumY) / denom
+    val intercept = (sumY - slope * sumX) / n
+    return Pair(slope, intercept)
 }
