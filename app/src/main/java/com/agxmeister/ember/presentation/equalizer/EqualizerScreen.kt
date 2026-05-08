@@ -140,9 +140,9 @@ fun EqualizerScreen() {
         Spacer(modifier = Modifier.height(12.dp))
         StatsRow(
             streak = state.streak,
-            todayWeight = todayWeight,
-            weeklyTrend = state.weeklyTrend,
-            trendCloserToTarget = state.trendCloserToTarget,
+            weeklyAvg = state.weeklyAvg,
+            targetKg = state.targetKg,
+            tolerance = state.tolerance,
             score = score,
             weightUnit = state.weightUnit,
             isWeekly = state.isWeekly,
@@ -182,11 +182,16 @@ private fun ReadoutBlock(
 ) {
     val weightStr = displayWeight?.let { "%.1f".format(weightUnit.fromKg(it)) } ?: "−.−"
     val diffDisplay = trendDiffKg?.let { weightUnit.scaleDiff(it) }
+    val arrow = when {
+        diffDisplay == null -> null
+        diffDisplay > 0.005 -> "▲"
+        diffDisplay < -0.005 -> "▼"
+        else -> null
+    }
     val deltaStr = when {
         diffDisplay == null -> "−"
-        diffDisplay > 0.005 -> "+%.1f".format(diffDisplay)
-        diffDisplay < -0.005 -> "−%.1f".format(abs(diffDisplay))
-        else -> "±0.0"
+        abs(diffDisplay) > 0.005 -> "%.1f".format(abs(diffDisplay))
+        else -> "0.0"
     }
 
     val onBg = MaterialTheme.colorScheme.onBackground
@@ -241,16 +246,30 @@ private fun ReadoutBlock(
                     modifier = Modifier.padding(bottom = 8.dp),
                 )
             }
-            Text(
-                text = deltaStr,
-                style = TextStyle(
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 36.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = displayColor,
-                    shadow = glow,
-                ),
-            )
+            Row(verticalAlignment = Alignment.Bottom) {
+                if (arrow != null) {
+                    Text(
+                        text = arrow,
+                        style = TextStyle(
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 18.sp,
+                            color = displayColor,
+                            shadow = glow,
+                        ),
+                        modifier = Modifier.padding(bottom = 6.dp, end = 2.dp),
+                    )
+                }
+                Text(
+                    text = deltaStr,
+                    style = TextStyle(
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 36.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = displayColor,
+                        shadow = glow,
+                    ),
+                )
+            }
         }
         Text(
             text = appString(R.string.trends_tap_to_edit),
@@ -743,9 +762,9 @@ private fun EqualizerEditDrawer(
 @Composable
 private fun StatsRow(
     streak: Int,
-    todayWeight: Double?,
-    weeklyTrend: Double?,
-    trendCloserToTarget: Boolean?,
+    weeklyAvg: Double?,
+    targetKg: Double,
+    tolerance: Double,
     score: Int?,
     weightUnit: WeightUnit,
     isWeekly: Boolean,
@@ -781,63 +800,26 @@ private fun StatsRow(
             }
         }
 
-        if (isWeekly) {
-            StatPill(modifier = Modifier.weight(1f), label = appString(R.string.trends_this_week)) {
-                val displayNum = todayWeight?.let { weightUnit.fromKg(it) }
-                Text(
-                    text = displayNum?.let { "%.1f".format(it) } ?: "−",
-                    style = TextStyle(
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    ),
-                )
+        StatPill(modifier = Modifier.weight(1f), label = appString(R.string.stat_delta_target)) {
+            val deltaDisplay = weeklyAvg?.let { weightUnit.scaleDiff(it - targetKg) }
+            val deltaStr = when {
+                deltaDisplay == null -> "−"
+                deltaDisplay > 0.005 -> "+%.1f".format(deltaDisplay)
+                deltaDisplay < -0.005 -> "−%.1f".format(abs(deltaDisplay))
+                else -> "±0.0"
             }
-        } else {
-            StatPill(
-                modifier = Modifier.weight(1f),
-                label = if (weeklyTrend != null) appString(R.string.trends_7_day_trend) else appString(R.string.stat_today),
-            ) {
-                val onSurface = MaterialTheme.colorScheme.onSurface
-                if (weeklyTrend != null) {
-                    val trendColor = if (trendCloserToTarget == true) Color(0xFF4BB543) else Color(0xFFD9534F)
-                    val trendDisplay = weightUnit.scaleDiff(weeklyTrend)
-                    val trendStr = if (trendDisplay >= 0) "+%.1f".format(trendDisplay) else "−%.1f".format(abs(trendDisplay))
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        Text(
-                            text = if (weeklyTrend >= 0) "▲" else "▼",
-                            style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 16.sp, color = trendColor),
-                            modifier = Modifier.padding(bottom = 4.dp, end = 2.dp),
-                        )
-                        Text(
-                            text = trendStr,
-                            style = TextStyle(
-                                fontFamily = FontFamily.Monospace,
-                                fontSize = 28.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = trendColor,
-                            ),
-                        )
-                        Text(
-                            text = " ${weightUnit.label}",
-                            style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp, color = trendColor.copy(alpha = 0.75f)),
-                            modifier = Modifier.padding(bottom = 6.dp),
-                        )
-                    }
-                } else {
-                    val displayNum = todayWeight?.let { weightUnit.fromKg(it) }
-                    Text(
-                        text = displayNum?.let { "%.1f".format(it) } ?: "−",
-                        style = TextStyle(
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = onSurface,
-                        ),
-                    )
-                }
-            }
+            val deltaColor = weeklyAvg?.let { w ->
+                closenessColor((1.0 - abs(w - targetKg) / tolerance).coerceIn(0.0, 1.0).toFloat())
+            } ?: MaterialTheme.colorScheme.onSurface
+            Text(
+                text = deltaStr,
+                style = TextStyle(
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = deltaColor,
+                ),
+            )
         }
 
         StatPill(modifier = Modifier.weight(1f), label = appString(R.string.trends_score)) {

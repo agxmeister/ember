@@ -99,6 +99,7 @@
     <string name="trends_this_week">CETTE SEMAINE</string>
     <string name="trends_7_day_trend">TENDANCE 7 J.</string>
     <string name="stat_today">AUJOURD\'HUI</string>
+    <string name="stat_delta_target">Δ OBJECTIF</string>
     <string name="trends_score">SCORE</string>
     <string name="cd_delete">Supprimer</string>
 </resources>

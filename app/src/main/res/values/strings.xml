@@ -104,6 +104,7 @@
     <string name="trends_this_week">THIS WEEK</string>
     <string name="trends_7_day_trend">7-DAY TREND</string>
     <string name="stat_today">TODAY</string>
+    <string name="stat_delta_target">Δ TARGET</string>
     <string name="trends_score">SCORE</string>
     <string name="cd_delete">Delete</string>
 
