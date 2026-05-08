@@ -114,7 +114,7 @@ fun EqualizerScreen() {
         ReadoutBlock(
             displayWeight = readoutWeight,
             label = readoutLabel,
-            targetKg = state.targetKg,
+            trendDiffKg = state.trendLine?.diffKg,
             displayColor = readoutColor,
             weightUnit = state.weightUnit,
             isFocused = isFocused,
@@ -174,25 +174,18 @@ fun EqualizerScreen() {
 private fun ReadoutBlock(
     displayWeight: Double?,
     label: String,
-    targetKg: Double,
+    trendDiffKg: Double?,
     displayColor: Color,
     weightUnit: WeightUnit,
     isFocused: Boolean,
     onTap: () -> Unit,
 ) {
-    val status = when {
-        displayWeight == null -> ""
-        displayWeight > targetKg -> "ABOVE"
-        displayWeight < targetKg -> "BELOW"
-        else -> "ON TARGET"
-    }
     val weightStr = displayWeight?.let { "%.1f".format(weightUnit.fromKg(it)) } ?: "−.−"
-    val deltaKg = displayWeight?.let { it - targetKg }
-    val deltaDisplay = deltaKg?.let { weightUnit.scaleDiff(it) }
+    val diffDisplay = trendDiffKg?.let { weightUnit.scaleDiff(it) }
     val deltaStr = when {
-        deltaDisplay == null -> "−"
-        deltaDisplay > 0.005 -> "+%.1f".format(deltaDisplay)
-        deltaDisplay < -0.005 -> "−%.1f".format(abs(deltaDisplay))
+        diffDisplay == null -> "−"
+        diffDisplay > 0.005 -> "+%.1f".format(diffDisplay)
+        diffDisplay < -0.005 -> "−%.1f".format(abs(diffDisplay))
         else -> "±0.0"
     }
 
@@ -446,37 +439,16 @@ private fun EqualizerCard(
             )
 
             trendLine?.let { tl ->
-                val diffDisplay = weightUnit.scaleDiff(tl.diffKg)
-                val diffStr = if (diffDisplay >= 0) "+%.1f".format(diffDisplay) else "%.1f".format(diffDisplay)
-                val trendLabelText = "DLT $diffStr"
-                val trendLabelStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = Color.Red.copy(alpha = 0.85f))
-                val trendLayout = textMeasurer.measure(trendLabelText, trendLabelStyle)
-                val trendLabelW = trendLayout.size.width.toFloat() + 8.dp.toPx()
-
                 val startFrac = ((tl.startKg - yMin) / (yMax - yMin)).coerceIn(0.0, 1.0).toFloat()
                 val endFrac = ((tl.endKg - yMin) / (yMax - yMin)).coerceIn(0.0, 1.0).toFloat()
                 val startY = dashAreaBottom - startFrac * innerHeight
                 val endY = dashAreaBottom - endFrac * innerHeight
-
-                val totalSpan = size.width - rightPad - leftPad
-                val lineStartX = leftPad + trendLabelW
-                val lineStartY = startY + (endY - startY) * trendLabelW / totalSpan
-
                 drawLine(
                     color = Color.Red.copy(alpha = 0.75f),
-                    start = Offset(lineStartX, lineStartY),
+                    start = Offset(leftPad, startY),
                     end = Offset(size.width - rightPad, endY),
                     strokeWidth = 1.dp.toPx(),
                     pathEffect = PathEffect.dashPathEffect(floatArrayOf(5.dp.toPx(), 4.dp.toPx())),
-                )
-                drawRect(
-                    color = cardBg,
-                    topLeft = Offset(leftPad, startY - trendLayout.size.height / 2f - 2.dp.toPx()),
-                    size = Size(trendLabelW, trendLayout.size.height.toFloat() + 4.dp.toPx()),
-                )
-                drawText(
-                    trendLayout,
-                    topLeft = Offset(leftPad, startY - trendLayout.size.height / 2f),
                 )
             }
         }

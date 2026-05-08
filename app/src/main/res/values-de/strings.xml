@@ -82,13 +82,13 @@
     <string name="notification_text">Vergiss deine %1$s-Messung nicht.</string>
 
     <string name="trends_tgt_prefix">ZIEL</string>
-    <string name="trends_delta_target">Δ ZIEL</string>
+    <string name="trends_delta_target">Δ TREND</string>
     <string name="trends_tap_to_edit">ZUM BEARBEITEN TIPPEN</string>
     <string name="trends_tap_again_to_clear">NOCHMAL TIPPEN ZUM ENTFERNEN</string>
     <string name="trends_tap_a_day">TAG ANTIPPEN ZUM ÖFFNEN</string>
     <string name="trends_tap_a_week">WOCHE ANTIPPEN ZUM ÖFFNEN</string>
-    <string name="trends_readout_day_avg">7-TAGE Ø</string>
-    <string name="trends_readout_week_avg">7-WO Ø</string>
+    <string name="trends_readout_day_avg">14-TAGE Ø</string>
+    <string name="trends_readout_week_avg">14-WO Ø</string>
     <string name="trends_readout_wk_prefix">WO</string>
     <string name="trends_day_and_time">Tag &amp; Uhrzeit</string>
     <string name="trends_tap_to_change">tippen zum ändern</string>

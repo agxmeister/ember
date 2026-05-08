@@ -87,13 +87,13 @@
 
     <!-- Trends / Equalizer -->
     <string name="trends_tgt_prefix">TGT</string>
-    <string name="trends_delta_target">Δ TARGET</string>
+    <string name="trends_delta_target">Δ TREND</string>
     <string name="trends_tap_to_edit">TAP TO EDIT</string>
     <string name="trends_tap_again_to_clear">TAP AGAIN TO CLEAR</string>
     <string name="trends_tap_a_day">TAP A DAY TO OPEN</string>
     <string name="trends_tap_a_week">TAP A WEEK TO OPEN</string>
-    <string name="trends_readout_day_avg">7-DAY AVG</string>
-    <string name="trends_readout_week_avg">7-WK AVG</string>
+    <string name="trends_readout_day_avg">14-DAY AVG</string>
+    <string name="trends_readout_week_avg">14-WK AVG</string>
     <string name="trends_readout_wk_prefix">WK</string>
     <string name="trends_day_and_time">day &amp; time</string>
     <string name="trends_tap_to_change">tap to change</string>

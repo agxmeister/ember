@@ -202,9 +202,8 @@ class EqualizerViewModel @Inject constructor(
             }
             streak = s
 
-            val last7Weeks = (0..6).map { currentWeekStart.minus(DatePeriod(days = it * 7)) }.toSet()
-            val last7WeekData = allWeekly.filter { it.weekStart in last7Weeks }
-            weeklyAvg = if (last7WeekData.isNotEmpty()) last7WeekData.map { it.median }.median() else null
+            val windowWeeks = days.mapNotNull { it.weightKg }
+            weeklyAvg = if (windowWeeks.isNotEmpty()) windowWeeks.median() else null
 
             val currentWeek = allWeekly.find { it.weekStart == currentWeekStart }
             val prevWeek = allWeekly.find { it.weekStart == currentWeekStart.minus(DatePeriod(days = 7)) }
@@ -242,7 +241,8 @@ class EqualizerViewModel @Inject constructor(
             val last7 = allCandles.filter { it.date in last7Dates }.map { it.close }
             val prev7 = allCandles.filter { it.date in prev7Dates }.map { it.close }
 
-            weeklyAvg = if (last7.isNotEmpty()) last7.median() else null
+            val windowWeights = days.mapNotNull { it.weightKg }
+            weeklyAvg = if (windowWeights.isNotEmpty()) windowWeights.median() else null
 
             if (last7.isNotEmpty() && prev7.isNotEmpty()) {
                 val currentMedian = last7.median()

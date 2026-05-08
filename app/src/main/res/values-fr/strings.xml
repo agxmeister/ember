@@ -82,13 +82,13 @@
     <string name="notification_text">N\'oubliez pas votre mesure %1$s.</string>
 
     <string name="trends_tgt_prefix">OBJ</string>
-    <string name="trends_delta_target">Δ OBJECTIF</string>
+    <string name="trends_delta_target">Δ TENDANCE</string>
     <string name="trends_tap_to_edit">APPUYER POUR MODIFIER</string>
     <string name="trends_tap_again_to_clear">APPUYER À NOUVEAU POUR EFFACER</string>
     <string name="trends_tap_a_day">APPUYER SUR UN JOUR</string>
     <string name="trends_tap_a_week">APPUYER SUR UNE SEMAINE</string>
-    <string name="trends_readout_day_avg">MOY. 7 JOURS</string>
-    <string name="trends_readout_week_avg">MOY. 7 SEM.</string>
+    <string name="trends_readout_day_avg">MOY. 14 JOURS</string>
+    <string name="trends_readout_week_avg">MOY. 14 SEM.</string>
     <string name="trends_readout_wk_prefix">SEM.</string>
     <string name="trends_day_and_time">jour &amp; heure</string>
     <string name="trends_tap_to_change">appuyer pour modifier</string>
