@@ -801,25 +801,32 @@ private fun StatsRow(
         }
 
         StatPill(modifier = Modifier.weight(1f), label = appString(R.string.stat_delta_target)) {
-            val deltaDisplay = weeklyAvg?.let { weightUnit.scaleDiff(it - targetKg) }
-            val deltaStr = when {
-                deltaDisplay == null -> "−"
-                deltaDisplay > 0.005 -> "+%.1f".format(deltaDisplay)
-                deltaDisplay < -0.005 -> "−%.1f".format(abs(deltaDisplay))
-                else -> "±0.0"
-            }
+            val deltaDisplay = weeklyAvg?.let { abs(weightUnit.scaleDiff(it - targetKg)) }
             val deltaColor = weeklyAvg?.let { w ->
                 closenessColor((1.0 - abs(w - targetKg) / tolerance).coerceIn(0.0, 1.0).toFloat())
             } ?: MaterialTheme.colorScheme.onSurface
-            Text(
-                text = deltaStr,
-                style = TextStyle(
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = deltaColor,
-                ),
-            )
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(
+                    text = deltaDisplay?.let { "%.1f".format(it) } ?: "−",
+                    style = TextStyle(
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = deltaColor,
+                    ),
+                )
+                if (deltaDisplay != null) {
+                    Text(
+                        text = " ${weightUnit.label}",
+                        style = TextStyle(
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 12.sp,
+                            color = deltaColor.copy(alpha = 0.75f),
+                        ),
+                        modifier = Modifier.padding(bottom = 4.dp),
+                    )
+                }
+            }
         }
 
         StatPill(modifier = Modifier.weight(1f), label = appString(R.string.trends_score)) {
