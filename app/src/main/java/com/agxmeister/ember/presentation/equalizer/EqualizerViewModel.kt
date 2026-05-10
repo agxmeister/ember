@@ -193,12 +193,17 @@ class EqualizerViewModel @Inject constructor(
             trendLine = computeTrendLine(days)
 
             var s = 0
-            var expected = currentWeekStart
-            for (week in allWeekly.sortedByDescending { it.weekStart }) {
-                if (week.weekStart > currentWeekStart) continue
-                if (week.weekStart != expected) break
-                s++
-                expected = expected.minus(DatePeriod(days = 7))
+            var w = currentWeekStart
+            while (true) {
+                if (!weeklyMap.containsKey(w)) break
+                val wStart = w.minus(DatePeriod(days = 13 * 7))
+                val window = (0..13).map { offset ->
+                    val weekStart = wStart.plus(DatePeriod(days = offset * 7))
+                    EqualizerDayData(date = weekStart, weightKg = weeklyMap[weekStart]?.median)
+                }
+                val t = computeTrendLine(window) ?: break
+                if (if (initialWeightKg > targetKg) t.diffKg < 0 else t.diffKg > 0) s++ else break
+                w = w.minus(DatePeriod(days = 7))
             }
             streak = s
 
@@ -227,12 +232,17 @@ class EqualizerViewModel @Inject constructor(
             trendLine = computeTrendLine(days)
 
             var s = 0
-            var expected = todayDate
-            for (candle in allCandles.sortedByDescending { it.date }) {
-                if (candle.date > todayDate) continue
-                if (candle.date != expected) break
-                s++
-                expected = expected.minus(DatePeriod(days = 1))
+            var d = todayDate
+            while (true) {
+                if (!candleMap.containsKey(d)) break
+                val wStart = d.minus(DatePeriod(days = 13))
+                val window = (0..13).map { offset ->
+                    val date = wStart.plus(DatePeriod(days = offset))
+                    EqualizerDayData(date = date, weightKg = candleMap[date]?.close)
+                }
+                val t = computeTrendLine(window) ?: break
+                if (if (initialWeightKg > targetKg) t.diffKg < 0 else t.diffKg > 0) s++ else break
+                d = d.minus(DatePeriod(days = 1))
             }
             streak = s
 
