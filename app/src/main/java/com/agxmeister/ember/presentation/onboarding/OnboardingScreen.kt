@@ -54,10 +54,12 @@ fun OnboardingScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
+    val bg = MaterialTheme.colorScheme.background
+    val onBg = MaterialTheme.colorScheme.onBackground
     MaterialTheme(
         colorScheme = MaterialTheme.colorScheme.copy(
-            primary = Color.White,
-            onPrimary = Color(0xFF0A0A0A),
+            primary = onBg,
+            onPrimary = bg,
             secondaryContainer = Color(0xFF282828),
             onSecondaryContainer = Color.White,
         ),
