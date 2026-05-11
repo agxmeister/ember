@@ -5,9 +5,18 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import kotlin.math.abs
 
 fun closenessColor(closeness: Float): Color =
     Color.hsl(hue = 8f + closeness * 112f, saturation = 0.82f, lightness = 0.57f)
+
+fun trendSpeedColor(weeklyRateKg: Double?, goalIsLoss: Boolean): Color {
+    if (weeklyRateKg == null) return Color.hsl(hue = 8f, saturation = 0.0f, lightness = 0.45f)
+    val towardTarget = if (goalIsLoss) weeklyRateKg < 0.0 else weeklyRateKg > 0.0
+    if (!towardTarget) return Color.hsl(hue = 8f, saturation = 0.82f, lightness = 0.57f)
+    val speedProgress = (abs(weeklyRateKg) / 0.5).coerceIn(0.0, 1.0).toFloat()
+    return Color.hsl(hue = 50f + speedProgress * 70f, saturation = 0.82f, lightness = 0.57f)
+}
 
 private val darkColors = darkColorScheme()
 private val lightColors = lightColorScheme()
