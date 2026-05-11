@@ -53,6 +53,9 @@ data class EqualizerUiState(
     val trendCloserToTarget: Boolean?,
     val isWeekly: Boolean,
     val trendLine: TrendLineData?,
+    val weeklyRateKg: Double?,
+    val goalIsLoss: Boolean,
+    val trendMeasurementsNeeded: Int?,
 )
 
 data class EqualizerEditState(
@@ -178,6 +181,8 @@ class EqualizerViewModel @Inject constructor(
         val weeklyAvg: Double?
         val trendCloserToTarget: Boolean?
         val trendLine: TrendLineData?
+        val weeklyRateKg: Double?
+        val trendMeasurementsNeeded: Int?
 
         if (isWeekly) {
             val currentWeekStart = todayDate.isoWeekStart()
@@ -191,6 +196,10 @@ class EqualizerViewModel @Inject constructor(
             }
 
             trendLine = computeTrendLine(days)
+            val last7Weeks = days.takeLast(7)
+            weeklyRateKg = computeWeeklyRate(last7Weeks, indexStepDays = 7)
+            val measuredInLast7Weeks = last7Weeks.count { it.weightKg != null }
+            trendMeasurementsNeeded = if (weeklyRateKg == null) (7 - measuredInLast7Weeks).coerceAtLeast(1) else null
 
             var s = 0
             var w = currentWeekStart
@@ -230,6 +239,10 @@ class EqualizerViewModel @Inject constructor(
             }
 
             trendLine = computeTrendLine(days)
+            val last7Days = days.takeLast(7)
+            weeklyRateKg = computeWeeklyRate(last7Days)
+            val measuredInLast7 = last7Days.count { it.weightKg != null }
+            trendMeasurementsNeeded = if (weeklyRateKg == null) (7 - measuredInLast7).coerceAtLeast(1) else null
 
             var s = 0
             var d = todayDate
@@ -278,6 +291,9 @@ class EqualizerViewModel @Inject constructor(
             trendCloserToTarget = trendCloserToTarget,
             isWeekly = isWeekly,
             trendLine = trendLine,
+            weeklyRateKg = weeklyRateKg,
+            goalIsLoss = initialWeightKg > targetKg,
+            trendMeasurementsNeeded = trendMeasurementsNeeded,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -295,21 +311,33 @@ class EqualizerViewModel @Inject constructor(
             trendCloserToTarget = null,
             isWeekly = false,
             trendLine = null,
+            weeklyRateKg = null,
+            goalIsLoss = true,
+            trendMeasurementsNeeded = null,
         ),
     )
 }
 
-private fun computeTrendLine(days: List<EqualizerDayData>): TrendLineData? {
+private fun computeTrendLine(days: List<EqualizerDayData>, minPoints: Int = 2): TrendLineData? {
     val measured = days.mapIndexedNotNull { idx, day ->
         day.weightKg?.let { Pair(idx.toDouble(), it) }
     }
-    if (measured.size < 2) return null
+    if (measured.size < minPoints) return null
     val xs = measured.map { it.first }
     val ys = measured.map { it.second }
     val (slope, intercept) = linearRegression(xs, ys) ?: return null
     val startKg = intercept
     val endKg = slope * (days.size - 1) + intercept
     return TrendLineData(startKg = startKg, endKg = endKg, diffKg = endKg - startKg)
+}
+
+private fun computeWeeklyRate(last7: List<EqualizerDayData>, indexStepDays: Int = 1): Double? {
+    val measured = last7.mapIndexedNotNull { idx, day ->
+        day.weightKg?.let { Pair(idx.toDouble(), it) }
+    }
+    if (measured.size < 7) return null
+    val (slope, _) = linearRegression(measured.map { it.first }, measured.map { it.second }) ?: return null
+    return slope * 7.0 / indexStepDays
 }
 
 private fun List<Double>.median(): Double {
