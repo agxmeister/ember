@@ -332,12 +332,36 @@ private fun computeTrendLine(days: List<EqualizerDayData>, minPoints: Int = 2): 
 }
 
 private fun computeWeeklyRate(last7: List<EqualizerDayData>, indexStepDays: Int = 1): Double? {
-    val measured = last7.mapIndexedNotNull { idx, day ->
-        day.weightKg?.let { Pair(idx.toDouble(), it) }
-    }
+    val filled = fillGaps(last7) ?: return null
+    val measured = filled.mapIndexedNotNull { idx, day -> day.weightKg?.let { idx.toDouble() to it } }
     if (measured.size < 7) return null
     val (slope, _) = linearRegression(measured.map { it.first }, measured.map { it.second }) ?: return null
     return slope * 7.0 / indexStepDays
+}
+
+private fun fillGaps(days: List<EqualizerDayData>, maxGap: Int = 5): List<EqualizerDayData>? {
+    val weights = days.map { it.weightKg }.toMutableList()
+    val n = weights.size
+    var i = 0
+    while (i < n) {
+        if (weights[i] == null) {
+            var j = i
+            while (j < n && weights[j] == null) j++
+            if (j - i > maxGap) return null
+            val before = if (i > 0) weights[i - 1] else null
+            val after = if (j < n) weights[j] else null
+            if (before != null && after != null) {
+                for (k in i until j) {
+                    weights[k] = before + (after - before) * (k - i + 1).toDouble() / (j - i + 1)
+                }
+            }
+            // edge gaps (no before or no after) are left as null
+            i = j
+        } else {
+            i++
+        }
+    }
+    return days.mapIndexed { idx, day -> day.copy(weightKg = weights[idx]) }
 }
 
 private fun List<Double>.median(): Double {
