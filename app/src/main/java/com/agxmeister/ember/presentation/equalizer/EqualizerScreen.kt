@@ -61,6 +61,7 @@ import com.agxmeister.ember.presentation.appString
 import com.agxmeister.ember.presentation.common.IntWheelPicker
 import com.agxmeister.ember.presentation.home.WeightWheelPicker
 import com.agxmeister.ember.presentation.theme.closenessColor
+import com.agxmeister.ember.presentation.theme.trendSpeedColor
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
@@ -114,7 +115,9 @@ fun EqualizerScreen() {
         ReadoutBlock(
             displayWeight = readoutWeight,
             label = readoutLabel,
-            trendDiffKg = state.trendLine?.diffKg,
+            weeklyRateKg = state.weeklyRateKg,
+            goalIsLoss = state.goalIsLoss,
+            trendMeasurementsNeeded = state.trendMeasurementsNeeded,
             displayColor = readoutColor,
             weightUnit = state.weightUnit,
             isFocused = isFocused,
@@ -174,14 +177,16 @@ fun EqualizerScreen() {
 private fun ReadoutBlock(
     displayWeight: Double?,
     label: String,
-    trendDiffKg: Double?,
+    weeklyRateKg: Double?,
+    goalIsLoss: Boolean,
+    trendMeasurementsNeeded: Int?,
     displayColor: Color,
     weightUnit: WeightUnit,
     isFocused: Boolean,
     onTap: () -> Unit,
 ) {
     val weightStr = displayWeight?.let { "%.1f".format(weightUnit.fromKg(it)) } ?: "−.−"
-    val diffDisplay = trendDiffKg?.let { weightUnit.scaleDiff(it) }
+    val diffDisplay = weeklyRateKg?.let { weightUnit.scaleDiff(it) }
     val arrow = when {
         diffDisplay == null -> null
         diffDisplay > 0.005 -> "▲"
@@ -189,10 +194,11 @@ private fun ReadoutBlock(
         else -> null
     }
     val deltaStr = when {
-        diffDisplay == null -> "−"
-        abs(diffDisplay) > 0.005 -> "%.1f".format(abs(diffDisplay))
-        else -> "0.0"
+        diffDisplay == null -> ".−−"
+        abs(diffDisplay) > 0.005 -> "%.2f".format(abs(diffDisplay)).let { if (abs(diffDisplay) < 1.0) it.removePrefix("0") else it }
+        else -> ".00"
     }
+    val trendColor = trendSpeedColor(weeklyRateKg, goalIsLoss)
 
     val onBg = MaterialTheme.colorScheme.onBackground
     val glow = Shadow(color = displayColor.copy(alpha = 0.65f), blurRadius = 22f)
@@ -247,14 +253,15 @@ private fun ReadoutBlock(
                 )
             }
             Row(verticalAlignment = Alignment.Bottom) {
+                val trendGlow = Shadow(color = trendColor.copy(alpha = 0.65f), blurRadius = 22f)
                 if (arrow != null) {
                     Text(
                         text = arrow,
                         style = TextStyle(
                             fontFamily = FontFamily.Monospace,
                             fontSize = 18.sp,
-                            color = displayColor,
-                            shadow = glow,
+                            color = trendColor,
+                            shadow = trendGlow,
                         ),
                         modifier = Modifier.padding(bottom = 6.dp, end = 2.dp),
                     )
@@ -265,21 +272,30 @@ private fun ReadoutBlock(
                         fontFamily = FontFamily.Monospace,
                         fontSize = 36.sp,
                         fontWeight = FontWeight.Bold,
-                        color = displayColor,
-                        shadow = glow,
+                        color = trendColor,
+                        shadow = trendGlow,
                     ),
                 )
             }
         }
-        Text(
-            text = appString(R.string.trends_tap_to_edit),
-            style = TextStyle(
-                fontFamily = FontFamily.Monospace,
-                fontSize = 11.sp,
-                letterSpacing = 0.5.sp,
-                color = if (isFocused) onBg.copy(alpha = 0.50f) else Color.Transparent,
-            ),
-        )
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = appString(R.string.trends_tap_to_edit),
+                style = TextStyle(
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 11.sp,
+                    letterSpacing = 0.5.sp,
+                    color = if (isFocused) onBg.copy(alpha = 0.50f) else Color.Transparent,
+                ),
+                modifier = Modifier.weight(1f),
+            )
+            if (trendMeasurementsNeeded != null) {
+                Text(
+                    text = "$trendMeasurementsNeeded TO GO",
+                    style = labelStyle,
+                )
+            }
+        }
     }
 }
 
