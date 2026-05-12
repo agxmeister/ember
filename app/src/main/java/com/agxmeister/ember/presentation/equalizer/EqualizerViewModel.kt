@@ -196,8 +196,14 @@ class EqualizerViewModel @Inject constructor(
             }
 
             trendLine = computeTrendLine(days)
-            val last7Weeks = days.takeLast(7)
-            weeklyRateKg = computeWeeklyRate(last7Weeks, indexStepDays = 7)
+            val lastMeasuredWeekIdx = days.indexOfLast { it.weightKg != null }
+            val firstMeasuredWeekIdx = days.indexOfFirst { it.weightKg != null }
+            val hasRecentWeek = lastMeasuredWeekIdx >= days.size - 7
+            val weekSpan = if (firstMeasuredWeekIdx >= 0 && lastMeasuredWeekIdx >= 0) lastMeasuredWeekIdx - firstMeasuredWeekIdx else -1
+            weeklyRateKg = if (hasRecentWeek && weekSpan >= 6) {
+                computeWeeklyRate(days.subList(firstMeasuredWeekIdx, lastMeasuredWeekIdx + 1), indexStepDays = 7)
+            } else null
+            val last7Weeks = if (lastMeasuredWeekIdx >= 6) days.subList(lastMeasuredWeekIdx - 6, lastMeasuredWeekIdx + 1) else days.takeLast(7)
             val measuredInLast7Weeks = last7Weeks.count { it.weightKg != null }
             trendMeasurementsNeeded = if (weeklyRateKg == null) (7 - measuredInLast7Weeks).coerceAtLeast(1) else null
 
@@ -239,8 +245,14 @@ class EqualizerViewModel @Inject constructor(
             }
 
             trendLine = computeTrendLine(days)
-            val last7Days = days.takeLast(7)
-            weeklyRateKg = computeWeeklyRate(last7Days)
+            val lastMeasuredDayIdx = days.indexOfLast { it.weightKg != null }
+            val firstMeasuredDayIdx = days.indexOfFirst { it.weightKg != null }
+            val hasRecentDay = lastMeasuredDayIdx >= days.size - 7
+            val daySpan = if (firstMeasuredDayIdx >= 0 && lastMeasuredDayIdx >= 0) lastMeasuredDayIdx - firstMeasuredDayIdx else -1
+            weeklyRateKg = if (hasRecentDay && daySpan >= 6) {
+                computeWeeklyRate(days.subList(firstMeasuredDayIdx, lastMeasuredDayIdx + 1))
+            } else null
+            val last7Days = if (lastMeasuredDayIdx >= 6) days.subList(lastMeasuredDayIdx - 6, lastMeasuredDayIdx + 1) else days.takeLast(7)
             val measuredInLast7 = last7Days.count { it.weightKg != null }
             trendMeasurementsNeeded = if (weeklyRateKg == null) (7 - measuredInLast7).coerceAtLeast(1) else null
 
@@ -331,10 +343,10 @@ private fun computeTrendLine(days: List<EqualizerDayData>, minPoints: Int = 2): 
     return TrendLineData(startKg = startKg, endKg = endKg, diffKg = endKg - startKg)
 }
 
-private fun computeWeeklyRate(last7: List<EqualizerDayData>, indexStepDays: Int = 1): Double? {
-    val filled = fillGaps(last7) ?: return null
+private fun computeWeeklyRate(window: List<EqualizerDayData>, indexStepDays: Int = 1): Double? {
+    val filled = fillGaps(window) ?: return null
     val measured = filled.mapIndexedNotNull { idx, day -> day.weightKg?.let { idx.toDouble() to it } }
-    if (measured.size < 7) return null
+    if (measured.size < 2) return null
     val (slope, _) = linearRegression(measured.map { it.first }, measured.map { it.second }) ?: return null
     return slope * 7.0 / indexStepDays
 }
