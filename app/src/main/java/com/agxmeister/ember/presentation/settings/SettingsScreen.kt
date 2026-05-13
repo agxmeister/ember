@@ -1,6 +1,7 @@
 package com.agxmeister.ember.presentation.settings
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -64,8 +65,9 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     val weighingFrequency by viewModel.weighingFrequency.collectAsStateWithLifecycle()
     val notificationDayOfWeek by viewModel.notificationDayOfWeek.collectAsStateWithLifecycle()
 
+    val darkTheme = isSystemInDarkTheme()
     val accentCloseness by viewModel.accentCloseness.collectAsStateWithLifecycle()
-    val accentColor = closenessColor(accentCloseness)
+    val accentColor = closenessColor(accentCloseness, darkTheme)
     val accentDim = Color.hsl(8f + accentCloseness * 112f, saturation = 0.60f, lightness = 0.15f)
 
     var showTimePicker by remember { mutableStateOf(false) }

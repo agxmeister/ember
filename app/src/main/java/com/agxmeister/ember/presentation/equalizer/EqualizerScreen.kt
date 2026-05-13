@@ -1,6 +1,7 @@
 package com.agxmeister.ember.presentation.equalizer
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -97,10 +98,11 @@ fun EqualizerScreen() {
             "${it.dayOfWeek.name.take(3)} ${it.month.name.take(3)} ${it.dayOfMonth.toString().padStart(2, '0')} ${it.year}"
         }
     } ?: if (state.isWeekly) appString(R.string.trends_readout_week_avg) else appString(R.string.trends_readout_day_avg)
+    val darkTheme = isSystemInDarkTheme()
     val readoutCloseness = readoutWeight?.let { w ->
         (1.0 - abs(w - state.targetKg) / state.tolerance).coerceIn(0.0, 1.0).toFloat()
     } ?: 0f
-    val readoutColor = closenessColor(readoutCloseness)
+    val readoutColor = closenessColor(readoutCloseness, darkTheme)
     val score = state.weeklyAvg?.let { w ->
         val c = (1.0 - abs(w - state.targetKg) / state.tolerance).coerceIn(0.0, 1.0)
         (c * 100).roundToInt()
@@ -155,7 +157,7 @@ fun EqualizerScreen() {
     editState?.let { es ->
         val editCloseness = (1.0 - abs(es.defaultWeightKg - state.targetKg) / state.tolerance)
             .coerceIn(0.0, 1.0).toFloat()
-        val accentColor = closenessColor(editCloseness)
+        val accentColor = closenessColor(editCloseness, darkTheme)
 
         ModalBottomSheet(
             onDismissRequest = viewModel::closeEdit,
@@ -185,6 +187,7 @@ private fun ReadoutBlock(
     isFocused: Boolean,
     onTap: () -> Unit,
 ) {
+    val darkTheme = isSystemInDarkTheme()
     val weightStr = displayWeight?.let { "%.1f".format(weightUnit.fromKg(it)) } ?: "−.−"
     val diffDisplay = weeklyRateKg?.let { weightUnit.scaleDiff(it) }
     val arrow = when {
@@ -198,7 +201,7 @@ private fun ReadoutBlock(
         abs(diffDisplay) > 0.005 -> "%.2f".format(abs(diffDisplay)).let { if (abs(diffDisplay) < 1.0) it.removePrefix("0") else it }
         else -> ".00"
     }
-    val trendColor = trendSpeedColor(weeklyRateKg, goalIsLoss)
+    val trendColor = trendSpeedColor(weeklyRateKg, goalIsLoss, darkTheme)
 
     val onBg = MaterialTheme.colorScheme.onBackground
     val glow = Shadow(color = displayColor.copy(alpha = 0.65f), blurRadius = 22f)
@@ -325,6 +328,7 @@ private fun EqualizerCard(
     val textMeasurer = rememberTextMeasurer()
 
     val tgtPrefix = appString(R.string.trends_tgt_prefix)
+    val darkTheme = isSystemInDarkTheme()
     val cardBg = MaterialTheme.colorScheme.surfaceContainer
     val onCard = MaterialTheme.colorScheme.onSurface
     val dimColor = onCard.copy(alpha = 0.18f)
@@ -384,7 +388,7 @@ private fun EqualizerCard(
                 val c = if (hasData) {
                     (1.0 - abs(day.weightKg!! - targetKg) / tolerance).coerceIn(0.0, 1.0).toFloat()
                 } else 0f
-                val litColor = closenessColor(c)
+                val litColor = closenessColor(c, darkTheme)
 
                 val litCount = if (hasData) {
                     val frac = (day.weightKg!! - yMin) / (yMax - yMin)
@@ -785,6 +789,7 @@ private fun StatsRow(
     weightUnit: WeightUnit,
     isWeekly: Boolean,
 ) {
+    val darkTheme = isSystemInDarkTheme()
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -819,7 +824,7 @@ private fun StatsRow(
         StatPill(modifier = Modifier.weight(1f), label = appString(R.string.stat_delta_target)) {
             val deltaDisplay = weeklyAvg?.let { abs(weightUnit.scaleDiff(it - targetKg)) }
             val deltaColor = weeklyAvg?.let { w ->
-                closenessColor((1.0 - abs(w - targetKg) / tolerance).coerceIn(0.0, 1.0).toFloat())
+                closenessColor((1.0 - abs(w - targetKg) / tolerance).coerceIn(0.0, 1.0).toFloat(), darkTheme)
             } ?: MaterialTheme.colorScheme.onSurface
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
@@ -846,7 +851,7 @@ private fun StatsRow(
         }
 
         StatPill(modifier = Modifier.weight(1f), label = appString(R.string.trends_score)) {
-            val scoreColor = closenessColor((score ?: 0) / 100f)
+            val scoreColor = closenessColor((score ?: 0) / 100f, darkTheme)
             Text(
                 text = score?.toString() ?: "−",
                 style = TextStyle(
