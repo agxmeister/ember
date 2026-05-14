@@ -101,11 +101,13 @@ class EqualizerViewModel @Inject constructor(
                 val targetDate = date.plus(DatePeriod(days = notifDow - 1))
                 val measurements = getMeasurementsForWeek(date).first()
                 val existing = measurements.maxByOrNull { it.timestamp }
+                val tz = TimeZone.currentSystemDefault()
+                val actualDate = existing?.timestamp?.toLocalDateTime(tz)?.date ?: targetDate
                 val defaultWeight = existing?.weightKg
                     ?: getWeeklyData().first().filter { it.weekStart < date }.maxByOrNull { it.weekStart }?.median
                     ?: current.targetKg
                 _editState.value = EqualizerEditState(
-                    date = targetDate,
+                    date = actualDate,
                     existingMeasurement = existing,
                     defaultWeightKg = defaultWeight,
                     defaultHour = notifHour,
