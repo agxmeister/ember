@@ -10,6 +10,7 @@
     <string name="prompt_ready_to_weigh_in">Bereit zum Wiegen?</string>
     <string name="prompt_lets_see_where_you_are">Schauen wir, wo du stehst.</string>
     <string name="prompt_daily_check_in_awaits">Dein tägliches Check-in wartet.</string>
+    <string name="prompt_weekly_check_in_awaits">Dein wöchentliches Check-in wartet.</string>
     <string name="action_check_in">EINCHECKEN</string>
     <string name="action_re_check">NOCHMAL</string>
     <string name="cd_what_is_cluster">Was ist %1$s?</string>

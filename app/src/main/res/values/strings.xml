@@ -11,6 +11,7 @@
     <string name="prompt_ready_to_weigh_in">Ready to weigh in?</string>
     <string name="prompt_lets_see_where_you_are">Let\'s see where you\'re at.</string>
     <string name="prompt_daily_check_in_awaits">Your daily check-in awaits.</string>
+    <string name="prompt_weekly_check_in_awaits">Your weekly check-in awaits.</string>
     <string name="action_check_in">CHECK-IN</string>
     <string name="action_re_check">RE-CHECK</string>
     <string name="cd_what_is_cluster">What is %1$s?</string>

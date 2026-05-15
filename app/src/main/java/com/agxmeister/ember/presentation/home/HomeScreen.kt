@@ -121,7 +121,7 @@ fun HomeScreen(
     val onBg = MaterialTheme.colorScheme.onBackground
 
     val appResources = LocalAppResources.current
-    val prompt = remember(state.language) {
+    val prompt = remember(state.language, state.isWeekly) {
         listOf(
             R.string.prompt_how_much_do_you_weigh,
             R.string.prompt_step_on_scale,
@@ -129,7 +129,7 @@ fun HomeScreen(
             R.string.prompt_whats_the_number,
             R.string.prompt_ready_to_weigh_in,
             R.string.prompt_lets_see_where_you_are,
-            R.string.prompt_daily_check_in_awaits,
+            if (state.isWeekly) R.string.prompt_weekly_check_in_awaits else R.string.prompt_daily_check_in_awaits,
         ).random().let { appResources.getString(it) }
     }
 

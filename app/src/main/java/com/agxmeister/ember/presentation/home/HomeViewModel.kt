@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.agxmeister.ember.domain.model.Cluster
 import com.agxmeister.ember.domain.model.Language
 import com.agxmeister.ember.domain.model.ThemeMode
+import com.agxmeister.ember.domain.model.WeighingFrequency
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.repository.UserPreferencesRepository
 import com.agxmeister.ember.domain.usecase.AddMeasurementUseCase
@@ -29,6 +30,7 @@ data class HomeUiState(
     val todayWeightKg: Double? = null,
     val weightUnit: WeightUnit = WeightUnit.Kg,
     val isRechecking: Boolean = false,
+    val isWeekly: Boolean = false,
     val targetKg: Double = 70.0,
     val tolerance: Double = 10.0,
     val themeMode: ThemeMode = ThemeMode.Auto,
@@ -70,7 +72,8 @@ class HomeViewModel @Inject constructor(
         getDailyCandles(),
         preferencesRepository.themeMode,
         preferencesRepository.language,
-    ) { state, candles, themeMode, language ->
+        preferencesRepository.weighingFrequency,
+    ) { state, candles, themeMode, language, frequency ->
         val previousWeight = if (state.currentCluster?.measurements.isNullOrEmpty()) {
             candles.filter { it.date < today }.maxByOrNull { it.date }?.close
         } else null
@@ -79,6 +82,7 @@ class HomeViewModel @Inject constructor(
             defaultWeightKg = previousWeight ?: state.defaultWeightKg,
             themeMode = themeMode,
             language = language,
+            isWeekly = frequency == WeighingFrequency.Weekly,
         )
     }.stateIn(
         scope = viewModelScope,
