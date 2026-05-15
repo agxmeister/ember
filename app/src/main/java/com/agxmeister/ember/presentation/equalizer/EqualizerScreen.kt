@@ -93,7 +93,14 @@ fun EqualizerScreen() {
     val wkPrefix = appString(R.string.trends_readout_wk_prefix)
     val readoutLabel = state.selectedDate?.let {
         if (state.isWeekly) {
-            "$wkPrefix ${it.month.name.take(3)} ${it.dayOfMonth.toString().padStart(2, '0')} ${it.year}"
+            val weekEnd = it.plus(DatePeriod(days = 6))
+            val startDay = it.dayOfMonth.toString().padStart(2, '0')
+            val endDay = weekEnd.dayOfMonth.toString().padStart(2, '0')
+            if (it.month == weekEnd.month) {
+                "$wkPrefix ${it.month.name.take(3)} $startDay/$endDay ${it.year}"
+            } else {
+                "$wkPrefix ${it.month.name.take(3)} $startDay / ${weekEnd.month.name.take(3)} $endDay ${weekEnd.year}"
+            }
         } else {
             "${it.dayOfWeek.name.take(3)} ${it.month.name.take(3)} ${it.dayOfMonth.toString().padStart(2, '0')} ${it.year}"
         }
