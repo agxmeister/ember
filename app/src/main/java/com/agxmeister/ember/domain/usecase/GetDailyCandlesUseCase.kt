@@ -1,9 +1,11 @@
 package com.agxmeister.ember.domain.usecase
 
+import com.agxmeister.ember.domain.clustering.MeasurementNormalizer
 import com.agxmeister.ember.domain.model.DailyCandle
 import com.agxmeister.ember.domain.repository.MeasurementRepository
+import com.agxmeister.ember.domain.repository.UserPreferencesRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
@@ -12,35 +14,42 @@ import javax.inject.Inject
 
 class GetDailyCandlesUseCase @Inject constructor(
     private val measurementRepository: MeasurementRepository,
+    private val preferencesRepository: UserPreferencesRepository,
 ) {
     operator fun invoke(): Flow<List<DailyCandle>> =
-        measurementRepository.getAll().map { measurements ->
+        combine(
+            measurementRepository.getAll(),
+            preferencesRepository.dayStartHour,
+            preferencesRepository.clusteringEnabled,
+        ) { measurements, dayStartHour, clusteringEnabled ->
+            val tz = TimeZone.currentSystemDefault()
             val byDate = measurements
-                .groupBy { it.timestamp.toLocalDateTime(TimeZone.currentSystemDefault()).date }
+                .groupBy { it.timestamp.toLocalDateTime(tz).date }
                 .toSortedMap()
-
             val dates = byDate.keys.toList()
+
+            if (dates.isEmpty()) return@combine emptyList()
+
+            val normalizer = MeasurementNormalizer.build(measurements, dayStartHour, clusteringEnabled)
 
             dates.mapIndexed { index, date ->
                 val dayMeasurements = byDate[date]!!.sortedBy { it.timestamp }
-                val close = dayMeasurements.last().weightKg
+                val close = normalizer.normalize(normalizer.selectClose(dayMeasurements))
 
-                // open = previous day's close so the body shows the day-over-day change.
-                // For the first day, fall back to today's first measurement.
-                val prevClose = if (index > 0) byDate[dates[index - 1]]!!.maxByOrNull { it.timestamp }!!.weightKg
-                                else dayMeasurements.first().weightKg
-                val open = prevClose
+                val prevMeasurements = if (index > 0) byDate[dates[index - 1]]!!.sortedBy { it.timestamp } else null
+                val open = if (prevMeasurements != null)
+                    normalizer.normalize(normalizer.selectClose(prevMeasurements))
+                else
+                    normalizer.normalize(dayMeasurements.first())
 
-                val high = maxOf(open, close, dayMeasurements.maxOf { it.weightKg })
-                val low = minOf(open, close, dayMeasurements.minOf { it.weightKg })
+                val allWeights = dayMeasurements.map { normalizer.normalize(it) }
+                val high = maxOf(open, close, allWeights.max())
+                val low = minOf(open, close, allWeights.min())
 
                 val windowStart = date.minus(DatePeriod(days = 6))
                 val windowWeights = measurements
-                    .filter {
-                        val d = it.timestamp.toLocalDateTime(TimeZone.currentSystemDefault()).date
-                        d in windowStart..date
-                    }
-                    .map { it.weightKg }
+                    .filter { it.timestamp.toLocalDateTime(tz).date in windowStart..date }
+                    .map { normalizer.normalize(it) }
                     .sorted()
 
                 DailyCandle(

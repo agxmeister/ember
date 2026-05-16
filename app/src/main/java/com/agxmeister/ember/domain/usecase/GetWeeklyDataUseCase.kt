@@ -1,9 +1,11 @@
 package com.agxmeister.ember.domain.usecase
 
+import com.agxmeister.ember.domain.clustering.MeasurementNormalizer
 import com.agxmeister.ember.domain.model.WeeklyData
 import com.agxmeister.ember.domain.repository.MeasurementRepository
+import com.agxmeister.ember.domain.repository.UserPreferencesRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -13,14 +15,23 @@ import javax.inject.Inject
 
 class GetWeeklyDataUseCase @Inject constructor(
     private val measurementRepository: MeasurementRepository,
+    private val preferencesRepository: UserPreferencesRepository,
 ) {
     operator fun invoke(): Flow<List<WeeklyData>> =
-        measurementRepository.getAll().map { measurements ->
+        combine(
+            measurementRepository.getAll(),
+            preferencesRepository.dayStartHour,
+            preferencesRepository.clusteringEnabled,
+        ) { measurements, dayStartHour, clusteringEnabled ->
+            val normalizer = MeasurementNormalizer.build(measurements, dayStartHour, clusteringEnabled)
             measurements
                 .groupBy { it.timestamp.toLocalDateTime(TimeZone.currentSystemDefault()).date.isoWeekStart() }
                 .toSortedMap()
                 .map { (weekStart, weekMeasurements) ->
-                    WeeklyData(weekStart = weekStart, median = weekMeasurements.map { it.weightKg }.median())
+                    WeeklyData(
+                        weekStart = weekStart,
+                        median = weekMeasurements.map { normalizer.normalize(it) }.median(),
+                    )
                 }
         }
 }
