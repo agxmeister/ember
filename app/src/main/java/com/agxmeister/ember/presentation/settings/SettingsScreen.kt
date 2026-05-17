@@ -17,6 +17,8 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +30,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.ui.graphics.Color
@@ -36,6 +39,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -60,6 +67,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     val weightUnit by viewModel.weightUnit.collectAsStateWithLifecycle()
     val initialWeightKg by viewModel.initialWeightKg.collectAsStateWithLifecycle()
     val goalTargetKg by viewModel.goalTargetKg.collectAsStateWithLifecycle()
+    val goalStartDate by viewModel.effectiveGoalStartDate.collectAsStateWithLifecycle()
     val notificationHour by viewModel.notificationHour.collectAsStateWithLifecycle()
     val notificationMinute by viewModel.notificationMinute.collectAsStateWithLifecycle()
     val weighingFrequency by viewModel.weighingFrequency.collectAsStateWithLifecycle()
@@ -118,6 +126,11 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
         Text(appString(R.string.settings_goal), style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
         val effectiveTargetKg = if (goalTargetKg > 0) goalTargetKg else initialWeightKg
+        val goalStartLabel = goalStartDate.ifEmpty { null }?.let {
+            runCatching {
+                LocalDate.parse(it).format(DateTimeFormatter.ofPattern("d MMM yyyy"))
+            }.getOrNull()
+        } ?: goalStartDate
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -127,6 +140,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             Text(
                 appString(
                     R.string.settings_goal_summary,
+                    goalStartLabel,
                     weightUnit.fromKg(initialWeightKg).toInt(),
                     weightUnit.label,
                     weightUnit.fromKg(effectiveTargetKg).toInt(),
@@ -269,11 +283,23 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
         if (showGoalSheet) {
             var initialText by remember { mutableStateOf(weightUnit.fromKg(initialWeightKg).toInt().toString()) }
             var targetText by remember { mutableStateOf(weightUnit.fromKg(effectiveTargetKg).toInt().toString()) }
+            val savedDate = goalStartDate.ifEmpty { LocalDate.now().toString() }
+            val initialDateMillis = remember(savedDate) {
+                runCatching {
+                    LocalDate.parse(savedDate).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+                }.getOrElse { LocalDate.now().atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli() }
+            }
+            val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialDateMillis)
+            var showDatePicker by remember { mutableStateOf(false) }
             val borderColor = MaterialTheme.colorScheme.outline
             val initialInUnit = initialText.toIntOrNull()
             val targetInUnit = targetText.toIntOrNull()
             val isValid = initialInUnit?.let { it in weightUnit.displayRange } == true &&
                 targetInUnit?.let { it in weightUnit.displayRange } == true
+            val selectedDateLabel = datePickerState.selectedDateMillis?.let {
+                Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate()
+                    .format(DateTimeFormatter.ofPattern("d MMM yyyy"))
+            } ?: savedDate
             ModalBottomSheet(
                 onDismissRequest = { showGoalSheet = false },
                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -290,13 +316,35 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly,
                     ) {
+                        Text(
+                            appString(R.string.settings_initial_weight),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            softWrap = false,
+                        )
+                        Text(
+                            appString(R.string.settings_target_weight),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            softWrap = false,
+                        )
+                        Text(
+                            appString(R.string.settings_goal_start_date),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            softWrap = false,
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                appString(R.string.settings_initial_weight),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
                             BasicTextField(
                                 value = initialText,
                                 onValueChange = { if (it.length <= 3 && it.all { c -> c.isDigit() }) initialText = it },
@@ -308,7 +356,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                                 singleLine = true,
                                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                                 modifier = Modifier
-                                    .width(120.dp)
+                                    .width(80.dp)
                                     .drawBehind {
                                         drawLine(
                                             color = borderColor,
@@ -322,12 +370,6 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                             Text(weightUnit.label, style = MaterialTheme.typography.bodyMedium)
                         }
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                appString(R.string.settings_target_weight),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
                             BasicTextField(
                                 value = targetText,
                                 onValueChange = { if (it.length <= 3 && it.all { c -> c.isDigit() }) targetText = it },
@@ -339,7 +381,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                                 singleLine = true,
                                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                                 modifier = Modifier
-                                    .width(120.dp)
+                                    .width(80.dp)
                                     .drawBehind {
                                         drawLine(
                                             color = borderColor,
@@ -352,19 +394,51 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(weightUnit.label, style = MaterialTheme.typography.bodyMedium)
                         }
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.clickable { showDatePicker = true },
+                        ) {
+                            Text(
+                                selectedDateLabel,
+                                style = MaterialTheme.typography.titleLarge,
+                                textAlign = TextAlign.Center,
+                            )
+                            Text(
+                                appString(R.string.label_tap_to_adjust),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.height(32.dp))
                     Button(
                         onClick = {
+                            val isoDate = datePickerState.selectedDateMillis?.let {
+                                Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate().toString()
+                            } ?: savedDate
                             viewModel.onGoalChanged(
                                 weightUnit.toKg(initialInUnit!!.toDouble()),
                                 weightUnit.toKg(targetInUnit!!.toDouble()),
+                                isoDate,
                             )
                             showGoalSheet = false
                         },
                         enabled = isValid,
                         modifier = Modifier.fillMaxWidth(),
                     ) { Text(appString(R.string.label_save)) }
+                }
+            }
+            if (showDatePicker) {
+                DatePickerDialog(
+                    onDismissRequest = { showDatePicker = false },
+                    confirmButton = {
+                        TextButton(onClick = { showDatePicker = false }) { Text(appString(R.string.label_ok)) }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDatePicker = false }) { Text(appString(R.string.label_cancel)) }
+                    },
+                ) {
+                    DatePicker(state = datePickerState)
                 }
             }
         }

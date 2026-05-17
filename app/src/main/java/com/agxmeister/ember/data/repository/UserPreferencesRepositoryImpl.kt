@@ -26,12 +26,14 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     override val weighingFrequency: Flow<WeighingFrequency> = dataStore.weighingFrequency
     override val notificationDayOfWeek: Flow<Int> = dataStore.notificationDayOfWeek
     override val goalTargetKg: Flow<Double> = dataStore.goalTargetKg
+    override val goalStartDate: Flow<String> = dataStore.goalStartDate
     override val themeMode: Flow<ThemeMode> = dataStore.themeMode
     override val language: Flow<Language> = dataStore.language
 
     override suspend fun saveOnboardingData(
         weightKg: Double,
         goalTargetKg: Double,
+        goalStartDate: String,
         dayStartHour: Int,
         dayStartMinute: Int,
         notificationHour: Int,
@@ -43,7 +45,7 @@ class UserPreferencesRepositoryImpl @Inject constructor(
         notificationDayOfWeek: Int,
     ) {
         dataStore.saveOnboardingData(
-            weightKg, goalTargetKg, dayStartHour, dayStartMinute,
+            weightKg, goalTargetKg, goalStartDate, dayStartHour, dayStartMinute,
             notificationHour, notificationMinute,
             clusteringEnabled, weightGoal, weightUnit,
             weighingFrequency, notificationDayOfWeek,
@@ -92,5 +94,9 @@ class UserPreferencesRepositoryImpl @Inject constructor(
 
     override suspend fun setLanguage(language: Language) {
         dataStore.setLanguage(language)
+    }
+
+    override suspend fun setGoalStartDate(date: String) {
+        dataStore.setGoalStartDate(date)
     }
 }

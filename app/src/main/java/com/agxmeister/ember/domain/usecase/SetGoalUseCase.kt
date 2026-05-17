@@ -7,10 +7,11 @@ import javax.inject.Inject
 class SetGoalUseCase @Inject constructor(
     private val preferencesRepository: UserPreferencesRepository,
 ) {
-    suspend operator fun invoke(initialWeightKg: Double, targetKg: Double) {
+    suspend operator fun invoke(initialWeightKg: Double, targetKg: Double, startDate: String) {
         val derivedGoal = if (targetKg < initialWeightKg) WeightGoal.Decrease else WeightGoal.Increase
         preferencesRepository.setInitialWeightKg(initialWeightKg)
         preferencesRepository.setGoalTargetKg(targetKg)
         preferencesRepository.setWeightGoal(derivedGoal)
+        preferencesRepository.setGoalStartDate(startDate)
     }
 }

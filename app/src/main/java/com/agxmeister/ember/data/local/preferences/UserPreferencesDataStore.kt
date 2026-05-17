@@ -41,6 +41,7 @@ class UserPreferencesDataStore @Inject constructor(
     private val notificationDayOfWeekKey = intPreferencesKey("notification_day_of_week")
     private val themeModeKey = stringPreferencesKey("theme_mode")
     private val languageKey = stringPreferencesKey("language")
+    private val goalStartDateKey = stringPreferencesKey("goal_start_date")
 
     val isOnboardingCompleted: Flow<Boolean> =
         context.dataStore.data.map { it[onboardingCompletedKey] ?: false }
@@ -112,9 +113,13 @@ class UserPreferencesDataStore @Inject constructor(
         }
     }
 
+    val goalStartDate: Flow<String> =
+        context.dataStore.data.map { it[goalStartDateKey] ?: "" }
+
     suspend fun saveOnboardingData(
         weightKg: Double,
         goalTargetKg: Double,
+        goalStartDate: String,
         dayStartHour: Int,
         dayStartMinute: Int,
         notificationHour: Int,
@@ -128,6 +133,7 @@ class UserPreferencesDataStore @Inject constructor(
         context.dataStore.edit { prefs ->
             prefs[initialWeightKey] = weightKg
             prefs[goalTargetKgKey] = goalTargetKg
+            prefs[goalStartDateKey] = goalStartDate
             prefs[dayStartHourKey] = dayStartHour
             prefs[dayStartMinuteKey] = dayStartMinute
             prefs[notificationHourKey] = notificationHour
@@ -205,6 +211,12 @@ class UserPreferencesDataStore @Inject constructor(
     suspend fun setLanguage(language: Language) {
         context.dataStore.edit { prefs ->
             prefs[languageKey] = language.name
+        }
+    }
+
+    suspend fun setGoalStartDate(date: String) {
+        context.dataStore.edit { prefs ->
+            prefs[goalStartDateKey] = date
         }
     }
 }

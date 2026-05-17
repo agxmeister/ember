@@ -5,6 +5,7 @@ import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.model.WeighingFrequency
 import com.agxmeister.ember.domain.repository.UserPreferencesRepository
 import com.agxmeister.ember.notification.ReminderScheduler
+import java.time.LocalDate
 import javax.inject.Inject
 
 class CompleteOnboardingUseCase @Inject constructor(
@@ -31,7 +32,8 @@ class CompleteOnboardingUseCase @Inject constructor(
             notificationHour to notificationMinute
         }
         preferencesRepository.saveOnboardingData(
-            weightKg, goalTargetKg, dayStartHour, dayStartMinute,
+            weightKg, goalTargetKg, LocalDate.now().toString(),
+            dayStartHour, dayStartMinute,
             finalHour, finalMinute,
             clusteringEnabled, derivedGoal, weightUnit,
             weighingFrequency, notificationDayOfWeek,

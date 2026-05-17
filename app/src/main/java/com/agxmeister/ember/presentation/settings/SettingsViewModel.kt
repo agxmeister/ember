@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.agxmeister.ember.domain.model.Cluster
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.model.WeighingFrequency
+import com.agxmeister.ember.domain.repository.MeasurementRepository
 import com.agxmeister.ember.domain.repository.UserPreferencesRepository
 import com.agxmeister.ember.domain.usecase.GetClusterTrendsUseCase
 import com.agxmeister.ember.domain.usecase.SetClusteringEnabledUseCase
@@ -22,6 +23,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.ZoneOffset
 import javax.inject.Inject
 import kotlin.math.abs
 
@@ -29,6 +32,7 @@ import kotlin.math.abs
 class SettingsViewModel @Inject constructor(
     getClusterTrends: GetClusterTrendsUseCase,
     preferencesRepository: UserPreferencesRepository,
+    measurementRepository: MeasurementRepository,
     private val setClusteringEnabled: SetClusteringEnabledUseCase,
     private val setGoalTarget: SetGoalTargetUseCase,
     private val setGoal: SetGoalUseCase,
@@ -110,6 +114,20 @@ class SettingsViewModel @Inject constructor(
             initialValue = 0.0,
         )
 
+    val effectiveGoalStartDate: StateFlow<String> = combine(
+        preferencesRepository.goalStartDate,
+        measurementRepository.getAll(),
+    ) { savedDate, measurements ->
+        if (savedDate.isNotEmpty()) savedDate
+        else measurements.minByOrNull { it.timestamp }?.let {
+            Instant.ofEpochMilli(it.timestamp.toEpochMilliseconds()).atZone(ZoneOffset.UTC).toLocalDate().toString()
+        } ?: ""
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = "",
+    )
+
     val accentCloseness: StateFlow<Float> = combine(clusters, initialWeightKg, goalTargetKg) { c, initialKg, targetKg ->
         val lastWeight = c.flatMap { it.measurements }.maxByOrNull { it.timestamp }?.weightKg
         if (lastWeight != null && targetKg > 0) {
@@ -150,7 +168,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch { setGoalTarget(targetKg) }
     }
 
-    fun onGoalChanged(initialWeightKg: Double, targetKg: Double) {
-        viewModelScope.launch { setGoal(initialWeightKg, targetKg) }
+    fun onGoalChanged(initialWeightKg: Double, targetKg: Double, startDate: String) {
+        viewModelScope.launch { setGoal(initialWeightKg, targetKg, startDate) }
     }
 }

@@ -44,7 +44,7 @@
     <string name="settings_title">Settings</string>
     <string name="settings_unit">Unit</string>
     <string name="settings_goal">Goal</string>
-    <string name="settings_goal_summary">Started at %1$d %2$s, target is %3$d %4$s</string>
+    <string name="settings_goal_summary">Started on %1$s at %2$d %3$s, target is %4$d %5$s</string>
     <string name="settings_tracking_mode">Tracking mode</string>
     <string name="settings_weighing_frequency">Weighing frequency</string>
     <string name="settings_reminder">Reminder</string>
@@ -53,6 +53,7 @@
     <string name="settings_adjust_goal">Adjust goal</string>
     <string name="settings_initial_weight">Initial weight</string>
     <string name="settings_target_weight">Target weight</string>
+    <string name="settings_goal_start_date">Goal start date</string>
 
     <!-- Onboarding -->
     <string name="onboarding_welcome">Welcome to Ember</string>

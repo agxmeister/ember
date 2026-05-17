@@ -40,7 +40,7 @@
     <string name="settings_title">Einstellungen</string>
     <string name="settings_unit">Einheit</string>
     <string name="settings_goal">Ziel</string>
-    <string name="settings_goal_summary">Startgewicht %1$d %2$s, Zielgewicht %3$d %4$s</string>
+    <string name="settings_goal_summary">Gestartet am %1$s mit %2$d %3$s, Ziel %4$d %5$s</string>
     <string name="settings_tracking_mode">Tracking-Modus</string>
     <string name="settings_weighing_frequency">Wiege-Häufigkeit</string>
     <string name="settings_reminder">Erinnerung</string>
@@ -49,6 +49,7 @@
     <string name="settings_adjust_goal">Ziel anpassen</string>
     <string name="settings_initial_weight">Startgewicht</string>
     <string name="settings_target_weight">Zielgewicht</string>
+    <string name="settings_goal_start_date">Startdatum</string>
 
     <string name="onboarding_welcome">Willkommen bei Ember</string>
     <string name="onboarding_current_weight_question">Wie viel wiegst du ungefähr?</string>
