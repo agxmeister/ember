@@ -56,6 +56,8 @@ data class EqualizerUiState(
     val weeklyRateKg: Double?,
     val goalIsLoss: Boolean,
     val trendMeasurementsNeeded: Int?,
+    val canScrollLeft: Boolean,
+    val canScrollRight: Boolean,
 )
 
 data class EqualizerEditState(
@@ -84,9 +86,15 @@ class EqualizerViewModel @Inject constructor(
     private val _selectedDate = MutableStateFlow<LocalDate?>(null)
     private val _editState = MutableStateFlow<EqualizerEditState?>(null)
     val editState: StateFlow<EqualizerEditState?> = _editState.asStateFlow()
+    private val _windowOffset = MutableStateFlow(0)
 
     fun toggleDay(date: LocalDate) {
         _selectedDate.value = if (_selectedDate.value == date) null else date
+    }
+
+    fun shiftWindow(delta: Int) {
+        _selectedDate.value = null
+        _windowOffset.value = (_windowOffset.value + delta).coerceAtLeast(0)
     }
 
     fun openEdit(date: LocalDate) {
@@ -170,9 +178,13 @@ class EqualizerViewModel @Inject constructor(
             preferencesRepository.initialWeightKg,
             preferencesRepository.weightUnit,
         ) { target, initial, unit -> Triple(target, initial, unit) },
-        preferencesRepository.weighingFrequency,
+        combine(
+            preferencesRepository.weighingFrequency,
+            preferencesRepository.goalStartDate,
+            _windowOffset,
+        ) { freq, gsd, offset -> Triple(freq, gsd, offset) },
         combine(getDailyCandles(), getWeeklyData(), _selectedDate) { c, w, s -> Triple(c, w, s) },
-    ) { (targetKg, initialWeightKg, weightUnit), frequency, (allCandles, allWeekly, selectedDate) ->
+    ) { (targetKg, initialWeightKg, weightUnit), (frequency, goalStartDateStr, rawOffset), (allCandles, allWeekly, selectedDate) ->
         val tolerance = abs(initialWeightKg - targetKg).coerceAtLeast(0.1)
         val isWeekly = frequency == WeighingFrequency.Weekly
 
@@ -185,13 +197,25 @@ class EqualizerViewModel @Inject constructor(
         val trendLine: TrendLineData?
         val weeklyRateKg: Double?
         val trendMeasurementsNeeded: Int?
+        val canScrollLeft: Boolean
+        val canScrollRight: Boolean
+
+        val goalDate = goalStartDateStr.takeIf { it.isNotEmpty() }?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
 
         if (isWeekly) {
             val currentWeekStart = todayDate.isoWeekStart()
             today = currentWeekStart
 
+            val goalWeekStart = goalDate?.isoWeekStart()
+            val currentEpochWeeks = currentWeekStart.toEpochDays() / 7
+            val goalEpochWeeks = goalWeekStart?.toEpochDays()?.div(7) ?: (currentEpochWeeks - 13)
+            val maxOffset = (currentEpochWeeks - goalEpochWeeks - 13).toInt().coerceAtLeast(0)
+            val effectiveOffset = rawOffset.coerceIn(0, maxOffset)
+            canScrollLeft = effectiveOffset < maxOffset
+            canScrollRight = effectiveOffset > 0
+
             val weeklyMap = allWeekly.associateBy { it.weekStart }
-            val windowStart = currentWeekStart.minus(DatePeriod(days = 13 * 7))
+            val windowStart = currentWeekStart.minus(DatePeriod(days = (13 + effectiveOffset) * 7))
             days = (0..13).map { offset ->
                 val weekStart = windowStart.plus(DatePeriod(days = offset * 7))
                 EqualizerDayData(date = weekStart, weightKg = weeklyMap[weekStart]?.median)
@@ -239,8 +263,15 @@ class EqualizerViewModel @Inject constructor(
         } else {
             today = todayDate
 
+            val todayEpochDays = todayDate.toEpochDays()
+            val goalEpochDays = goalDate?.toEpochDays() ?: (todayEpochDays - 13)
+            val maxOffset = (todayEpochDays - goalEpochDays - 13).toInt().coerceAtLeast(0)
+            val effectiveOffset = rawOffset.coerceIn(0, maxOffset)
+            canScrollLeft = effectiveOffset < maxOffset
+            canScrollRight = effectiveOffset > 0
+
             val candleMap = allCandles.associateBy { it.date }
-            val windowStart = todayDate.minus(DatePeriod(days = 13))
+            val windowStart = todayDate.minus(DatePeriod(days = 13 + effectiveOffset))
             days = (0..13).map { offset ->
                 val date = windowStart.plus(DatePeriod(days = offset))
                 EqualizerDayData(date = date, weightKg = candleMap[date]?.close)
@@ -308,6 +339,8 @@ class EqualizerViewModel @Inject constructor(
             weeklyRateKg = weeklyRateKg,
             goalIsLoss = initialWeightKg > targetKg,
             trendMeasurementsNeeded = trendMeasurementsNeeded,
+            canScrollLeft = canScrollLeft,
+            canScrollRight = canScrollRight,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -328,6 +361,8 @@ class EqualizerViewModel @Inject constructor(
             weeklyRateKg = null,
             goalIsLoss = true,
             trendMeasurementsNeeded = null,
+            canScrollLeft = false,
+            canScrollRight = false,
         ),
     )
 }

@@ -4,8 +4,10 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -19,6 +21,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -145,7 +149,11 @@ fun EqualizerScreen() {
             selectedDate = state.selectedDate,
             isWeekly = state.isWeekly,
             trendLine = state.trendLine,
+            canScrollLeft = state.canScrollLeft,
+            canScrollRight = state.canScrollRight,
             onDayToggle = viewModel::toggleDay,
+            onSwipeLeft = { viewModel.shiftWindow(1) },
+            onSwipeRight = { viewModel.shiftWindow(-1) },
         )
         Spacer(modifier = Modifier.height(6.dp))
         ContextStrip(state.selectedDate, state.isWeekly)
@@ -320,7 +328,11 @@ private fun EqualizerCard(
     selectedDate: LocalDate?,
     isWeekly: Boolean,
     trendLine: TrendLineData?,
+    canScrollLeft: Boolean,
+    canScrollRight: Boolean,
     onDayToggle: (LocalDate) -> Unit,
+    onSwipeLeft: () -> Unit,
+    onSwipeRight: () -> Unit,
 ) {
     val weights = days.mapNotNull { it.weightKg }
     val allValues = if (weights.isEmpty()) listOf(targetKg - 2.0, targetKg + 2.0) else weights + targetKg
@@ -340,22 +352,46 @@ private fun EqualizerCard(
     val onCard = MaterialTheme.colorScheme.onSurface
     val dimColor = onCard.copy(alpha = 0.18f)
 
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = cardBg),
-        shape = RoundedCornerShape(12.dp),
-    ) {
+    val onSurfaceArrow = MaterialTheme.colorScheme.onSurface
+
+    Box(modifier = modifier) {
+        Card(
+            modifier = Modifier.fillMaxSize(),
+            colors = CardDefaults.cardColors(containerColor = cardBg),
+            shape = RoundedCornerShape(12.dp),
+        ) {
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
-                .pointerInput(days) {
-                    detectTapGestures { offset ->
-                        val leftPad = with(density) { 8.dp.toPx() }
-                        val rightPad = with(density) { 8.dp.toPx() }
-                        val innerWidth = size.width.toFloat() - leftPad - rightPad
-                        val colWidth = innerWidth / 14f
-                        val colIdx = ((offset.x - leftPad) / colWidth).toInt()
-                        if (colIdx in 0..13) onDayToggle(days[colIdx].date)
+                .pointerInput(days, canScrollLeft, canScrollRight) {
+                    awaitEachGesture {
+                        val down = awaitFirstDown(requireUnconsumed = false)
+                        val startX = down.position.x
+                        val startY = down.position.y
+                        var swiped = false
+                        while (true) {
+                            val event = awaitPointerEvent()
+                            val change = event.changes.firstOrNull() ?: break
+                            if (!change.pressed) {
+                                if (!swiped) {
+                                    val leftPad = 8.dp.toPx()
+                                    val innerWidth = size.width.toFloat() - leftPad * 2
+                                    val colWidth = innerWidth / 14f
+                                    val colIdx = ((startX - leftPad) / colWidth).toInt()
+                                    if (colIdx in 0..13) onDayToggle(days[colIdx].date)
+                                }
+                                break
+                            }
+                            val dx = change.position.x - startX
+                            val dy = change.position.y - startY
+                            if (!swiped && abs(dx) > 20.dp.toPx() && abs(dx) > abs(dy)) {
+                                swiped = true
+                                if (dx > 0 && canScrollLeft) onSwipeLeft()
+                                else if (dx < 0 && canScrollRight) onSwipeRight()
+                                change.consume()
+                                break
+                            }
+                        }
                     }
                 },
         ) {
@@ -498,7 +534,31 @@ private fun EqualizerCard(
                 )
             }
         }
-    }
+        }  // Card
+
+        if (canScrollLeft) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
+                contentDescription = null,
+                tint = onSurfaceArrow.copy(alpha = 0.55f),
+                modifier = Modifier
+                    .size(28.dp)
+                    .align(Alignment.CenterStart)
+                    .padding(start = 2.dp),
+            )
+        }
+        if (canScrollRight) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                contentDescription = null,
+                tint = onSurfaceArrow.copy(alpha = 0.55f),
+                modifier = Modifier
+                    .size(28.dp)
+                    .align(Alignment.CenterEnd)
+                    .padding(end = 2.dp),
+            )
+        }
+    }  // Box
 }
 
 @Composable
