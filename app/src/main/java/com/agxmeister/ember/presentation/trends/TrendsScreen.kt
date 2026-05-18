@@ -4,6 +4,6 @@ import androidx.compose.runtime.Composable
 import com.agxmeister.ember.presentation.equalizer.EqualizerScreen
 
 @Composable
-fun TrendsScreen(onNavigateToHome: () -> Unit = {}) {
-    EqualizerScreen()
+fun TrendsScreen(animateEntry: Boolean = false, onNavigateToHome: () -> Unit = {}) {
+    EqualizerScreen(animateEntry = animateEntry)
 }

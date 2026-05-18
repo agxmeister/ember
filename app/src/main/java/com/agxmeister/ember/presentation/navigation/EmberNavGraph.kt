@@ -15,6 +15,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.agxmeister.ember.presentation.appString
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -38,6 +40,9 @@ sealed class Screen(val route: String, @StringRes val labelRes: Int, val icon: I
     data object Trends : Screen("trends", R.string.nav_trends, Icons.Default.ShowChart)
     data object Settings : Screen("settings", R.string.nav_settings, Icons.Default.Settings)
 }
+
+private const val TRENDS_ROUTE_PATTERN = "trends?animateEntry={animateEntry}"
+private fun trendsRoute(animateEntry: Boolean = false) = "trends?animateEntry=$animateEntry"
 
 private val screens = listOf(Screen.Home, Screen.Trends, Screen.Settings)
 
@@ -64,9 +69,13 @@ fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
                         NavigationBarItem(
                             icon = { Icon(screen.icon, contentDescription = label) },
                             label = { Text(label) },
-                            selected = navBackStackEntry?.destination?.hierarchy?.any { it.route == screen.route } == true,
+                            selected = navBackStackEntry?.destination?.hierarchy?.any {
+                                val effectiveRoute = if (screen == Screen.Trends) TRENDS_ROUTE_PATTERN else screen.route
+                                it.route == effectiveRoute
+                            } == true,
                             onClick = {
-                                navController.navigate(screen.route) {
+                                val route = if (screen == Screen.Trends) trendsRoute() else screen.route
+                                navController.navigate(route) {
                                     popUpTo(navController.graph.findStartDestination().id) {
                                         saveState = true
                                     }
@@ -84,7 +93,7 @@ fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
             navController = navController,
             startDestination = when {
                 onboardingCompleted != true -> ROUTE_ONBOARDING
-                hasCheckedIn == true -> Screen.Trends.route
+                hasCheckedIn == true -> trendsRoute()
                 else -> Screen.Home.route
             },
             modifier = Modifier.padding(innerPadding),
@@ -100,25 +109,35 @@ fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
             }
             composable(Screen.Home.route) {
                 HomeScreen(onNavigateToTrends = {
-                    navController.navigate(Screen.Trends.route) {
+                    navController.navigate(trendsRoute(animateEntry = true)) {
                         popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
+                            saveState = false
                         }
-                        launchSingleTop = true
-                        restoreState = true
+                        launchSingleTop = false
+                        restoreState = false
                     }
                 })
             }
-            composable(Screen.Trends.route) {
-                TrendsScreen(onNavigateToHome = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
+            composable(
+                route = TRENDS_ROUTE_PATTERN,
+                arguments = listOf(navArgument("animateEntry") {
+                    type = NavType.BoolType
+                    defaultValue = false
+                }),
+            ) { backStackEntry ->
+                val animateEntry = backStackEntry.arguments?.getBoolean("animateEntry") == true
+                TrendsScreen(
+                    animateEntry = animateEntry,
+                    onNavigateToHome = {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
                         }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                })
+                    },
+                )
             }
             composable(Screen.Settings.route) { SettingsScreen() }
         }

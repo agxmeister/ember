@@ -35,7 +35,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -83,12 +87,22 @@ import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EqualizerScreen() {
+fun EqualizerScreen(animateEntry: Boolean = false) {
     val viewModel: EqualizerViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val editState by viewModel.editState.collectAsStateWithLifecycle()
 
     if (state.days.isEmpty()) return
+
+    val todayColumnProgress = remember { Animatable(if (animateEntry) 0f else 1f) }
+    LaunchedEffect(Unit) {
+        if (animateEntry) {
+            todayColumnProgress.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(durationMillis = 700, easing = FastOutSlowInEasing),
+            )
+        }
+    }
 
     val isFocused = state.selectedDate != null
     val displayDate = state.selectedDate ?: state.today
@@ -151,6 +165,7 @@ fun EqualizerScreen() {
             trendLine = state.trendLine,
             canScrollLeft = state.canScrollLeft,
             canScrollRight = state.canScrollRight,
+            todayColumnProgress = todayColumnProgress.value,
             onDayToggle = viewModel::toggleDay,
             onSwipeLeft = { viewModel.shiftWindow(1) },
             onSwipeRight = { viewModel.shiftWindow(-1) },
@@ -330,6 +345,7 @@ private fun EqualizerCard(
     trendLine: TrendLineData?,
     canScrollLeft: Boolean,
     canScrollRight: Boolean,
+    todayColumnProgress: Float = 1f,
     onDayToggle: (LocalDate) -> Unit,
     onSwipeLeft: () -> Unit,
     onSwipeRight: () -> Unit,
@@ -435,7 +451,8 @@ private fun EqualizerCard(
 
                 val litCount = if (hasData) {
                     val frac = (day.weightKg!! - yMin) / (yMax - yMin)
-                    (frac * 32).roundToInt().coerceIn(1, 32)
+                    val full = (frac * 32).roundToInt().coerceIn(1, 32)
+                    if (isToday) (full * todayColumnProgress).roundToInt().coerceIn(0, full) else full
                 } else 0
 
                 if (isSelected && !isToday) {
