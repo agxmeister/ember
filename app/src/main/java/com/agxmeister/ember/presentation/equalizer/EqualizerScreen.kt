@@ -43,6 +43,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,7 +53,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -71,6 +74,7 @@ import com.agxmeister.ember.presentation.common.IntWheelPicker
 import com.agxmeister.ember.presentation.home.WeightWheelPicker
 import com.agxmeister.ember.presentation.theme.closenessColor
 import com.agxmeister.ember.presentation.theme.trendSpeedColor
+import kotlinx.coroutines.launch
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
@@ -167,8 +171,7 @@ fun EqualizerScreen(animateEntry: Boolean = false) {
             canScrollRight = state.canScrollRight,
             todayColumnProgress = todayColumnProgress.value,
             onDayToggle = viewModel::toggleDay,
-            onSwipeLeft = { viewModel.shiftWindow(1) },
-            onSwipeRight = { viewModel.shiftWindow(-1) },
+            onScroll = { viewModel.shiftWindow(it) },
         )
         Spacer(modifier = Modifier.height(6.dp))
         ContextStrip(state.selectedDate, state.isWeekly)
@@ -347,8 +350,7 @@ private fun EqualizerCard(
     canScrollRight: Boolean,
     todayColumnProgress: Float = 1f,
     onDayToggle: (LocalDate) -> Unit,
-    onSwipeLeft: () -> Unit,
-    onSwipeRight: () -> Unit,
+    onScroll: (Int) -> Unit,
 ) {
     val weights = days.mapNotNull { it.weightKg }
     val allValues = if (weights.isEmpty()) listOf(targetKg - 2.0, targetKg + 2.0) else weights + targetKg
@@ -361,6 +363,8 @@ private fun EqualizerCard(
 
     val density = LocalDensity.current
     val textMeasurer = rememberTextMeasurer()
+    val coroutineScope = rememberCoroutineScope()
+    val animatedOffset = remember { Animatable(0f) }
 
     val tgtPrefix = appString(R.string.trends_tgt_prefix)
     val darkTheme = isSystemInDarkTheme()
@@ -382,35 +386,57 @@ private fun EqualizerCard(
                 .pointerInput(days, canScrollLeft, canScrollRight) {
                     awaitEachGesture {
                         val down = awaitFirstDown(requireUnconsumed = false)
+                        val velocityTracker = VelocityTracker()
+                        velocityTracker.addPosition(down.uptimeMillis, down.position)
                         val startX = down.position.x
                         val startY = down.position.y
-                        var swiped = false
+                        var isHorizontal = false
+                        var isVertical = false
                         while (true) {
                             val event = awaitPointerEvent()
                             val change = event.changes.firstOrNull() ?: break
+                            velocityTracker.addPosition(change.uptimeMillis, change.position)
+                            val dx = change.position.x - startX
+                            val dy = change.position.y - startY
+                            if (!isHorizontal && !isVertical && (abs(dx) > 8.dp.toPx() || abs(dy) > 8.dp.toPx())) {
+                                if (abs(dx) > abs(dy)) isHorizontal = true else isVertical = true
+                            }
+                            if (isHorizontal) change.consume()
                             if (!change.pressed) {
-                                if (!swiped) {
+                                if (!isHorizontal && !isVertical) {
                                     val leftPad = 8.dp.toPx()
                                     val innerWidth = size.width.toFloat() - leftPad * 2
                                     val colWidth = innerWidth / 14f
                                     val colIdx = ((startX - leftPad) / colWidth).toInt()
                                     if (colIdx in 0..13) onDayToggle(days[colIdx].date)
+                                } else if (isHorizontal) {
+                                    val velocity = velocityTracker.calculateVelocity()
+                                    val colWidth = (size.width - 16.dp.toPx()) / 14f
+                                    val rawDelta = (abs(velocity.x) / colWidth * 0.4f).roundToInt().coerceIn(1, 10)
+                                    val totalDx = change.position.x - startX
+                                    if (totalDx > 0 && canScrollLeft) {
+                                        // swipe right → older data (slides in from the left)
+                                        onScroll(rawDelta)
+                                        coroutineScope.launch {
+                                            animatedOffset.snapTo(-rawDelta * colWidth)
+                                            animatedOffset.animateTo(0f, animationSpec = tween(280, easing = FastOutSlowInEasing))
+                                        }
+                                    } else if (totalDx < 0 && canScrollRight) {
+                                        // swipe left → newer data (slides in from the right)
+                                        onScroll(-rawDelta)
+                                        coroutineScope.launch {
+                                            animatedOffset.snapTo(rawDelta * colWidth)
+                                            animatedOffset.animateTo(0f, animationSpec = tween(280, easing = FastOutSlowInEasing))
+                                        }
+                                    }
                                 }
-                                break
-                            }
-                            val dx = change.position.x - startX
-                            val dy = change.position.y - startY
-                            if (!swiped && abs(dx) > 20.dp.toPx() && abs(dx) > abs(dy)) {
-                                swiped = true
-                                if (dx > 0 && canScrollLeft) onSwipeLeft()
-                                else if (dx < 0 && canScrollRight) onSwipeRight()
-                                change.consume()
                                 break
                             }
                         }
                     }
                 },
         ) {
+            translate(left = animatedOffset.value) {
             val leftPad = 8.dp.toPx()
             val rightPad = 8.dp.toPx()
             val topPad = 20.dp.toPx()
@@ -550,6 +576,7 @@ private fun EqualizerCard(
                     pathEffect = PathEffect.dashPathEffect(floatArrayOf(5.dp.toPx(), 4.dp.toPx())),
                 )
             }
+            }  // translate
         }
         }  // Card
 
