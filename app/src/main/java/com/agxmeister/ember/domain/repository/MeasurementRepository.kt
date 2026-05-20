@@ -10,4 +10,5 @@ interface MeasurementRepository {
     suspend fun update(measurement: Measurement)
     suspend fun delete(id: Long)
     suspend fun getSince(fromMs: Long): List<Measurement>
+    suspend fun deleteAll()
 }

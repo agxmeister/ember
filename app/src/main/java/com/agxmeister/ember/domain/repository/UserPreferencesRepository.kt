@@ -50,4 +50,5 @@ interface UserPreferencesRepository {
     suspend fun setThemeMode(mode: ThemeMode)
     suspend fun setLanguage(language: Language)
     suspend fun setGoalStartDate(date: String)
+    suspend fun resetOnboarding()
 }

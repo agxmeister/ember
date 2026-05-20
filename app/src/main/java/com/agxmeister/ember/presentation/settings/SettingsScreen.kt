@@ -80,6 +80,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
 
     var showTimePicker by remember { mutableStateOf(false) }
     var showGoalSheet by remember { mutableStateOf(false) }
+    var showResetDialog by remember { mutableStateOf(false) }
 
     val dayLabels = listOf(
         appString(R.string.day_mon),
@@ -154,6 +155,15 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            appString(R.string.settings_start_over),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.error,
+            modifier = Modifier
+                .clickable { showResetDialog = true }
+                .padding(vertical = 4.dp),
+        )
         Spacer(modifier = Modifier.height(24.dp))
         HorizontalDivider()
         Spacer(modifier = Modifier.height(24.dp))
@@ -257,6 +267,23 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+        }
+
+        if (showResetDialog) {
+            AlertDialog(
+                onDismissRequest = { showResetDialog = false },
+                title = { Text(appString(R.string.settings_start_over_confirm_title)) },
+                text = { Text(appString(R.string.settings_start_over_confirm_message)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        viewModel.onResetData()
+                        showResetDialog = false
+                    }) { Text(appString(R.string.label_confirm)) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showResetDialog = false }) { Text(appString(R.string.label_cancel)) }
+                },
+            )
         }
 
         if (showTimePicker) {

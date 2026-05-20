@@ -99,4 +99,8 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     override suspend fun setGoalStartDate(date: String) {
         dataStore.setGoalStartDate(date)
     }
+
+    override suspend fun resetOnboarding() {
+        dataStore.resetOnboarding()
+    }
 }

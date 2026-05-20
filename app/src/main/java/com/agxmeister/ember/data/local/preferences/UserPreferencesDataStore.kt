@@ -219,4 +219,10 @@ class UserPreferencesDataStore @Inject constructor(
             prefs[goalStartDateKey] = date
         }
     }
+
+    suspend fun resetOnboarding() {
+        context.dataStore.edit { prefs ->
+            prefs[onboardingCompletedKey] = false
+        }
+    }
 }

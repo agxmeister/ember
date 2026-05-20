@@ -14,6 +14,7 @@ import com.agxmeister.ember.domain.usecase.SetNotificationTimeUseCase
 import com.agxmeister.ember.domain.usecase.SetNotificationsEnabledUseCase
 import com.agxmeister.ember.domain.usecase.SetGoalTargetUseCase
 import com.agxmeister.ember.domain.usecase.SetGoalUseCase
+import com.agxmeister.ember.domain.usecase.ResetDataUseCase
 import com.agxmeister.ember.domain.usecase.SetWeightUnitUseCase
 import com.agxmeister.ember.domain.usecase.SetWeighingFrequencyUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -41,6 +42,7 @@ class SettingsViewModel @Inject constructor(
     private val setNotificationsEnabled: SetNotificationsEnabledUseCase,
     private val setWeighingFrequency: SetWeighingFrequencyUseCase,
     private val setNotificationDayOfWeek: SetNotificationDayOfWeekUseCase,
+    private val resetData: ResetDataUseCase,
 ) : ViewModel() {
 
     val clusters: StateFlow<List<Cluster>> = getClusterTrends()
@@ -170,5 +172,9 @@ class SettingsViewModel @Inject constructor(
 
     fun onGoalChanged(initialWeightKg: Double, targetKg: Double, startDate: String) {
         viewModelScope.launch { setGoal(initialWeightKg, targetKg, startDate) }
+    }
+
+    fun onResetData() {
+        viewModelScope.launch { resetData() }
     }
 }

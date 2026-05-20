@@ -25,6 +25,7 @@
     <string name="label_save">Save</string>
     <string name="label_ok">OK</string>
     <string name="label_cancel">Cancel</string>
+    <string name="label_confirm">Confirm</string>
     <string name="label_next">Next</string>
     <string name="label_day">Day</string>
     <string name="label_clustering">Time-of-day clustering</string>
@@ -54,6 +55,9 @@
     <string name="settings_initial_weight">Initial weight</string>
     <string name="settings_target_weight">Target weight</string>
     <string name="settings_goal_start_date">Goal start date</string>
+    <string name="settings_start_over">Define a new goal</string>
+    <string name="settings_start_over_confirm_title">Define a new goal?</string>
+    <string name="settings_start_over_confirm_message">All measurements will be deleted and you\'ll go through onboarding to set a new goal. This cannot be undone.</string>
 
     <!-- Onboarding -->
     <string name="onboarding_welcome">Welcome to Ember</string>

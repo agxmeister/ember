@@ -26,4 +26,7 @@ interface MeasurementDao {
 
     @Query("SELECT * FROM measurements WHERE timestamp >= :fromMs ORDER BY timestamp ASC")
     suspend fun getSince(fromMs: Long): List<MeasurementEntity>
+
+    @Query("DELETE FROM measurements")
+    suspend fun deleteAll()
 }
