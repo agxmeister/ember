@@ -445,11 +445,10 @@ private fun ColumnScope.ClusteringStep(
     )
     Spacer(Modifier.weight(1f))
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(modifier = Modifier.weight(1f)) {
+        Column {
             Text(appString(R.string.label_clustering), style = MaterialTheme.typography.bodyLarge)
             Text(
                 if (clusteringEnabled) appString(R.string.label_clustering_on) else appString(R.string.label_clustering_off),
