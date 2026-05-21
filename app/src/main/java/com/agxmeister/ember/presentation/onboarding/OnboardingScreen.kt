@@ -1,5 +1,6 @@
 package com.agxmeister.ember.presentation.onboarding
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -70,6 +72,8 @@ fun OnboardingScreen(
             .padding(horizontal = 32.dp, vertical = 48.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        StepProgressBar(totalSteps = 5, currentStep = state.step)
+        Spacer(Modifier.height(32.dp))
         when (state.step) {
             0 -> WeightStep(
                 weightKg = state.weightKg,
@@ -465,6 +469,26 @@ private fun ColumnScope.ClusteringStep(
     Spacer(Modifier.weight(1f))
     Button(onClick = onDone, modifier = Modifier.fillMaxWidth()) {
         Text(appString(R.string.onboarding_get_started))
+    }
+}
+
+@Composable
+private fun StepProgressBar(totalSteps: Int, currentStep: Int, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        repeat(totalSteps) { index ->
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(4.dp)
+                    .background(
+                        color = if (index < currentStep) Color.White.copy(alpha = 0.6f) else Color.White.copy(alpha = 0.2f),
+                        shape = RoundedCornerShape(2.dp),
+                    ),
+            )
+        }
     }
 }
 
