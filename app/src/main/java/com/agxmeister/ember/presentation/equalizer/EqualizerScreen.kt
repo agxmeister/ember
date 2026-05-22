@@ -24,6 +24,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.HelpOutline
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -907,7 +910,11 @@ private fun StatsRow(
             .height(IntrinsicSize.Max),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        StatPill(modifier = Modifier.weight(1f), label = appString(R.string.trends_streak)) {
+        StatPill(
+            modifier = Modifier.weight(1f),
+            label = appString(R.string.trends_streak),
+            info = appString(if (isWeekly) R.string.trends_streak_info_weekly else R.string.trends_streak_info_daily),
+        ) {
             val onSurface = MaterialTheme.colorScheme.onSurface
             val streakColor = if (streak >= 5) Color(0xFF4BB543) else onSurface
             Row(verticalAlignment = Alignment.Bottom) {
@@ -981,23 +988,50 @@ private fun StatsRow(
 private fun StatPill(
     modifier: Modifier = Modifier,
     label: String,
+    info: String? = null,
     content: @Composable () -> Unit,
 ) {
+    var showInfo by remember { mutableStateOf(false) }
+    if (showInfo && info != null) {
+        AlertDialog(
+            onDismissRequest = { showInfo = false },
+            confirmButton = {
+                TextButton(onClick = { showInfo = false }) {
+                    Text(appString(R.string.label_ok))
+                }
+            },
+            title = { Text(label) },
+            text = { Text(info) },
+        )
+    }
     Card(
         modifier = modifier.fillMaxHeight(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         shape = RoundedCornerShape(10.dp),
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            Text(
-                text = label,
-                style = TextStyle(
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 9.sp,
-                    letterSpacing = 0.8.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f),
-                ),
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = label,
+                    modifier = Modifier.weight(1f),
+                    style = TextStyle(
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 9.sp,
+                        letterSpacing = 0.8.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f),
+                    ),
+                )
+                if (info != null) {
+                    Icon(
+                        imageVector = Icons.Outlined.HelpOutline,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(12.dp)
+                            .clickable { showInfo = true },
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f),
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(4.dp))
             content()
         }

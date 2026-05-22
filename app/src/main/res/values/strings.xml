@@ -105,6 +105,8 @@
     <string name="trends_tap_to_change">tap to change</string>
     <string name="trends_taken_at">taken at</string>
     <string name="trends_streak">STREAK</string>
+    <string name="trends_streak_info_daily">Your streak counts how many consecutive days your weight trend has been moving toward your goal.</string>
+    <string name="trends_streak_info_weekly">Your streak counts how many consecutive weeks your weight trend has been moving toward your goal.</string>
     <string name="trends_days">days</string>
     <string name="trends_wks">wks</string>
     <string name="trends_this_week">THIS WEEK</string>
