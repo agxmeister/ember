@@ -13,6 +13,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavType
@@ -55,6 +56,8 @@ fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
     onboardingCompleted ?: return
     hasCheckedIn ?: return
 
+    val hasCheckedInSnapshot = remember(onboardingCompleted) { hasCheckedIn }
+
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -93,7 +96,7 @@ fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
             navController = navController,
             startDestination = when {
                 onboardingCompleted != true -> ROUTE_ONBOARDING
-                hasCheckedIn == true -> trendsRoute()
+                hasCheckedInSnapshot == true -> trendsRoute()
                 else -> Screen.Home.route
             },
             modifier = Modifier.padding(innerPadding),
