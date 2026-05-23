@@ -968,7 +968,11 @@ private fun StatsRow(
             }
         }
 
-        StatPill(modifier = Modifier.weight(1f), label = appString(R.string.trends_score)) {
+        StatPill(
+            modifier = Modifier.weight(1f),
+            label = appString(R.string.trends_score),
+            info = appString(if (isWeekly) R.string.trends_score_info_weekly else R.string.trends_score_info_daily),
+        ) {
             val scoreColor = closenessColor((score ?: 0) / 100f, darkTheme)
             Text(
                 text = score?.toString() ?: "−",

@@ -114,6 +114,8 @@
     <string name="stat_today">TODAY</string>
     <string name="stat_delta_target">Δ TARGET</string>
     <string name="trends_score">SCORE</string>
+    <string name="trends_score_info_daily">Your score reflects how close your current 14-day average is to your target weight.</string>
+    <string name="trends_score_info_weekly">Your score reflects how close your current 14-week average is to your target weight.</string>
     <string name="cd_delete">Delete</string>
 
     <!-- Notifications -->

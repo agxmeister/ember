@@ -96,6 +96,8 @@
     <string name="trends_tap_to_change">tippen zum ändern</string>
     <string name="trends_taken_at">aufgenommen um</string>
     <string name="trends_streak">SERIE</string>
+    <string name="trends_streak_info_daily">Deine Serie zählt, wie viele aufeinanderfolgende Tage dein Gewichtstrend in Richtung deines Ziels verläuft.</string>
+    <string name="trends_streak_info_weekly">Deine Serie zählt, wie viele aufeinanderfolgende Wochen dein Gewichtstrend in Richtung deines Ziels verläuft.</string>
     <string name="trends_days">Tage</string>
     <string name="trends_wks">Wo</string>
     <string name="trends_this_week">DIESE WOCHE</string>
@@ -103,5 +105,7 @@
     <string name="stat_today">HEUTE</string>
     <string name="stat_delta_target">Δ ZIEL</string>
     <string name="trends_score">WERT</string>
+    <string name="trends_score_info_daily">Dein Wert zeigt, wie nah dein 14-Tage-Durchschnitt an deinem Zielgewicht liegt.</string>
+    <string name="trends_score_info_weekly">Dein Wert zeigt, wie nah dein 14-Wochen-Durchschnitt an deinem Zielgewicht liegt.</string>
     <string name="cd_delete">Löschen</string>
 </resources>

@@ -96,6 +96,8 @@
     <string name="trends_tap_to_change">appuyer pour modifier</string>
     <string name="trends_taken_at">pris à</string>
     <string name="trends_streak">SÉRIE</string>
+    <string name="trends_streak_info_daily">Votre série compte le nombre de jours consécutifs où votre tendance de poids évolue vers votre objectif.</string>
+    <string name="trends_streak_info_weekly">Votre série compte le nombre de semaines consécutives où votre tendance de poids évolue vers votre objectif.</string>
     <string name="trends_days">jours</string>
     <string name="trends_wks">sem.</string>
     <string name="trends_this_week">CETTE SEMAINE</string>
@@ -103,5 +105,7 @@
     <string name="stat_today">AUJOURD\'HUI</string>
     <string name="stat_delta_target">Δ OBJECTIF</string>
     <string name="trends_score">SCORE</string>
+    <string name="trends_score_info_daily">Votre score reflète la proximité de votre moyenne des 14 derniers jours par rapport à votre poids cible.</string>
+    <string name="trends_score_info_weekly">Votre score reflète la proximité de votre moyenne des 14 dernières semaines par rapport à votre poids cible.</string>
     <string name="cd_delete">Supprimer</string>
 </resources>
