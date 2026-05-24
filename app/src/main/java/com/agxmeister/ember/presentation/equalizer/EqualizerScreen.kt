@@ -1,70 +1,34 @@
 package com.agxmeister.ember.presentation.equalizer
 
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.HelpOutline
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.graphics.drawscope.translate
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.util.VelocityTracker
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -73,23 +37,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.agxmeister.ember.R
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.presentation.appString
-import com.agxmeister.ember.presentation.common.IntWheelPicker
-import com.agxmeister.ember.presentation.home.WeightWheelPicker
 import com.agxmeister.ember.presentation.theme.closenessColor
 import com.agxmeister.ember.presentation.theme.trendSpeedColor
-import kotlinx.coroutines.launch
 import kotlinx.datetime.DatePeriod
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.LocalTime
-import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toLocalDateTime
 import kotlin.math.abs
-import kotlin.math.ceil
-import kotlin.math.floor
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -113,7 +66,6 @@ fun EqualizerScreen(animateEntry: Boolean = false) {
 
     val isFocused = state.selectedDate != null
     val displayDate = state.selectedDate ?: state.today
-    val todayWeight = state.days.find { it.date == state.today }?.weightKg
     val readoutWeight = if (isFocused) state.days.find { it.date == displayDate }?.weightKg else state.weeklyAvg
     val wkPrefix = appString(R.string.trends_readout_wk_prefix)
     val readoutLabel = state.selectedDate?.let {
@@ -188,6 +140,19 @@ fun EqualizerScreen(animateEntry: Boolean = false) {
             weightUnit = state.weightUnit,
             isWeekly = state.isWeekly,
         )
+        Spacer(modifier = Modifier.height(8.dp))
+        ProjectionCard(
+            projection = state.projection,
+            targetKg = state.targetKg,
+            weightUnit = state.weightUnit,
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        WeeklyRateCard(
+            weeklyRateKg = state.weeklyRateKg,
+            rateZone = state.rateZone,
+            goalIsLoss = state.goalIsLoss,
+            weightUnit = state.weightUnit,
+        )
     }
 
     editState?.let { es ->
@@ -209,7 +174,6 @@ fun EqualizerScreen(animateEntry: Boolean = false) {
         }
     }
 }
-
 
 @Composable
 private fun ReadoutBlock(
@@ -339,276 +303,6 @@ private fun ReadoutBlock(
 }
 
 @Composable
-private fun EqualizerCard(
-    modifier: Modifier = Modifier,
-    days: List<EqualizerDayData>,
-    targetKg: Double,
-    tolerance: Double,
-    weightUnit: WeightUnit,
-    today: LocalDate,
-    selectedDate: LocalDate?,
-    isWeekly: Boolean,
-    trendLine: TrendLineData?,
-    canScrollLeft: Boolean,
-    canScrollRight: Boolean,
-    todayColumnProgress: Float = 1f,
-    onDayToggle: (LocalDate) -> Unit,
-    onScroll: (Int) -> Unit,
-) {
-    val weights = days.mapNotNull { it.weightKg }
-    val allValues = if (weights.isEmpty()) listOf(targetKg - 2.0, targetKg + 2.0) else weights + targetKg
-    val minW = allValues.min()
-    val maxW = allValues.max()
-    val span = (maxW - minW).coerceAtLeast(4.0)
-    val pad = (span * 0.18).coerceAtLeast(1.5)
-    val yMin = floor((minW - pad) * 2) / 2
-    val yMax = ceil((maxW + pad) * 2) / 2
-
-    val density = LocalDensity.current
-    val textMeasurer = rememberTextMeasurer()
-    val coroutineScope = rememberCoroutineScope()
-    val animatedOffset = remember { Animatable(0f) }
-
-    val tgtPrefix = appString(R.string.trends_tgt_prefix)
-    val darkTheme = isSystemInDarkTheme()
-    val cardBg = MaterialTheme.colorScheme.surfaceContainer
-    val onCard = MaterialTheme.colorScheme.onSurface
-    val dimColor = onCard.copy(alpha = 0.18f)
-
-    val onSurfaceArrow = MaterialTheme.colorScheme.onSurface
-
-    Box(modifier = modifier) {
-        Card(
-            modifier = Modifier.fillMaxSize(),
-            colors = CardDefaults.cardColors(containerColor = cardBg),
-            shape = RoundedCornerShape(12.dp),
-        ) {
-        Canvas(
-            modifier = Modifier
-                .fillMaxSize()
-                .pointerInput(days, canScrollLeft, canScrollRight) {
-                    awaitEachGesture {
-                        val down = awaitFirstDown(requireUnconsumed = false)
-                        val velocityTracker = VelocityTracker()
-                        velocityTracker.addPosition(down.uptimeMillis, down.position)
-                        val startX = down.position.x
-                        val startY = down.position.y
-                        var isHorizontal = false
-                        var isVertical = false
-                        while (true) {
-                            val event = awaitPointerEvent()
-                            val change = event.changes.firstOrNull() ?: break
-                            velocityTracker.addPosition(change.uptimeMillis, change.position)
-                            val dx = change.position.x - startX
-                            val dy = change.position.y - startY
-                            if (!isHorizontal && !isVertical && (abs(dx) > 8.dp.toPx() || abs(dy) > 8.dp.toPx())) {
-                                if (abs(dx) > abs(dy)) isHorizontal = true else isVertical = true
-                            }
-                            if (isHorizontal) change.consume()
-                            if (!change.pressed) {
-                                if (!isHorizontal && !isVertical) {
-                                    val leftPad = 8.dp.toPx()
-                                    val innerWidth = size.width.toFloat() - leftPad * 2
-                                    val colWidth = innerWidth / 14f
-                                    val colIdx = ((startX - leftPad) / colWidth).toInt()
-                                    if (colIdx in 0..13) onDayToggle(days[colIdx].date)
-                                } else if (isHorizontal) {
-                                    val velocity = velocityTracker.calculateVelocity()
-                                    val colWidth = (size.width - 16.dp.toPx()) / 14f
-                                    val rawDelta = (abs(velocity.x) / colWidth * 0.4f).roundToInt().coerceIn(1, 10)
-                                    val totalDx = change.position.x - startX
-                                    if (totalDx > 0 && canScrollLeft) {
-                                        // swipe right → older data (slides in from the left)
-                                        onScroll(rawDelta)
-                                        coroutineScope.launch {
-                                            animatedOffset.snapTo(-rawDelta * colWidth)
-                                            animatedOffset.animateTo(0f, animationSpec = tween(280, easing = FastOutSlowInEasing))
-                                        }
-                                    } else if (totalDx < 0 && canScrollRight) {
-                                        // swipe left → newer data (slides in from the right)
-                                        onScroll(-rawDelta)
-                                        coroutineScope.launch {
-                                            animatedOffset.snapTo(rawDelta * colWidth)
-                                            animatedOffset.animateTo(0f, animationSpec = tween(280, easing = FastOutSlowInEasing))
-                                        }
-                                    }
-                                }
-                                break
-                            }
-                        }
-                    }
-                },
-        ) {
-            translate(left = animatedOffset.value) {
-            val leftPad = 8.dp.toPx()
-            val rightPad = 8.dp.toPx()
-            val topPad = 20.dp.toPx()
-            val bottomPad = 28.dp.toPx()
-
-            val innerWidth = size.width - leftPad - rightPad
-            val innerHeight = size.height - topPad - bottomPad
-            val colWidth = innerWidth / 14f
-
-            val dashUnit = innerHeight / 32f
-            val dashH = dashUnit * 0.60f
-            val maxDashW = (colWidth * 0.72f).coerceAtMost(10.dp.toPx())
-
-            val dashAreaBottom = size.height - bottomPad
-            val dashAreaTop = dashAreaBottom - innerHeight
-
-            val targetFrac = ((targetKg - yMin) / (yMax - yMin)).coerceIn(0.0, 1.0).toFloat()
-            val targetY = dashAreaBottom - targetFrac * innerHeight
-            val tgtLabelText = "$tgtPrefix %.1f".format(weightUnit.fromKg(targetKg))
-            val tgtLayout = textMeasurer.measure(
-                tgtLabelText,
-                TextStyle(fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = onCard.copy(alpha = 0.60f)),
-            )
-            val tgtLabelW = tgtLayout.size.width.toFloat() + 8.dp.toPx()
-            val lineEndX = size.width - rightPad - tgtLabelW
-
-            days.forEachIndexed { idx, day ->
-                val colLeft = leftPad + idx * colWidth
-                val colCenterX = colLeft + colWidth / 2f
-                val isToday = day.date == today
-                val isSelected = day.date == selectedDate
-                val hasData = day.weightKg != null
-
-                val c = if (hasData) {
-                    (1.0 - abs(day.weightKg!! - targetKg) / tolerance).coerceIn(0.0, 1.0).toFloat()
-                } else 0f
-                val litColor = closenessColor(c, darkTheme)
-
-                val litCount = if (hasData) {
-                    val frac = (day.weightKg!! - yMin) / (yMax - yMin)
-                    val full = (frac * 32).roundToInt().coerceIn(1, 32)
-                    if (isToday) (full * todayColumnProgress).roundToInt().coerceIn(0, full) else full
-                } else 0
-
-                if (isSelected && !isToday) {
-                    drawRect(
-                        color = onCard.copy(alpha = 0.04f),
-                        topLeft = Offset(colLeft + 1.dp.toPx(), dashAreaTop - 4.dp.toPx()),
-                        size = Size(colWidth - 2.dp.toPx(), innerHeight + 8.dp.toPx()),
-                    )
-                }
-
-                val dashW = maxDashW
-                val dashX = colLeft + (colWidth - dashW) / 2f
-
-                for (di in 0 until 32) {
-                    val isLit = di < litCount
-                    val isTip = isLit && di == litCount - 1 && (isToday || isSelected)
-                    val yBottom = dashAreaBottom - di * dashUnit
-                    val yTop = yBottom - dashH
-
-                    if (isLit) {
-                        val w = if (isTip) dashW * 1.18f else dashW
-                        val x = if (isTip) dashX - (w - dashW) / 2f else dashX
-                        drawRect(color = litColor.copy(alpha = 0.14f), topLeft = Offset(x - 3f, yTop - 2f), size = Size(w + 6f, dashH + 4f))
-                        drawRect(color = litColor.copy(alpha = 0.28f), topLeft = Offset(x - 1f, yTop - 1f), size = Size(w + 2f, dashH + 2f))
-                        drawRect(color = litColor, topLeft = Offset(x, yTop), size = Size(w, dashH))
-                    } else {
-                        drawRect(color = dimColor, topLeft = Offset(dashX, yTop), size = Size(dashW, dashH))
-                    }
-                }
-
-                val glyphY = topPad / 2f
-                when {
-                    isSelected -> {
-                        val r = 4.dp.toPx()
-                        val path = Path().apply {
-                            moveTo(colCenterX, glyphY - r)
-                            lineTo(colCenterX + r, glyphY)
-                            lineTo(colCenterX, glyphY + r)
-                            lineTo(colCenterX - r, glyphY)
-                            close()
-                        }
-                        drawPath(path, color = onCard.copy(alpha = 0.75f))
-                    }
-                    isToday -> {
-                        val todayGreen = Color(0xFF4BB543)
-                        drawCircle(color = todayGreen.copy(alpha = 0.22f), radius = 7.dp.toPx(), center = Offset(colCenterX, glyphY))
-                        drawCircle(color = todayGreen, radius = 3.5.dp.toPx(), center = Offset(colCenterX, glyphY))
-                    }
-                }
-
-                val dayLabel = if (isWeekly) {
-                    day.date.month.name.take(1) + day.date.dayOfMonth.toString().padStart(2, '0')
-                } else {
-                    day.date.dayOfMonth.toString().padStart(2, '0')
-                }
-                val labelLayout = textMeasurer.measure(
-                    dayLabel,
-                    TextStyle(
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 10.sp,
-                        color = if (isToday || isSelected) onCard.copy(alpha = 0.90f) else onCard.copy(alpha = 0.28f),
-                        fontWeight = if (isToday || isSelected) FontWeight.Bold else FontWeight.Normal,
-                    ),
-                )
-                drawText(labelLayout, topLeft = Offset(colCenterX - labelLayout.size.width / 2f, dashAreaBottom + 5.dp.toPx()))
-            }
-
-            drawLine(
-                color = onCard.copy(alpha = 0.45f),
-                start = Offset(leftPad, targetY),
-                end = Offset(lineEndX, targetY),
-                strokeWidth = 1.dp.toPx(),
-                pathEffect = PathEffect.dashPathEffect(floatArrayOf(5.dp.toPx(), 4.dp.toPx())),
-            )
-            drawRect(
-                color = cardBg,
-                topLeft = Offset(lineEndX, targetY - tgtLayout.size.height / 2f - 2.dp.toPx()),
-                size = Size(tgtLabelW, tgtLayout.size.height.toFloat() + 4.dp.toPx()),
-            )
-            drawText(
-                tgtLayout,
-                topLeft = Offset(lineEndX + 4.dp.toPx(), targetY - tgtLayout.size.height / 2f),
-            )
-
-            trendLine?.let { tl ->
-                val startFrac = ((tl.startKg - yMin) / (yMax - yMin)).coerceIn(0.0, 1.0).toFloat()
-                val endFrac = ((tl.endKg - yMin) / (yMax - yMin)).coerceIn(0.0, 1.0).toFloat()
-                val startY = dashAreaBottom - startFrac * innerHeight
-                val endY = dashAreaBottom - endFrac * innerHeight
-                drawLine(
-                    color = Color.Red.copy(alpha = 0.75f),
-                    start = Offset(leftPad, startY),
-                    end = Offset(size.width - rightPad, endY),
-                    strokeWidth = 1.dp.toPx(),
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5.dp.toPx(), 4.dp.toPx())),
-                )
-            }
-            }  // translate
-        }
-        }  // Card
-
-        if (canScrollLeft) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
-                contentDescription = null,
-                tint = onSurfaceArrow.copy(alpha = 0.55f),
-                modifier = Modifier
-                    .size(28.dp)
-                    .align(Alignment.CenterStart)
-                    .padding(start = 2.dp),
-            )
-        }
-        if (canScrollRight) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                contentDescription = null,
-                tint = onSurfaceArrow.copy(alpha = 0.55f),
-                modifier = Modifier
-                    .size(28.dp)
-                    .align(Alignment.CenterEnd)
-                    .padding(end = 2.dp),
-            )
-        }
-    }  // Box
-}
-
-@Composable
 private fun ContextStrip(selectedDate: LocalDate?, isWeekly: Boolean) {
     Text(
         text = if (selectedDate != null) appString(R.string.trends_tap_again_to_clear)
@@ -622,422 +316,4 @@ private fun ContextStrip(selectedDate: LocalDate?, isWeekly: Boolean) {
         textAlign = TextAlign.Center,
         modifier = Modifier.fillMaxWidth(),
     )
-}
-
-@Composable
-private fun EqualizerEditDrawer(
-    editState: EqualizerEditState,
-    accentColor: Color,
-    onSave: (id: Long, weightKg: Double, timestamp: Instant) -> Unit,
-    onDelete: () -> Unit,
-) {
-    val tz = TimeZone.currentSystemDefault()
-    val initialTime = editState.existingMeasurement?.timestamp?.let {
-        it.toLocalDateTime(tz).time
-    } ?: LocalTime(editState.defaultHour, editState.defaultMinute)
-    var selectedWeightKg by remember { mutableStateOf(editState.defaultWeightKg) }
-    var selectedHour by remember { mutableStateOf(initialTime.hour) }
-    var selectedMinute by remember { mutableStateOf(initialTime.minute) }
-    var selectedDow by remember { mutableStateOf(editState.date.dayOfWeek.value) }
-    var timeEditing by remember { mutableStateOf(false) }
-
-    val displayDate = if (editState.isWeekly && editState.weekStart != null) {
-        editState.weekStart.plus(DatePeriod(days = selectedDow - 1))
-    } else {
-        editState.date
-    }
-    val dow = displayDate.dayOfWeek.name.take(3)
-    val mon = displayDate.month.name.take(3)
-    val day = displayDate.dayOfMonth.toString().padStart(2, '0')
-    val pickerHeight = 168.dp
-
-    val onSurface = MaterialTheme.colorScheme.onSurface
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp)
-            .padding(bottom = 32.dp),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = "$dow  $mon $day  ${displayDate.year}",
-                style = TextStyle(
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 13.sp,
-                    letterSpacing = 1.5.sp,
-                    color = onSurface.copy(alpha = 0.80f),
-                    fontWeight = FontWeight.Bold,
-                ),
-                modifier = Modifier.weight(1f),
-            )
-            if (editState.existingMeasurement != null) {
-                IconButton(onClick = onDelete, modifier = Modifier.size(36.dp)) {
-                    Icon(
-                        imageVector = Icons.Outlined.Delete,
-                        contentDescription = appString(R.string.cd_delete),
-                        tint = onSurface.copy(alpha = 0.50f),
-                        modifier = Modifier.size(20.dp),
-                    )
-                }
-            }
-        }
-
-        val dowNames = listOf(
-            appString(R.string.day_mon),
-            appString(R.string.day_tue),
-            appString(R.string.day_wed),
-            appString(R.string.day_thu),
-            appString(R.string.day_fri),
-            appString(R.string.day_sat),
-            appString(R.string.day_sun),
-        )
-
-        MaterialTheme(
-            colorScheme = MaterialTheme.colorScheme.copy(
-                primary = onSurface,
-                onPrimary = MaterialTheme.colorScheme.surface,
-                onSurface = onSurface,
-            ),
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                WeightWheelPicker(
-                    initialWeightKg = editState.defaultWeightKg,
-                    unit = editState.weightUnit,
-                    onWeightKgChanged = { selectedWeightKg = it },
-                    modifier = Modifier.weight(1f),
-                )
-
-                Spacer(
-                    modifier = Modifier
-                        .width(1.dp)
-                        .height(pickerHeight)
-                        .background(onSurface.copy(alpha = 0.12f)),
-                )
-
-                if (editState.isWeekly && !timeEditing) {
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(pickerHeight)
-                            .clickable { timeEditing = true },
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                    ) {
-                        Text(
-                            text = appString(R.string.trends_day_and_time),
-                            style = TextStyle(
-                                fontFamily = FontFamily.Monospace,
-                                fontSize = 9.sp,
-                                letterSpacing = 0.5.sp,
-                                color = onSurface.copy(alpha = 0.40f),
-                            ),
-                        )
-                        Spacer(Modifier.height(6.dp))
-                        Text(
-                            text = "${dowNames[selectedDow - 1]}  %02d:%02d".format(selectedHour, selectedMinute),
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = onSurface,
-                        )
-                        Spacer(Modifier.height(6.dp))
-                        Text(
-                            text = appString(R.string.trends_tap_to_change),
-                            style = TextStyle(
-                                fontFamily = FontFamily.Monospace,
-                                fontSize = 9.sp,
-                                letterSpacing = 0.5.sp,
-                                color = onSurface.copy(alpha = 0.35f),
-                            ),
-                        )
-                    }
-                } else if (editState.isWeekly) {
-                    Row(
-                        modifier = Modifier.weight(1f),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        IntWheelPicker(
-                            initialValue = editState.date.dayOfWeek.value,
-                            range = 1..7,
-                            label = { dowNames[it - 1] },
-                            onValueChanged = { selectedDow = it },
-                            modifier = Modifier.weight(1f),
-                            dividerEndPadding = 0.dp,
-                        )
-                        Text(
-                            text = " ",
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = onSurface.copy(alpha = 0.60f),
-                        )
-                        IntWheelPicker(
-                            initialValue = initialTime.hour,
-                            range = 0..23,
-                            label = { "%02d".format(it) },
-                            onValueChanged = { selectedHour = it },
-                            modifier = Modifier.weight(1f),
-                            dividerEndPadding = 0.dp,
-                            dividerStartPadding = 0.dp,
-                        )
-                        Text(
-                            text = ":",
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = onSurface.copy(alpha = 0.60f),
-                        )
-                        IntWheelPicker(
-                            initialValue = initialTime.minute,
-                            range = 0..59,
-                            label = { "%02d".format(it) },
-                            onValueChanged = { selectedMinute = it },
-                            modifier = Modifier.weight(1f),
-                            dividerStartPadding = 0.dp,
-                        )
-                    }
-                } else if (!timeEditing) {
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(pickerHeight)
-                            .clickable { timeEditing = true },
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                    ) {
-                        Text(
-                            text = appString(R.string.trends_taken_at),
-                            style = TextStyle(
-                                fontFamily = FontFamily.Monospace,
-                                fontSize = 9.sp,
-                                letterSpacing = 0.5.sp,
-                                color = onSurface.copy(alpha = 0.40f),
-                            ),
-                        )
-                        Spacer(Modifier.height(6.dp))
-                        Text(
-                            text = "%02d:%02d".format(selectedHour, selectedMinute),
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = onSurface,
-                        )
-                        Spacer(Modifier.height(6.dp))
-                        Text(
-                            text = appString(R.string.trends_tap_to_change),
-                            style = TextStyle(
-                                fontFamily = FontFamily.Monospace,
-                                fontSize = 9.sp,
-                                letterSpacing = 0.5.sp,
-                                color = onSurface.copy(alpha = 0.35f),
-                            ),
-                        )
-                    }
-                } else {
-                    Row(
-                        modifier = Modifier.weight(1f),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        IntWheelPicker(
-                            initialValue = initialTime.hour,
-                            range = 0..23,
-                            label = { "%02d".format(it) },
-                            onValueChanged = { selectedHour = it },
-                            modifier = Modifier.weight(1f),
-                            dividerEndPadding = 0.dp,
-                        )
-                        Text(
-                            text = ":",
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = onSurface.copy(alpha = 0.60f),
-                        )
-                        IntWheelPicker(
-                            initialValue = initialTime.minute,
-                            range = 0..59,
-                            label = { "%02d".format(it) },
-                            onValueChanged = { selectedMinute = it },
-                            modifier = Modifier.weight(1f),
-                            dividerStartPadding = 0.dp,
-                        )
-                    }
-                }
-            }
-        }
-
-        Spacer(Modifier.height(24.dp))
-        Button(
-            onClick = {
-                val dateTime = LocalDateTime(displayDate, LocalTime(selectedHour, selectedMinute))
-                onSave(
-                    editState.existingMeasurement?.id ?: 0L,
-                    selectedWeightKg,
-                    dateTime.toInstant(tz),
-                )
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(52.dp),
-            shape = RoundedCornerShape(26.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = accentColor),
-        ) {
-            Text(
-                text = appString(R.string.label_save),
-                style = TextStyle(
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 14.sp,
-                    letterSpacing = 2.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0A0A0A),
-                ),
-            )
-        }
-    }
-}
-
-@Composable
-private fun StatsRow(
-    streak: Int,
-    weeklyAvg: Double?,
-    targetKg: Double,
-    tolerance: Double,
-    score: Int?,
-    weightUnit: WeightUnit,
-    isWeekly: Boolean,
-) {
-    val darkTheme = isSystemInDarkTheme()
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(IntrinsicSize.Max),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        StatPill(
-            modifier = Modifier.weight(1f),
-            label = appString(R.string.trends_streak),
-            info = appString(if (isWeekly) R.string.trends_streak_info_weekly else R.string.trends_streak_info_daily),
-        ) {
-            val onSurface = MaterialTheme.colorScheme.onSurface
-            val streakColor = if (streak >= 5) Color(0xFF4BB543) else onSurface
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text(
-                    text = streak.toString(),
-                    style = TextStyle(
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = streakColor,
-                    ),
-                )
-                Text(
-                    text = " ${appString(if (isWeekly) R.string.trends_wks else R.string.trends_days)}",
-                    style = TextStyle(
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 12.sp,
-                        color = streakColor.copy(alpha = 0.75f),
-                    ),
-                    modifier = Modifier.padding(bottom = 4.dp),
-                )
-            }
-        }
-
-        StatPill(modifier = Modifier.weight(1f), label = appString(R.string.stat_delta_target)) {
-            val deltaDisplay = weeklyAvg?.let { abs(weightUnit.scaleDiff(it - targetKg)) }
-            val deltaColor = weeklyAvg?.let { w ->
-                closenessColor((1.0 - abs(w - targetKg) / tolerance).coerceIn(0.0, 1.0).toFloat(), darkTheme)
-            } ?: MaterialTheme.colorScheme.onSurface
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text(
-                    text = deltaDisplay?.let { "%.1f".format(it) } ?: "−",
-                    style = TextStyle(
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = deltaColor,
-                    ),
-                )
-                if (deltaDisplay != null) {
-                    Text(
-                        text = " ${weightUnit.label}",
-                        style = TextStyle(
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = 12.sp,
-                            color = deltaColor.copy(alpha = 0.75f),
-                        ),
-                        modifier = Modifier.padding(bottom = 4.dp),
-                    )
-                }
-            }
-        }
-
-        StatPill(
-            modifier = Modifier.weight(1f),
-            label = appString(R.string.trends_score),
-            info = appString(if (isWeekly) R.string.trends_score_info_weekly else R.string.trends_score_info_daily),
-        ) {
-            val scoreColor = closenessColor((score ?: 0) / 100f, darkTheme)
-            Text(
-                text = score?.toString() ?: "−",
-                style = TextStyle(
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = scoreColor,
-                    shadow = Shadow(color = scoreColor.copy(alpha = 0.5f), blurRadius = 10f),
-                ),
-            )
-        }
-    }
-}
-
-@Composable
-private fun StatPill(
-    modifier: Modifier = Modifier,
-    label: String,
-    info: String? = null,
-    content: @Composable () -> Unit,
-) {
-    var showInfo by remember { mutableStateOf(false) }
-    if (showInfo && info != null) {
-        AlertDialog(
-            onDismissRequest = { showInfo = false },
-            confirmButton = {
-                TextButton(onClick = { showInfo = false }) {
-                    Text(appString(R.string.label_ok))
-                }
-            },
-            title = { Text(label) },
-            text = { Text(info) },
-        )
-    }
-    Card(
-        modifier = modifier.fillMaxHeight(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        shape = RoundedCornerShape(10.dp),
-    ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = label,
-                    modifier = Modifier.weight(1f),
-                    style = TextStyle(
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 9.sp,
-                        letterSpacing = 0.8.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f),
-                    ),
-                )
-                if (info != null) {
-                    Icon(
-                        imageVector = Icons.Outlined.HelpOutline,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(12.dp)
-                            .clickable { showInfo = true },
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f),
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(4.dp))
-            content()
-        }
-    }
 }
