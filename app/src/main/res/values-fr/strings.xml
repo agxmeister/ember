@@ -108,4 +108,24 @@
     <string name="trends_score_info_daily">Votre score reflète la proximité de votre moyenne des 14 derniers jours par rapport à votre poids cible.</string>
     <string name="trends_score_info_weekly">Votre score reflète la proximité de votre moyenne des 14 dernières semaines par rapport à votre poids cible.</string>
     <string name="cd_delete">Supprimer</string>
+
+    <!-- Projection card -->
+    <string name="trends_projected_eta">DATE ESTIMÉE</string>
+    <string name="trends_projected_eta_info">Votre date d\'objectif estimée est basée sur votre tendance actuelle et se met à jour au fil du temps.</string>
+    <string name="trends_in_days">dans %1$d jours</string>
+    <string name="trends_today">aujourd\'hui</string>
+    <string name="trends_goal_reached">Objectif atteint</string>
+    <string name="trends_eta_not_enough_data">plus de mesures requises</string>
+    <string name="trends_eta_wrong_direction">tendance dans le mauvais sens</string>
+    <string name="trends_eta_too_noisy">tendance trop irrégulière</string>
+    <string name="trends_eta_too_far">plus de 2 ans</string>
+
+    <!-- Weekly rate card -->
+    <string name="trends_weekly_rate">RYTHME HEBDO</string>
+    <string name="trends_weekly_rate_info">Votre rythme hebdomadaire indique la vitesse de changement de votre poids. Un rythme sain est de 0,25 à 1,0 kg par semaine.</string>
+    <string name="trends_rate_zone_too_slow">TROP LENT</string>
+    <string name="trends_rate_zone_healthy">EN BONNE VOIE</string>
+    <string name="trends_rate_zone_aggressive">AGRESSIF</string>
+    <string name="trends_rate_zone_too_fast">TROP VITE</string>
+    <string name="trends_rate_zone_wrong_direction">MAUVAIS SENS</string>
 </resources>

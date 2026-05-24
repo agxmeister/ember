@@ -118,6 +118,26 @@
     <string name="trends_score_info_weekly">Your score reflects how close your current 14-week average is to your target weight.</string>
     <string name="cd_delete">Delete</string>
 
+    <!-- Projection card -->
+    <string name="trends_projected_eta">PROJECTED ETA</string>
+    <string name="trends_projected_eta_info">Your projected goal date is based on your current trend. It updates as your weight changes.</string>
+    <string name="trends_in_days">in %1$d days</string>
+    <string name="trends_today">today</string>
+    <string name="trends_goal_reached">Goal reached</string>
+    <string name="trends_eta_not_enough_data">need more measurements</string>
+    <string name="trends_eta_wrong_direction">trend going wrong way</string>
+    <string name="trends_eta_too_noisy">trend too noisy</string>
+    <string name="trends_eta_too_far">more than 2 years out</string>
+
+    <!-- Weekly rate card -->
+    <string name="trends_weekly_rate">WEEKLY RATE</string>
+    <string name="trends_weekly_rate_info">Your weekly rate shows how fast your weight is changing. A healthy rate is 0.25–1.0 kg per week.</string>
+    <string name="trends_rate_zone_too_slow">TOO SLOW</string>
+    <string name="trends_rate_zone_healthy">ON PACE</string>
+    <string name="trends_rate_zone_aggressive">AGGRESSIVE</string>
+    <string name="trends_rate_zone_too_fast">TOO FAST</string>
+    <string name="trends_rate_zone_wrong_direction">WRONG WAY</string>
+
     <!-- Notifications -->
     <string name="notification_title">Time to weigh in</string>
     <string name="notification_text">Don\'t forget your %1$s measurement.</string>

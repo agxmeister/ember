@@ -40,6 +40,18 @@ data class EqualizerDayData(
 
 data class TrendLineData(val startKg: Double, val endKg: Double, val diffKg: Double)
 
+sealed interface ProjectionResult {
+    data class Eta(val date: LocalDate, val daysAway: Int, val currentAvgKg: Double) : ProjectionResult
+    data object Reached : ProjectionResult
+    sealed interface Unavailable : ProjectionResult {
+        data object NotEnoughData : Unavailable
+        data object WrongDirection : Unavailable
+        data object TooFar : Unavailable
+    }
+}
+
+enum class WeeklyRateZone { TooSlow, Healthy, Aggressive, TooFast, WrongDirection, Unavailable }
+
 data class EqualizerUiState(
     val days: List<EqualizerDayData>,
     val targetKg: Double,
@@ -58,6 +70,8 @@ data class EqualizerUiState(
     val trendMeasurementsNeeded: Int?,
     val canScrollLeft: Boolean,
     val canScrollRight: Boolean,
+    val projection: ProjectionResult,
+    val rateZone: WeeklyRateZone,
 )
 
 data class EqualizerEditState(
@@ -185,6 +199,10 @@ class EqualizerViewModel @Inject constructor(
         ) { freq, gsd, offset -> Triple(freq, gsd, offset) },
         combine(getDailyCandles(), getWeeklyData(), _selectedDate) { c, w, s -> Triple(c, w, s) },
     ) { (targetKg, initialWeightKg, weightUnit), (frequency, goalStartDateStr, rawOffset), (allCandles, allWeekly, selectedDate) ->
+        val recentWeight = allCandles.maxByOrNull { it.date }?.close
+            ?: allWeekly.maxByOrNull { it.weekStart }?.median
+            ?: initialWeightKg
+        val goalIsLoss = recentWeight > targetKg
         val tolerance = abs(initialWeightKg - targetKg).coerceAtLeast(0.1)
         val isWeekly = frequency == WeighingFrequency.Weekly
 
@@ -243,7 +261,7 @@ class EqualizerViewModel @Inject constructor(
                     EqualizerDayData(date = weekStart, weightKg = weeklyMap[weekStart]?.median)
                 }
                 val t = computeTrendLine(window) ?: break
-                if (if (initialWeightKg > targetKg) t.diffKg < 0 else t.diffKg > 0) s++ else break
+                if (if (goalIsLoss) t.diffKg < 0 else t.diffKg > 0) s++ else break
                 w = w.minus(DatePeriod(days = 7))
             }
             streak = s
@@ -299,7 +317,7 @@ class EqualizerViewModel @Inject constructor(
                     EqualizerDayData(date = date, weightKg = candleMap[date]?.close)
                 }
                 val t = computeTrendLine(window) ?: break
-                if (if (initialWeightKg > targetKg) t.diffKg < 0 else t.diffKg > 0) s++ else break
+                if (if (goalIsLoss) t.diffKg < 0 else t.diffKg > 0) s++ else break
                 d = d.minus(DatePeriod(days = 1))
             }
             streak = s
@@ -323,6 +341,9 @@ class EqualizerViewModel @Inject constructor(
             }
         }
 
+        val projection = computeProjection(weeklyAvg, weeklyRateKg, targetKg, goalIsLoss, todayDate)
+        val rateZone = classifyWeeklyRate(weeklyRateKg, goalIsLoss)
+
         EqualizerUiState(
             days = days,
             targetKg = targetKg,
@@ -337,10 +358,12 @@ class EqualizerViewModel @Inject constructor(
             isWeekly = isWeekly,
             trendLine = trendLine,
             weeklyRateKg = weeklyRateKg,
-            goalIsLoss = initialWeightKg > targetKg,
+            goalIsLoss = goalIsLoss,
             trendMeasurementsNeeded = trendMeasurementsNeeded,
             canScrollLeft = canScrollLeft,
             canScrollRight = canScrollRight,
+            projection = projection,
+            rateZone = rateZone,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -363,6 +386,8 @@ class EqualizerViewModel @Inject constructor(
             trendMeasurementsNeeded = null,
             canScrollLeft = false,
             canScrollRight = false,
+            projection = ProjectionResult.Unavailable.NotEnoughData,
+            rateZone = WeeklyRateZone.Unavailable,
         ),
     )
 }
@@ -378,6 +403,42 @@ private fun computeTrendLine(days: List<EqualizerDayData>, minPoints: Int = 2): 
     val startKg = intercept
     val endKg = slope * (days.size - 1) + intercept
     return TrendLineData(startKg = startKg, endKg = endKg, diffKg = endKg - startKg)
+}
+
+private fun computeProjection(
+    weeklyAvg: Double?,
+    weeklyRateKg: Double?,
+    targetKg: Double,
+    goalIsLoss: Boolean,
+    today: LocalDate,
+): ProjectionResult {
+    if (weeklyAvg == null || weeklyRateKg == null) return ProjectionResult.Unavailable.NotEnoughData
+    val alreadyReached = if (goalIsLoss) weeklyAvg <= targetKg else weeklyAvg >= targetKg
+    if (alreadyReached) return ProjectionResult.Reached
+    val correctDirection = if (goalIsLoss) weeklyRateKg < -0.05 else weeklyRateKg > 0.05
+    if (!correctDirection) return ProjectionResult.Unavailable.WrongDirection
+    val dailyRate = weeklyRateKg / 7.0
+    val daysToTarget = ((targetKg - weeklyAvg) / dailyRate).toInt()
+    if (daysToTarget < 0) return ProjectionResult.Unavailable.WrongDirection
+    if (daysToTarget > 730) return ProjectionResult.Unavailable.TooFar
+    return ProjectionResult.Eta(
+        date = today.plus(DatePeriod(days = daysToTarget)),
+        daysAway = daysToTarget,
+        currentAvgKg = weeklyAvg,
+    )
+}
+
+private fun classifyWeeklyRate(weeklyRateKg: Double?, goalIsLoss: Boolean): WeeklyRateZone {
+    if (weeklyRateKg == null) return WeeklyRateZone.Unavailable
+    val absRate = abs(weeklyRateKg)
+    val correctDirection = if (goalIsLoss) weeklyRateKg < -0.05 else weeklyRateKg > 0.05
+    if (!correctDirection && absRate > 0.1) return WeeklyRateZone.WrongDirection
+    return when {
+        absRate < 0.25 -> WeeklyRateZone.TooSlow
+        absRate <= 1.0 -> WeeklyRateZone.Healthy
+        absRate <= 1.5 -> WeeklyRateZone.Aggressive
+        else -> WeeklyRateZone.TooFast
+    }
 }
 
 private fun computeWeeklyRate(window: List<EqualizerDayData>, indexStepDays: Int = 1): Double? {

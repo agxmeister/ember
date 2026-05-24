@@ -108,4 +108,24 @@
     <string name="trends_score_info_daily">Dein Wert zeigt, wie nah dein 14-Tage-Durchschnitt an deinem Zielgewicht liegt.</string>
     <string name="trends_score_info_weekly">Dein Wert zeigt, wie nah dein 14-Wochen-Durchschnitt an deinem Zielgewicht liegt.</string>
     <string name="cd_delete">Löschen</string>
+
+    <!-- Projection card -->
+    <string name="trends_projected_eta">VORAUSSICHTLICH</string>
+    <string name="trends_projected_eta_info">Dein voraussichtliches Zieldatum basiert auf deinem aktuellen Trend und wird laufend aktualisiert.</string>
+    <string name="trends_in_days">in %1$d Tagen</string>
+    <string name="trends_today">heute</string>
+    <string name="trends_goal_reached">Ziel erreicht</string>
+    <string name="trends_eta_not_enough_data">mehr Messungen nötig</string>
+    <string name="trends_eta_wrong_direction">Trend geht falsche Richtung</string>
+    <string name="trends_eta_too_noisy">Trend zu unregelmäßig</string>
+    <string name="trends_eta_too_far">mehr als 2 Jahre entfernt</string>
+
+    <!-- Weekly rate card -->
+    <string name="trends_weekly_rate">WÖCHENTLICHE RATE</string>
+    <string name="trends_weekly_rate_info">Deine wöchentliche Rate zeigt, wie schnell sich dein Gewicht verändert. Eine gesunde Rate liegt bei 0,25–1,0 kg pro Woche.</string>
+    <string name="trends_rate_zone_too_slow">ZU LANGSAM</string>
+    <string name="trends_rate_zone_healthy">IM PLAN</string>
+    <string name="trends_rate_zone_aggressive">AGGRESSIV</string>
+    <string name="trends_rate_zone_too_fast">ZU SCHNELL</string>
+    <string name="trends_rate_zone_wrong_direction">FALSCHE RICHTUNG</string>
 </resources>
