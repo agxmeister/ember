@@ -6,6 +6,7 @@ import com.agxmeister.ember.domain.model.Measurement
 import com.agxmeister.ember.domain.model.WeighingFrequency
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.repository.UserPreferencesRepository
+import com.agxmeister.ember.domain.usecase.GetCloseMeasurementForDateUseCase
 import com.agxmeister.ember.domain.usecase.GetDailyCandlesUseCase
 import com.agxmeister.ember.domain.usecase.GetMeasurementsForDateUseCase
 import com.agxmeister.ember.domain.usecase.DeleteMeasurementUseCase
@@ -41,7 +42,7 @@ data class EqualizerDayData(
 data class TrendLineData(val startKg: Double, val endKg: Double, val diffKg: Double)
 
 sealed interface ProjectionResult {
-    data class Eta(val date: LocalDate, val daysAway: Int, val currentAvgKg: Double) : ProjectionResult
+    data class Eta(val date: LocalDate, val daysAway: Int, val currentAvgKg: Double, val progress: Float?, val goalIsLoss: Boolean) : ProjectionResult
     data object Reached : ProjectionResult
     sealed interface Unavailable : ProjectionResult {
         data object NotEnoughData : Unavailable
@@ -91,6 +92,7 @@ class EqualizerViewModel @Inject constructor(
     private val getWeeklyData: GetWeeklyDataUseCase,
     private val getMeasurementsForDate: GetMeasurementsForDateUseCase,
     private val getMeasurementsForWeek: GetMeasurementsForWeekUseCase,
+    private val getCloseMeasurementForDate: GetCloseMeasurementForDateUseCase,
     private val saveMeasurementUseCase: SaveMeasurementUseCase,
     private val deleteMeasurementUseCase: DeleteMeasurementUseCase,
     private val preferencesRepository: UserPreferencesRepository,
@@ -139,8 +141,7 @@ class EqualizerViewModel @Inject constructor(
                     weekStart = date,
                 )
             } else {
-                val measurements = getMeasurementsForDate(date).first()
-                val existing = measurements.maxByOrNull { it.timestamp }
+                val existing = getCloseMeasurementForDate(date).first()
                 val defaultWeight = existing?.weightKg
                     ?: getDailyCandles().first()
                         .filter { it.date < date }
@@ -341,7 +342,7 @@ class EqualizerViewModel @Inject constructor(
             }
         }
 
-        val projection = computeProjection(weeklyAvg, weeklyRateKg, targetKg, goalIsLoss, todayDate)
+        val projection = computeProjection(weeklyAvg, weeklyRateKg, targetKg, goalDate, goalIsLoss, todayDate)
         val rateZone = classifyWeeklyRate(weeklyRateKg, goalIsLoss)
 
         EqualizerUiState(
@@ -409,6 +410,7 @@ private fun computeProjection(
     weeklyAvg: Double?,
     weeklyRateKg: Double?,
     targetKg: Double,
+    goalStartDate: LocalDate?,
     goalIsLoss: Boolean,
     today: LocalDate,
 ): ProjectionResult {
@@ -421,10 +423,15 @@ private fun computeProjection(
     val daysToTarget = ((targetKg - weeklyAvg) / dailyRate).toInt()
     if (daysToTarget < 0) return ProjectionResult.Unavailable.WrongDirection
     if (daysToTarget > 730) return ProjectionResult.Unavailable.TooFar
+    val elapsedDays = goalStartDate?.let { (today.toEpochDays() - it.toEpochDays()).toInt().coerceAtLeast(0) }
+    val totalDays = elapsedDays?.let { it + daysToTarget }
+    val progress = if (totalDays != null && totalDays > 0) (elapsedDays!!.toFloat() / totalDays).coerceIn(0f, 1f) else null
     return ProjectionResult.Eta(
         date = today.plus(DatePeriod(days = daysToTarget)),
         daysAway = daysToTarget,
         currentAvgKg = weeklyAvg,
+        progress = progress,
+        goalIsLoss = goalIsLoss,
     )
 }
 
