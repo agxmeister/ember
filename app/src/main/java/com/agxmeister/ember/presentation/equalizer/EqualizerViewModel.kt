@@ -342,7 +342,7 @@ class EqualizerViewModel @Inject constructor(
             }
         }
 
-        val projection = computeProjection(weeklyAvg, weeklyRateKg, targetKg, goalDate, goalIsLoss, todayDate)
+        val projection = computeProjection(weeklyAvg, weeklyRateKg, targetKg, initialWeightKg, goalIsLoss, todayDate)
         val rateZone = classifyWeeklyRate(weeklyRateKg, goalIsLoss)
 
         EqualizerUiState(
@@ -410,7 +410,7 @@ private fun computeProjection(
     weeklyAvg: Double?,
     weeklyRateKg: Double?,
     targetKg: Double,
-    goalStartDate: LocalDate?,
+    initialWeightKg: Double,
     goalIsLoss: Boolean,
     today: LocalDate,
 ): ProjectionResult {
@@ -423,9 +423,8 @@ private fun computeProjection(
     val daysToTarget = ((targetKg - weeklyAvg) / dailyRate).toInt()
     if (daysToTarget < 0) return ProjectionResult.Unavailable.WrongDirection
     if (daysToTarget > 730) return ProjectionResult.Unavailable.TooFar
-    val elapsedDays = goalStartDate?.let { (today.toEpochDays() - it.toEpochDays()).toInt().coerceAtLeast(0) }
-    val totalDays = elapsedDays?.let { it + daysToTarget }
-    val progress = if (totalDays != null && totalDays > 0) (elapsedDays!!.toFloat() / totalDays).coerceIn(0f, 1f) else null
+    val totalDelta = abs(initialWeightKg - targetKg)
+    val progress = if (totalDelta > 0.0) (abs(initialWeightKg - weeklyAvg) / totalDelta).toFloat().coerceIn(0f, 1f) else null
     return ProjectionResult.Eta(
         date = today.plus(DatePeriod(days = daysToTarget)),
         daysAway = daysToTarget,
