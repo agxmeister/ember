@@ -28,12 +28,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.math.roundToInt
 import com.agxmeister.ember.R
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.presentation.appString
@@ -43,6 +45,7 @@ internal fun ProjectionCard(
     projection: ProjectionResult,
     targetKg: Double,
     weightUnit: WeightUnit,
+    measurementsNeeded: Int? = null,
 ) {
     val onSurface = MaterialTheme.colorScheme.onSurface
     val labelStyle = TextStyle(
@@ -82,34 +85,32 @@ internal fun ProjectionCard(
             }
             Spacer(Modifier.height(6.dp))
             when (projection) {
-                is ProjectionResult.Eta -> EtaContent(projection, targetKg, onSurface)
+                is ProjectionResult.Eta -> EtaContent(projection, onSurface)
                 ProjectionResult.Reached -> ReachedContent()
                 ProjectionResult.Unavailable.NotEnoughData,
                 ProjectionResult.Unavailable.WrongDirection,
-                ProjectionResult.Unavailable.TooFar -> UnavailableContent(projection, onSurface)
+                ProjectionResult.Unavailable.TooFar -> UnavailableContent(projection, onSurface, measurementsNeeded)
             }
         }
     }
 }
 
 @Composable
-private fun EtaContent(projection: ProjectionResult.Eta, targetKg: Double, onSurface: Color) {
-    val accentGreen = Color(0xFF4BB543)
-    val dateStr = "${projection.date.month.name.take(3)} ${projection.date.dayOfMonth}, ${projection.date.year}"
+private fun EtaContent(projection: ProjectionResult.Eta, onSurface: Color) {
     val daysStr = if (projection.daysAway == 0) appString(R.string.trends_today)
                   else appString(R.string.trends_in_days, projection.daysAway)
-
+    val percentStr = if (projection.progress != null) "${"%.1f".format(projection.progress * 100).trimStart('0')}%" else ".-"
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.Bottom,
     ) {
         Text(
-            text = dateStr,
+            text = percentStr,
             style = TextStyle(
                 fontFamily = FontFamily.Monospace,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                color = accentGreen,
+                color = onSurface,
             ),
             modifier = Modifier.weight(1f),
         )
@@ -118,32 +119,54 @@ private fun EtaContent(projection: ProjectionResult.Eta, targetKg: Double, onSur
             style = TextStyle(
                 fontFamily = FontFamily.Monospace,
                 fontSize = 12.sp,
-                color = onSurface.copy(alpha = 0.50f),
+                fontWeight = FontWeight.Bold,
+                color = onSurface,
             ),
             modifier = Modifier.padding(bottom = 3.dp),
         )
     }
     Spacer(Modifier.height(8.dp))
-    EtaSparkline(startKg = projection.currentAvgKg, endKg = targetKg, color = accentGreen)
+    EtaLadder(
+        progress = projection.progress ?: 0f,
+        goalIsLoss = projection.goalIsLoss,
+        modifier = Modifier.fillMaxWidth(),
+    )
+}
+
+private fun lerpColor(a: Color, b: Color, t: Float): Color {
+    val s = t.coerceIn(0f, 1f)
+    return Color(
+        red = a.red + (b.red - a.red) * s,
+        green = a.green + (b.green - a.green) * s,
+        blue = a.blue + (b.blue - a.blue) * s,
+        alpha = 1f,
+    )
 }
 
 @Composable
-private fun EtaSparkline(startKg: Double, endKg: Double, color: Color) {
-    Canvas(modifier = Modifier.fillMaxWidth().height(32.dp)) {
-        val padX = 4.dp.toPx()
-        val yMin = minOf(startKg, endKg) - 0.3
-        val yMax = maxOf(startKg, endKg) + 0.3
-        val yRange = (yMax - yMin).coerceAtLeast(0.1)
-        val startY = (size.height - ((startKg - yMin) / yRange * size.height)).toFloat()
-        val endY = (size.height - ((endKg - yMin) / yRange * size.height)).toFloat()
-        drawLine(
-            color = color.copy(alpha = 0.55f),
-            start = Offset(padX, startY),
-            end = Offset(size.width - padX, endY),
-            strokeWidth = 2.dp.toPx(),
-        )
-        drawCircle(color = color, radius = 3.5.dp.toPx(), center = Offset(padX, startY))
-        drawCircle(color = color.copy(alpha = 0.45f), radius = 3.5.dp.toPx(), center = Offset(size.width - padX, endY))
+private fun EtaLadder(progress: Float, goalIsLoss: Boolean, modifier: Modifier = Modifier) {
+    val colorRed = Color(0xFFE53935)
+    val colorGreen = Color(0xFF4BB543)
+    Canvas(modifier = modifier.height(24.dp)) {
+        val barCount = 30
+        val gap = 2.dp.toPx()
+        val totalGaps = gap * (barCount - 1)
+        val barWidth = (size.width - totalGaps) / barCount
+        val filledCount = (progress * barCount).roundToInt()
+        val maxH = size.height
+        val minH = size.height * 0.30f
+        for (i in 0 until barCount) {
+            val x = i * (barWidth + gap)
+            val t = if (barCount > 1) i.toFloat() / (barCount - 1) else 0f
+            val barH = if (goalIsLoss) minH + (maxH - minH) * (1f - t) else minH + (maxH - minH) * t
+            val top = size.height - barH
+            val barColor = lerpColor(colorRed, colorGreen, t).copy(alpha = if (i < filledCount) 1f else 0.15f)
+            drawRect(
+                color = barColor,
+                topLeft = Offset(x, top),
+                size = Size(barWidth, barH),
+            )
+        }
     }
 }
 
@@ -161,25 +184,29 @@ private fun ReachedContent() {
 }
 
 @Composable
-private fun UnavailableContent(projection: ProjectionResult, onSurface: Color) {
-    val reason = when (projection) {
-        ProjectionResult.Unavailable.WrongDirection -> appString(R.string.trends_eta_wrong_direction)
-        ProjectionResult.Unavailable.TooFar -> appString(R.string.trends_eta_too_far)
-        else -> appString(R.string.trends_eta_not_enough_data)
+private fun UnavailableContent(projection: ProjectionResult, onSurface: Color, measurementsNeeded: Int?) {
+    val secondary = if (projection == ProjectionResult.Unavailable.NotEnoughData && measurementsNeeded != null) {
+        "$measurementsNeeded TO GO"
+    } else {
+        when (projection) {
+            ProjectionResult.Unavailable.WrongDirection -> appString(R.string.trends_eta_wrong_direction)
+            ProjectionResult.Unavailable.TooFar -> appString(R.string.trends_eta_too_far)
+            else -> appString(R.string.trends_eta_not_enough_data)
+        }
     }
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
-            text = "—",
+            text = ".-",
             style = TextStyle(
                 fontFamily = FontFamily.Monospace,
-                fontSize = 28.sp,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = onSurface.copy(alpha = 0.30f),
             ),
         )
         Spacer(Modifier.width(10.dp))
         Text(
-            text = reason,
+            text = secondary,
             style = TextStyle(
                 fontFamily = FontFamily.Monospace,
                 fontSize = 11.sp,

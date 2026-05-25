@@ -145,6 +145,7 @@ fun EqualizerScreen(animateEntry: Boolean = false) {
             projection = state.projection,
             targetKg = state.targetKg,
             weightUnit = state.weightUnit,
+            measurementsNeeded = state.trendMeasurementsNeeded,
         )
         Spacer(modifier = Modifier.height(8.dp))
         WeeklyRateCard(
