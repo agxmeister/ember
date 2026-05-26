@@ -43,6 +43,7 @@ import kotlin.math.abs
 
 @Composable
 internal fun WeeklyRateCard(
+    modifier: Modifier = Modifier,
     weeklyRateKg: Double?,
     rateZone: WeeklyRateZone,
     goalIsLoss: Boolean,
@@ -80,7 +81,7 @@ internal fun WeeklyRateCard(
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         shape = RoundedCornerShape(10.dp),
     ) {
