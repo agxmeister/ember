@@ -31,12 +31,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlin.math.roundToInt
 import com.agxmeister.ember.R
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.presentation.appString
@@ -129,9 +130,9 @@ private fun EtaContent(modifier: Modifier = Modifier, projection: ProjectionResu
             )
         }
         Spacer(Modifier.height(8.dp))
-        EtaLadder(
+        EtaJourney(
             progress = projection.progress ?: 0f,
-            goalIsLoss = projection.goalIsLoss,
+            onSurface = onSurface,
             modifier = Modifier.fillMaxWidth().weight(1f),
         )
     }
@@ -148,29 +149,79 @@ private fun lerpColor(a: Color, b: Color, t: Float): Color {
 }
 
 @Composable
-private fun EtaLadder(progress: Float, goalIsLoss: Boolean, modifier: Modifier = Modifier) {
-    val colorRed = Color(0xFFE53935)
-    val colorGreen = Color(0xFF4BB543)
+private fun EtaJourney(progress: Float, onSurface: Color, modifier: Modifier = Modifier) {
+    val colorStart = Color(0xFFE53935)
+    val colorEnd = Color(0xFF4BB543)
+    val accent = lerpColor(colorStart, colorEnd, progress)
     Canvas(modifier = modifier) {
-        val barCount = 30
-        val gap = 6.dp.toPx()
-        val totalGaps = gap * (barCount - 1)
-        val barWidth = (size.width - totalGaps) / barCount
-        val filledCount = (progress * barCount).roundToInt()
-        val maxH = size.height
-        val minH = size.height * 0.30f
-        for (i in 0 until barCount) {
-            val x = i * (barWidth + gap)
-            val t = if (barCount > 1) i.toFloat() / (barCount - 1) else 0f
-            val barH = if (goalIsLoss) minH + (maxH - minH) * (1f - t) else minH + (maxH - minH) * t
-            val top = size.height - barH
-            val barColor = lerpColor(colorRed, colorGreen, t).copy(alpha = if (i < filledCount) 1f else 0.15f)
-            drawRect(
-                color = barColor,
-                topLeft = Offset(x, top),
-                size = Size(barWidth, barH),
-            )
+        val padH = 14.dp.toPx()
+        val trackY = size.height * 0.78f
+        val trackStart = padH
+        val trackEnd = size.width - padH
+        val cursorX = trackStart + (trackEnd - trackStart) * progress.coerceIn(0.02f, 0.98f)
+
+        // Remaining track
+        drawLine(
+            color = onSurface.copy(alpha = 0.16f),
+            start = Offset(cursorX, trackY),
+            end = Offset(trackEnd, trackY),
+            strokeWidth = 2.dp.toPx(),
+            cap = StrokeCap.Round,
+        )
+        // Done track
+        drawLine(
+            color = accent.copy(alpha = 0.55f),
+            start = Offset(trackStart, trackY),
+            end = Offset(cursorX, trackY),
+            strokeWidth = 2.5.dp.toPx(),
+            cap = StrokeCap.Round,
+        )
+        // Start cap
+        drawCircle(color = colorStart.copy(alpha = 0.50f), radius = 3.5.dp.toPx(), center = Offset(trackStart, trackY))
+        // Goal cap
+        drawCircle(color = colorEnd.copy(alpha = 0.50f), radius = 3.5.dp.toPx(), center = Offset(trackEnd, trackY))
+
+        // Cursor arrow (upward-pointing triangle on the track line)
+        val arrowHalf = 5.dp.toPx()
+        val arrowHeight = 8.dp.toPx()
+        val arrowPath = Path().apply {
+            moveTo(cursorX, trackY)
+            lineTo(cursorX - arrowHalf, trackY + arrowHeight)
+            lineTo(cursorX + arrowHalf, trackY + arrowHeight)
+            close()
         }
+        drawPath(arrowPath, color = accent)
+
+        // Silhouette figure above the cursor
+        val headR = (size.height * 0.09f).coerceIn(3.5.dp.toPx(), 5.5.dp.toPx())
+        val topW  = headR * 2.0f   // wide at shoulders/arms
+        val botW  = headR * 1.3f   // narrower at feet
+        val bodyH = headR * 2.3f
+        val cr    = headR * 0.28f  // corner radius
+        val figBottom = trackY - 7.dp.toPx()
+        val bodyTop   = figBottom - bodyH
+        val headCY    = bodyTop - headR - 1.dp.toPx()
+
+        // body — rounded trapezoid
+        val tlx = cursorX - topW / 2f
+        val trx = cursorX + topW / 2f
+        val blx = cursorX - botW / 2f
+        val brx = cursorX + botW / 2f
+        val bodyPath = Path().apply {
+            moveTo(tlx + cr, bodyTop)
+            lineTo(trx - cr, bodyTop)
+            quadraticTo(trx, bodyTop, trx, bodyTop + cr)
+            lineTo(brx, figBottom - cr)
+            quadraticTo(brx, figBottom, brx - cr, figBottom)
+            lineTo(blx + cr, figBottom)
+            quadraticTo(blx, figBottom, blx, figBottom - cr)
+            lineTo(tlx, bodyTop + cr)
+            quadraticTo(tlx, bodyTop, tlx + cr, bodyTop)
+            close()
+        }
+        drawPath(bodyPath, color = accent)
+        // head
+        drawCircle(color = accent, radius = headR, center = Offset(cursorX, headCY))
     }
 }
 
