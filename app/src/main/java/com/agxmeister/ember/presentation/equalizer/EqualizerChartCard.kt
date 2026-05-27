@@ -159,8 +159,8 @@ internal fun EqualizerCard(
                     val innerHeight = size.height - topPad - bottomPad
                     val colWidth = innerWidth / 14f
 
-                    val dashUnit = innerHeight / 32f
-                    val dashH = dashUnit * 0.60f
+                    val dashUnit = innerHeight / 48f
+                    val dashH = dashUnit * 0.68f
                     val maxDashW = (colWidth * 0.72f).coerceAtMost(10.dp.toPx())
 
                     val dashAreaBottom = size.height - bottomPad
@@ -190,7 +190,7 @@ internal fun EqualizerCard(
 
                         val litCount = if (hasData) {
                             val frac = (day.weightKg!! - yMin) / (yMax - yMin)
-                            val full = (frac * 32).roundToInt().coerceIn(1, 32)
+                            val full = (frac * 48).roundToInt().coerceIn(1, 48)
                             if (isToday) (full * todayColumnProgress).roundToInt().coerceIn(0, full) else full
                         } else 0
 
@@ -205,7 +205,7 @@ internal fun EqualizerCard(
                         val dashW = maxDashW
                         val dashX = colLeft + (colWidth - dashW) / 2f
 
-                        for (di in 0 until 32) {
+                        for (di in 0 until 48) {
                             val isLit = di < litCount
                             val isTip = isLit && di == litCount - 1 && (isToday || isSelected)
                             val yBottom = dashAreaBottom - di * dashUnit
