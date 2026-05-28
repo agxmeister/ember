@@ -100,34 +100,45 @@ internal fun ProjectionCard(
 
 @Composable
 private fun EtaContent(modifier: Modifier = Modifier, projection: ProjectionResult.Eta, onSurface: Color) {
-    val daysStr = if (projection.daysAway == 0) appString(R.string.trends_today)
-                  else appString(R.string.trends_in_days, projection.daysAway)
-    val percentStr = if (projection.progress != null) "${"%.1f".format(projection.progress * 100).trimStart('0')}%" else ".-"
+    val percentNum = if (projection.progress != null) "%.1f".format(projection.progress * 100).trimStart('0') else ".-"
+    val showPercent = projection.progress != null
+    val bigStyle = TextStyle(
+        fontFamily = FontFamily.Monospace,
+        fontSize = 28.sp,
+        fontWeight = FontWeight.Bold,
+        color = onSurface,
+    )
+    val smallStyle = TextStyle(
+        fontFamily = FontFamily.Monospace,
+        fontSize = 12.sp,
+        color = onSurface.copy(alpha = 0.75f),
+    )
     Column(modifier = modifier) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.Bottom,
         ) {
-            Text(
-                text = percentStr,
-                style = TextStyle(
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = onSurface,
-                ),
-                modifier = Modifier.weight(1f),
-            )
-            Text(
-                text = daysStr,
-                style = TextStyle(
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = onSurface,
-                ),
-                modifier = Modifier.padding(bottom = 3.dp),
-            )
+            Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.Bottom) {
+                Text(text = percentNum, style = bigStyle)
+                if (showPercent) {
+                    Text(text = " %", style = smallStyle, modifier = Modifier.padding(bottom = 4.dp))
+                }
+            }
+            if (projection.daysAway == 0) {
+                Text(
+                    text = appString(R.string.trends_today),
+                    style = smallStyle,
+                    modifier = Modifier.padding(bottom = 4.dp),
+                )
+            } else {
+                val fullStr = appString(R.string.trends_in_days, projection.daysAway)
+                val parts = fullStr.split(projection.daysAway.toString())
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text(text = parts.getOrElse(0) { "" }, style = smallStyle, modifier = Modifier.padding(bottom = 4.dp))
+                    Text(text = projection.daysAway.toString(), style = bigStyle)
+                    Text(text = parts.getOrElse(1) { "" }, style = smallStyle, modifier = Modifier.padding(bottom = 4.dp))
+                }
+            }
         }
         Spacer(Modifier.height(8.dp))
         EtaJourney(
