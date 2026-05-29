@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    ViewBox 100×180:
+      head  cy=22 r=22  →  0–44  (24% of height)
+      torso             →  48–115 (37%)
+      legs              →  125–180 (31%)
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="44dp"
+    android:viewportWidth="100"
+    android:viewportHeight="180">
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="
+            M50,22 m-22,0 a22,22,0,1,0,44,0 a22,22,0,1,0,-44,0 Z
+            M12,62 Q12,48 24,48 L76,48 Q88,48 88,62
+            L86,115 Q86,125 72,125
+            L72,180 L28,180
+            L28,125 Q14,125 14,115 Z"/>
+</vector>

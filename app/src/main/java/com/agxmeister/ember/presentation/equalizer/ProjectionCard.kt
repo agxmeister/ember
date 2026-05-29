@@ -31,8 +31,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -164,9 +167,10 @@ private fun EtaJourney(progress: Float, onSurface: Color, modifier: Modifier = M
     val colorStart = Color(0xFFE53935)
     val colorEnd = Color(0xFF4BB543)
     val accent = lerpColor(colorStart, colorEnd, progress)
+    val figurePainter = painterResource(R.drawable.ic_person_figure)
     Canvas(modifier = modifier) {
         val padH = 14.dp.toPx()
-        val trackY = size.height * 0.78f
+        val trackY = size.height - 12.dp.toPx()
         val trackStart = padH
         val trackEnd = size.width - padH
         val cursorX = trackStart + (trackEnd - trackStart) * progress.coerceIn(0.02f, 0.98f)
@@ -204,35 +208,14 @@ private fun EtaJourney(progress: Float, onSurface: Color, modifier: Modifier = M
         drawPath(arrowPath, color = accent)
 
         // Silhouette figure above the cursor
-        val headR = (size.height * 0.09f).coerceIn(3.5.dp.toPx(), 5.5.dp.toPx())
-        val topW  = headR * 2.0f   // wide at shoulders/arms
-        val botW  = headR * 1.3f   // narrower at feet
-        val bodyH = headR * 2.3f
-        val cr    = headR * 0.28f  // corner radius
         val figBottom = trackY - 7.dp.toPx()
-        val bodyTop   = figBottom - bodyH
-        val headCY    = bodyTop - headR - 1.dp.toPx()
-
-        // body — rounded trapezoid
-        val tlx = cursorX - topW / 2f
-        val trx = cursorX + topW / 2f
-        val blx = cursorX - botW / 2f
-        val brx = cursorX + botW / 2f
-        val bodyPath = Path().apply {
-            moveTo(tlx + cr, bodyTop)
-            lineTo(trx - cr, bodyTop)
-            quadraticTo(trx, bodyTop, trx, bodyTop + cr)
-            lineTo(brx, figBottom - cr)
-            quadraticTo(brx, figBottom, brx - cr, figBottom)
-            lineTo(blx + cr, figBottom)
-            quadraticTo(blx, figBottom, blx, figBottom - cr)
-            lineTo(tlx, bodyTop + cr)
-            quadraticTo(tlx, bodyTop, tlx + cr, bodyTop)
-            close()
+        val figH = figBottom * (2f / 3f)
+        val figW = figH * (100f / 180f)
+        translate(cursorX - figW / 2f, figBottom - figH) {
+            with(figurePainter) {
+                draw(Size(figW, figH), colorFilter = ColorFilter.tint(accent))
+            }
         }
-        drawPath(bodyPath, color = accent)
-        // head
-        drawCircle(color = accent, radius = headR, center = Offset(cursorX, headCY))
     }
 }
 
