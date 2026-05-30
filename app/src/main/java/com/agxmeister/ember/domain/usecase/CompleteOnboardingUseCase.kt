@@ -23,6 +23,7 @@ class CompleteOnboardingUseCase @Inject constructor(
         notificationDayOfWeek: Int,
         notificationHour: Int,
         notificationMinute: Int,
+        goalStartDate: String = LocalDate.now().toString(),
     ) {
         val derivedGoal = if (goalTargetKg < weightKg) WeightGoal.Decrease else WeightGoal.Increase
         val (finalHour, finalMinute) = if (weighingFrequency == WeighingFrequency.Daily) {
@@ -32,7 +33,7 @@ class CompleteOnboardingUseCase @Inject constructor(
             notificationHour to notificationMinute
         }
         preferencesRepository.saveOnboardingData(
-            weightKg, goalTargetKg, LocalDate.now().toString(),
+            weightKg, goalTargetKg, goalStartDate,
             dayStartHour, dayStartMinute,
             finalHour, finalMinute,
             clusteringEnabled, derivedGoal, weightUnit,

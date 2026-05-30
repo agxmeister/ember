@@ -14,6 +14,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.minus
+import kotlinx.datetime.toLocalDateTime
 import javax.inject.Inject
 
 data class SeedMeasuresOnboardingUiState(
@@ -59,6 +64,11 @@ class SeedMeasuresOnboardingViewModel @Inject constructor(
     fun complete() {
         val state = _uiState.value
         viewModelScope.launch {
+            val values = state.measuresText.split(",").mapNotNull { it.trim().toDoubleOrNull() }
+            val goalStartDate = if (values.size > 1) {
+                val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+                today.minus(values.size - 1, DateTimeUnit.DAY).toString()
+            } else null
             completeOnboarding(
                 weightKg = state.weightKg,
                 goalTargetKg = state.goalTargetKg,
@@ -70,10 +80,10 @@ class SeedMeasuresOnboardingViewModel @Inject constructor(
                 notificationDayOfWeek = state.notificationDayOfWeek,
                 notificationHour = state.notificationHour,
                 notificationMinute = state.notificationMinute,
+                goalStartDate = goalStartDate ?: java.time.LocalDate.now().toString(),
             )
             seedMeasuresCoordinator.consume()
             measurementRepository.deleteAll()
-            val values = state.measuresText.split(",").mapNotNull { it.trim().toDoubleOrNull() }
             if (values.isNotEmpty()) {
                 importMeasurements(values, state.weightUnit)
             }
