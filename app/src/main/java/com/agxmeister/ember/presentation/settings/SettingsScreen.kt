@@ -36,6 +36,7 @@ import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -81,6 +82,8 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     var showTimePicker by remember { mutableStateOf(false) }
     var showGoalSheet by remember { mutableStateOf(false) }
     var showResetDialog by remember { mutableStateOf(false) }
+    var seedMeasuresMode by remember { mutableStateOf(false) }
+    var titleTapCount by remember { mutableIntStateOf(0) }
 
     val dayLabels = listOf(
         appString(R.string.day_mon),
@@ -106,7 +109,18 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
     ) {
-        Text(appString(R.string.settings_title), style = MaterialTheme.typography.headlineSmall)
+        Text(
+            appString(R.string.settings_title),
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.clickable {
+                titleTapCount++
+                if (titleTapCount >= 7) {
+                    titleTapCount = 0
+                    seedMeasuresMode = true
+                    showResetDialog = true
+                }
+            },
+        )
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(appString(R.string.settings_unit), style = MaterialTheme.typography.titleMedium)
@@ -161,7 +175,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.error,
             modifier = Modifier
-                .clickable { showResetDialog = true }
+                .clickable { seedMeasuresMode = false; showResetDialog = true }
                 .padding(vertical = 4.dp),
         )
         Spacer(modifier = Modifier.height(24.dp))
@@ -271,17 +285,24 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
 
         if (showResetDialog) {
             AlertDialog(
-                onDismissRequest = { showResetDialog = false },
+                onDismissRequest = { showResetDialog = false; seedMeasuresMode = false },
                 title = { Text(appString(R.string.settings_start_over_confirm_title)) },
                 text = { Text(appString(R.string.settings_start_over_confirm_message)) },
                 confirmButton = {
                     TextButton(onClick = {
-                        viewModel.onResetData()
                         showResetDialog = false
+                        if (seedMeasuresMode) {
+                            viewModel.onSeedMeasuresTriggered()
+                        } else {
+                            viewModel.onResetData()
+                        }
+                        seedMeasuresMode = false
                     }) { Text(appString(R.string.label_confirm)) }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showResetDialog = false }) { Text(appString(R.string.label_cancel)) }
+                    TextButton(onClick = { showResetDialog = false; seedMeasuresMode = false }) {
+                        Text(appString(R.string.label_cancel))
+                    }
                 },
             )
         }
@@ -469,6 +490,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                 }
             }
         }
-    }
+
+}
     }
 }

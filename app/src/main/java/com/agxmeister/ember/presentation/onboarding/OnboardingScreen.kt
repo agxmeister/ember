@@ -31,6 +31,7 @@ import com.agxmeister.ember.domain.model.WeighingFrequency
 import com.agxmeister.ember.presentation.common.IntWheelPicker
 import com.agxmeister.ember.presentation.theme.EmberTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -489,6 +490,133 @@ private fun StepProgressBar(totalSteps: Int, currentStep: Int, modifier: Modifie
                     ),
             )
         }
+    }
+}
+
+@Composable
+fun SeedMeasuresOnboardingScreen(
+    onComplete: () -> Unit,
+    viewModel: SeedMeasuresOnboardingViewModel = hiltViewModel(),
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(state.completed) {
+        if (state.completed) onComplete()
+    }
+
+    val bg = MaterialTheme.colorScheme.background
+    val onBg = MaterialTheme.colorScheme.onBackground
+    MaterialTheme(
+        colorScheme = MaterialTheme.colorScheme.copy(
+            primary = onBg,
+            onPrimary = bg,
+            secondaryContainer = Color(0xFF282828),
+            onSecondaryContainer = Color.White,
+        ),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 32.dp, vertical = 48.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            StepProgressBar(totalSteps = 6, currentStep = state.step)
+            Spacer(Modifier.height(32.dp))
+            when (state.step) {
+                0 -> WeightStep(
+                    weightKg = state.weightKg,
+                    weightUnit = state.weightUnit,
+                    onWeightChanged = viewModel::onWeightChanged,
+                    onUnitChanged = viewModel::onWeightUnitChanged,
+                    onNext = viewModel::onNextStep,
+                )
+                1 -> GoalTargetStep(
+                    weightKg = state.weightKg,
+                    goalTargetKg = state.goalTargetKg,
+                    weightUnit = state.weightUnit,
+                    onGoalTargetChanged = viewModel::onGoalTargetChanged,
+                    onNext = viewModel::onNextStep,
+                )
+                2 -> FrequencyStep(
+                    frequency = state.weighingFrequency,
+                    onFrequencyChanged = viewModel::onWeighingFrequencyChanged,
+                    onNext = viewModel::onNextStep,
+                )
+                3 -> TimeStep(
+                    frequency = state.weighingFrequency,
+                    dayStartHour = state.dayStartHour,
+                    dayStartMinute = state.dayStartMinute,
+                    notificationDayOfWeek = state.notificationDayOfWeek,
+                    notificationHour = state.notificationHour,
+                    notificationMinute = state.notificationMinute,
+                    onDayStartHourChanged = viewModel::onDayStartHourChanged,
+                    onDayStartMinuteChanged = viewModel::onDayStartMinuteChanged,
+                    onNotificationDayOfWeekChanged = viewModel::onNotificationDayOfWeekChanged,
+                    onNotificationHourChanged = viewModel::onNotificationHourChanged,
+                    onNotificationMinuteChanged = viewModel::onNotificationMinuteChanged,
+                    onNext = viewModel::onNextStep,
+                )
+                4 -> ClusteringStep(
+                    clusteringEnabled = state.clusteringEnabled,
+                    onClusteringEnabledChanged = viewModel::onClusteringEnabledChanged,
+                    onDone = viewModel::onNextStep,
+                )
+                5 -> MeasuresStep(
+                    weightUnit = state.weightUnit,
+                    measuresText = state.measuresText,
+                    onMeasuresTextChanged = viewModel::onMeasuresTextChanged,
+                    onDone = viewModel::complete,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ColumnScope.MeasuresStep(
+    weightUnit: WeightUnit,
+    measuresText: String,
+    onMeasuresTextChanged: (String) -> Unit,
+    onDone: () -> Unit,
+) {
+    val borderColor = MaterialTheme.colorScheme.outline
+    Text("Import history", style = MaterialTheme.typography.headlineSmall)
+    Spacer(Modifier.height(8.dp))
+    Text(
+        "Enter comma-separated weights in ${weightUnit.label}. Last value = today, each earlier one = the previous day.",
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+    )
+    Spacer(Modifier.weight(1f))
+    BasicTextField(
+        value = measuresText,
+        onValueChange = onMeasuresTextChanged,
+        textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+        modifier = Modifier
+            .fillMaxWidth()
+            .drawBehind {
+                drawLine(
+                    color = borderColor,
+                    start = Offset(0f, size.height),
+                    end = Offset(size.width, size.height),
+                    strokeWidth = 1.dp.toPx(),
+                )
+            },
+        decorationBox = { inner ->
+            if (measuresText.isEmpty()) {
+                Text(
+                    "e.g. 72.5, 73.0, 72.8",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                )
+            }
+            inner()
+        },
+    )
+    Spacer(Modifier.weight(1f))
+    Button(onClick = onDone, modifier = Modifier.fillMaxWidth()) {
+        Text(appString(R.string.onboarding_get_started))
     }
 }
 

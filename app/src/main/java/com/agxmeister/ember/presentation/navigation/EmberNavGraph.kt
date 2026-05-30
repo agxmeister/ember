@@ -32,6 +32,7 @@ import com.agxmeister.ember.presentation.AppViewModel
 import com.agxmeister.ember.presentation.trends.TrendsScreen
 import com.agxmeister.ember.presentation.home.HomeScreen
 import com.agxmeister.ember.presentation.onboarding.OnboardingScreen
+import com.agxmeister.ember.presentation.onboarding.SeedMeasuresOnboardingScreen
 import com.agxmeister.ember.presentation.settings.SettingsScreen
 
 private const val ROUTE_ONBOARDING = "onboarding"
@@ -51,6 +52,7 @@ private val screens = listOf(Screen.Home, Screen.Trends, Screen.Settings)
 fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
     val onboardingCompleted by viewModel.isOnboardingCompleted.collectAsStateWithLifecycle()
     val hasCheckedIn by viewModel.hasCheckedIn.collectAsStateWithLifecycle()
+    val isSeedMeasuresPending by viewModel.isSeedMeasuresPending.collectAsStateWithLifecycle()
 
     // Don't render until both states are known (DataStore + DB reads are near-instant)
     onboardingCompleted ?: return
@@ -102,13 +104,16 @@ fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
             modifier = Modifier.padding(innerPadding),
         ) {
             composable(ROUTE_ONBOARDING) {
-                OnboardingScreen(
-                    onComplete = {
-                        navController.navigate(Screen.Home.route) {
-                            popUpTo(ROUTE_ONBOARDING) { inclusive = true }
-                        }
+                val onComplete = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(ROUTE_ONBOARDING) { inclusive = true }
                     }
-                )
+                }
+                if (isSeedMeasuresPending) {
+                    SeedMeasuresOnboardingScreen(onComplete = onComplete)
+                } else {
+                    OnboardingScreen(onComplete = onComplete)
+                }
             }
             composable(Screen.Home.route) {
                 HomeScreen(onNavigateToTrends = {

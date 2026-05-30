@@ -17,6 +17,7 @@ import com.agxmeister.ember.domain.usecase.SetGoalUseCase
 import com.agxmeister.ember.domain.usecase.ResetDataUseCase
 import com.agxmeister.ember.domain.usecase.SetWeightUnitUseCase
 import com.agxmeister.ember.domain.usecase.SetWeighingFrequencyUseCase
+import com.agxmeister.ember.presentation.SeedMeasuresCoordinator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -43,6 +44,7 @@ class SettingsViewModel @Inject constructor(
     private val setWeighingFrequency: SetWeighingFrequencyUseCase,
     private val setNotificationDayOfWeek: SetNotificationDayOfWeekUseCase,
     private val resetData: ResetDataUseCase,
+    private val seedMeasuresCoordinator: SeedMeasuresCoordinator,
 ) : ViewModel() {
 
     val clusters: StateFlow<List<Cluster>> = getClusterTrends()
@@ -176,5 +178,12 @@ class SettingsViewModel @Inject constructor(
 
     fun onResetData() {
         viewModelScope.launch { resetData() }
+    }
+
+    fun onSeedMeasuresTriggered() {
+        viewModelScope.launch {
+            resetData()
+            seedMeasuresCoordinator.trigger()
+        }
     }
 }

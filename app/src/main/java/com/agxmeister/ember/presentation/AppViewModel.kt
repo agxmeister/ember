@@ -8,6 +8,7 @@ import com.agxmeister.ember.domain.repository.UserPreferencesRepository
 import com.agxmeister.ember.domain.usecase.HasRecentMeasurementUseCase
 import com.agxmeister.ember.domain.usecase.IsOnboardingCompletedUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import com.agxmeister.ember.presentation.SeedMeasuresCoordinator
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -22,7 +23,11 @@ class AppViewModel @Inject constructor(
     isOnboardingCompleted: IsOnboardingCompletedUseCase,
     hasRecentMeasurement: HasRecentMeasurementUseCase,
     preferencesRepository: UserPreferencesRepository,
+    seedMeasuresCoordinator: SeedMeasuresCoordinator,
 ) : ViewModel() {
+
+    val isSeedMeasuresPending: StateFlow<Boolean> = seedMeasuresCoordinator.isPending
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     val isOnboardingCompleted: StateFlow<Boolean?> = isOnboardingCompleted()
         .map { it as Boolean? }
