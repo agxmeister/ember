@@ -46,7 +46,7 @@ sealed class Screen(val route: String, @StringRes val labelRes: Int, val icon: I
 private const val TRENDS_ROUTE_PATTERN = "trends?animateEntry={animateEntry}"
 private fun trendsRoute(animateEntry: Boolean = false) = "trends?animateEntry=$animateEntry"
 
-private val screens = listOf(Screen.Home, Screen.Trends, Screen.Settings)
+private val screens = listOf(Screen.Home, Screen.Trends)
 
 @Composable
 fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
@@ -116,15 +116,26 @@ fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
                 }
             }
             composable(Screen.Home.route) {
-                HomeScreen(onNavigateToTrends = {
-                    navController.navigate(trendsRoute(animateEntry = true)) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = false
+                HomeScreen(
+                    onNavigateToTrends = {
+                        navController.navigate(trendsRoute(animateEntry = true)) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = false
+                            }
+                            launchSingleTop = false
+                            restoreState = false
                         }
-                        launchSingleTop = false
-                        restoreState = false
-                    }
-                })
+                    },
+                    onNavigateToSettings = {
+                        navController.navigate(Screen.Settings.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                )
             }
             composable(
                 route = TRENDS_ROUTE_PATTERN,

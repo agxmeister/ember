@@ -21,6 +21,7 @@ import androidx.compose.material.icons.outlined.BrightnessAuto
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.LightMode
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -98,6 +99,7 @@ private fun DayCluster.localizedDescription() = appString(
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     onNavigateToTrends: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val defaultWeight = state.defaultWeightKg ?: return
@@ -209,6 +211,13 @@ fun HomeScreen(
                 Icon(
                     imageVector = state.themeMode.icon(),
                     contentDescription = state.themeMode.name,
+                    tint = onBg.copy(alpha = 0.55f),
+                )
+            }
+            IconButton(onClick = onNavigateToSettings) {
+                Icon(
+                    imageVector = Icons.Outlined.Settings,
+                    contentDescription = "Settings",
                     tint = onBg.copy(alpha = 0.55f),
                 )
             }
