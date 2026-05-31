@@ -34,7 +34,9 @@ class GetDailyCandlesUseCase @Inject constructor(
 
             dates.mapIndexed { index, date ->
                 val dayMeasurements = byDate[date]!!.sortedBy { it.timestamp }
-                val close = normalizer.normalize(normalizer.selectClose(dayMeasurements))
+                val closeMs = normalizer.selectClose(dayMeasurements)
+                val close = normalizer.normalize(closeMs)
+                val rawClose = closeMs.weightKg
 
                 val prevMeasurements = if (index > 0) byDate[dates[index - 1]]!!.sortedBy { it.timestamp } else null
                 val open = if (prevMeasurements != null)
@@ -58,6 +60,7 @@ class GetDailyCandlesUseCase @Inject constructor(
                     high = high,
                     low = low,
                     close = close,
+                    rawClose = rawClose,
                     rollingMedian = windowWeights.median(),
                 )
             }

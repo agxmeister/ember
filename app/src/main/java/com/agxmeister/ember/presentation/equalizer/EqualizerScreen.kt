@@ -53,7 +53,7 @@ fun EqualizerScreen(animateEntry: Boolean = false) {
 
     val isFocused = state.selectedDate != null
     val displayDate = state.selectedDate ?: state.today
-    val readoutWeight = if (isFocused) state.days.find { it.date == displayDate }?.weightKg else state.weeklyAvg
+    val readoutWeight = if (isFocused) state.days.find { it.date == displayDate }?.rawWeightKg else state.weeklyAvg
     val wkPrefix = appString(R.string.trends_readout_wk_prefix)
     val readoutLabel = state.selectedDate?.let {
         if (state.isWeekly) {

@@ -8,5 +8,6 @@ data class DailyCandle(
     val high: Double,
     val low: Double,
     val close: Double,
+    val rawClose: Double,
     val rollingMedian: Double,
 )

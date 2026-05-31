@@ -37,6 +37,7 @@ import kotlin.math.abs
 data class EqualizerDayData(
     val date: LocalDate,
     val weightKg: Double?,
+    val rawWeightKg: Double? = null,
 )
 
 data class TrendLineData(val startKg: Double, val endKg: Double, val diffKg: Double)
@@ -281,7 +282,8 @@ class EqualizerViewModel @Inject constructor(
             val windowStart = todayDate.minus(DatePeriod(days = 13 + effectiveOffset))
             days = (0..13).map { offset ->
                 val date = windowStart.plus(DatePeriod(days = offset))
-                EqualizerDayData(date = date, weightKg = candleMap[date]?.close)
+                val candle = candleMap[date]
+                EqualizerDayData(date = date, weightKg = candle?.close, rawWeightKg = candle?.rawClose)
             }
 
             trendLine = computeTrendLine(days)
