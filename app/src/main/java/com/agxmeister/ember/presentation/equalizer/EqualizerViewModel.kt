@@ -61,9 +61,7 @@ data class EqualizerUiState(
     val today: LocalDate,
     val selectedDate: LocalDate?,
     val streak: Int,
-    val weeklyTrend: Double?,
     val weeklyAvg: Double?,
-    val trendCloserToTarget: Boolean?,
     val isWeekly: Boolean,
     val trendLine: TrendLineData?,
     val weeklyRateKg: Double?,
@@ -210,9 +208,7 @@ class EqualizerViewModel @Inject constructor(
         val days: List<EqualizerDayData>
         val today: LocalDate
         val streak: Int
-        val weeklyTrend: Double?
         val weeklyAvg: Double?
-        val trendCloserToTarget: Boolean?
         val trendLine: TrendLineData?
         val weeklyRateKg: Double?
         val trendMeasurementsNeeded: Int?
@@ -242,15 +238,17 @@ class EqualizerViewModel @Inject constructor(
 
             trendLine = computeTrendLine(days)
             val lastMeasuredWeekIdx = days.indexOfLast { it.weightKg != null }
-            val firstMeasuredWeekIdx = days.indexOfFirst { it.weightKg != null }
             val hasRecentWeek = lastMeasuredWeekIdx >= days.size - 7
-            val weekSpan = if (firstMeasuredWeekIdx >= 0 && lastMeasuredWeekIdx >= 0) lastMeasuredWeekIdx - firstMeasuredWeekIdx else -1
-            weeklyRateKg = if (hasRecentWeek && weekSpan >= 6) {
-                computeWeeklyRate(days.subList(firstMeasuredWeekIdx, lastMeasuredWeekIdx + 1), indexStepDays = 7)
+            val rateWeekWindowStart = currentWeekStart.minus(DatePeriod(days = 27 * 7))
+            val rateWeekWindow = (0..27).map { offset ->
+                val weekStart = rateWeekWindowStart.plus(DatePeriod(days = offset * 7))
+                EqualizerDayData(date = weekStart, weightKg = weeklyMap[weekStart]?.median)
+            }
+            val measuredIn28Weeks = rateWeekWindow.count { it.weightKg != null }
+            weeklyRateKg = if (hasRecentWeek && measuredIn28Weeks >= 7) {
+                computeWeeklyRate(rateWeekWindow, indexStepDays = 7)
             } else null
-            val last7Weeks = if (lastMeasuredWeekIdx >= 6) days.subList(lastMeasuredWeekIdx - 6, lastMeasuredWeekIdx + 1) else days.takeLast(7)
-            val measuredInLast7Weeks = last7Weeks.count { it.weightKg != null }
-            trendMeasurementsNeeded = if (weeklyRateKg == null) (7 - measuredInLast7Weeks).coerceAtLeast(1) else null
+            trendMeasurementsNeeded = if (weeklyRateKg == null) (7 - measuredIn28Weeks).coerceAtLeast(1) else null
 
             var s = 0
             var w = currentWeekStart
@@ -269,16 +267,6 @@ class EqualizerViewModel @Inject constructor(
 
             val windowWeeks = days.mapNotNull { it.weightKg }
             weeklyAvg = if (windowWeeks.isNotEmpty()) windowWeeks.median() else null
-
-            val currentWeek = allWeekly.find { it.weekStart == currentWeekStart }
-            val prevWeek = allWeekly.find { it.weekStart == currentWeekStart.minus(DatePeriod(days = 7)) }
-            if (currentWeek != null && prevWeek != null) {
-                weeklyTrend = currentWeek.median - prevWeek.median
-                trendCloserToTarget = abs(currentWeek.median - targetKg) < abs(prevWeek.median - targetKg)
-            } else {
-                weeklyTrend = null
-                trendCloserToTarget = null
-            }
         } else {
             today = todayDate
 
@@ -298,15 +286,17 @@ class EqualizerViewModel @Inject constructor(
 
             trendLine = computeTrendLine(days)
             val lastMeasuredDayIdx = days.indexOfLast { it.weightKg != null }
-            val firstMeasuredDayIdx = days.indexOfFirst { it.weightKg != null }
             val hasRecentDay = lastMeasuredDayIdx >= days.size - 7
-            val daySpan = if (firstMeasuredDayIdx >= 0 && lastMeasuredDayIdx >= 0) lastMeasuredDayIdx - firstMeasuredDayIdx else -1
-            weeklyRateKg = if (hasRecentDay && daySpan >= 6) {
-                computeWeeklyRate(days.subList(firstMeasuredDayIdx, lastMeasuredDayIdx + 1))
+            val rateDayWindowStart = todayDate.minus(DatePeriod(days = DAILY_RATE_WINDOW_DAYS - 1))
+            val rateDayWindow = (0 until DAILY_RATE_WINDOW_DAYS).map { offset ->
+                val date = rateDayWindowStart.plus(DatePeriod(days = offset))
+                EqualizerDayData(date = date, weightKg = candleMap[date]?.close)
+            }
+            val measuredInRateWindow = rateDayWindow.count { it.weightKg != null }
+            weeklyRateKg = if (hasRecentDay && measuredInRateWindow >= 7) {
+                computeWeeklyRate(rateDayWindow)
             } else null
-            val last7Days = if (lastMeasuredDayIdx >= 6) days.subList(lastMeasuredDayIdx - 6, lastMeasuredDayIdx + 1) else days.takeLast(7)
-            val measuredInLast7 = last7Days.count { it.weightKg != null }
-            trendMeasurementsNeeded = if (weeklyRateKg == null) (7 - measuredInLast7).coerceAtLeast(1) else null
+            trendMeasurementsNeeded = if (weeklyRateKg == null) (7 - measuredInRateWindow).coerceAtLeast(1) else null
 
             var s = 0
             var d = todayDate
@@ -323,23 +313,8 @@ class EqualizerViewModel @Inject constructor(
             }
             streak = s
 
-            val last7Dates = (0..6).map { todayDate.minus(DatePeriod(days = it)) }.toSet()
-            val prev7Dates = (7..13).map { todayDate.minus(DatePeriod(days = it)) }.toSet()
-            val last7 = allCandles.filter { it.date in last7Dates }.map { it.close }
-            val prev7 = allCandles.filter { it.date in prev7Dates }.map { it.close }
-
             val windowWeights = days.mapNotNull { it.weightKg }
             weeklyAvg = if (windowWeights.isNotEmpty()) windowWeights.median() else null
-
-            if (last7.isNotEmpty() && prev7.isNotEmpty()) {
-                val currentMedian = last7.median()
-                val prevMedian = prev7.median()
-                weeklyTrend = currentMedian - prevMedian
-                trendCloserToTarget = abs(currentMedian - targetKg) < abs(prevMedian - targetKg)
-            } else {
-                weeklyTrend = null
-                trendCloserToTarget = null
-            }
         }
 
         val projection = computeProjection(weeklyAvg, weeklyRateKg, targetKg, initialWeightKg, goalIsLoss, todayDate)
@@ -353,9 +328,7 @@ class EqualizerViewModel @Inject constructor(
             today = today,
             selectedDate = selectedDate,
             streak = streak,
-            weeklyTrend = weeklyTrend,
             weeklyAvg = weeklyAvg,
-            trendCloserToTarget = trendCloserToTarget,
             isWeekly = isWeekly,
             trendLine = trendLine,
             weeklyRateKg = weeklyRateKg,
@@ -377,9 +350,7 @@ class EqualizerViewModel @Inject constructor(
             today = todayDate,
             selectedDate = null,
             streak = 0,
-            weeklyTrend = null,
             weeklyAvg = null,
-            trendCloserToTarget = null,
             isWeekly = false,
             trendLine = null,
             weeklyRateKg = null,
@@ -392,6 +363,8 @@ class EqualizerViewModel @Inject constructor(
         ),
     )
 }
+
+private const val DAILY_RATE_WINDOW_DAYS = 28
 
 private fun computeTrendLine(days: List<EqualizerDayData>, minPoints: Int = 2): TrendLineData? {
     val measured = days.mapIndexedNotNull { idx, day ->
