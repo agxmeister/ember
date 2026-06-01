@@ -68,7 +68,7 @@ internal fun EqualizerCard(
     onDayToggle: (LocalDate) -> Unit,
     onScroll: (Int) -> Unit,
 ) {
-    val weights = days.mapNotNull { it.weightKg }
+    val weights = days.mapNotNull { it.rawWeightKg ?: it.weightKg }
     val allValues = if (weights.isEmpty()) listOf(targetKg - 2.0, targetKg + 2.0) else weights + targetKg
     val minW = allValues.min()
     val maxW = allValues.max()
@@ -181,15 +181,16 @@ internal fun EqualizerCard(
                         val colCenterX = colLeft + colWidth / 2f
                         val isToday = day.date == today
                         val isSelected = day.date == selectedDate
-                        val hasData = day.weightKg != null
+                        val displayWeight = day.rawWeightKg ?: day.weightKg
+                        val hasData = displayWeight != null
 
                         val c = if (hasData) {
-                            (1.0 - abs(day.weightKg!! - targetKg) / tolerance).coerceIn(0.0, 1.0).toFloat()
+                            (1.0 - abs(displayWeight!! - targetKg) / tolerance).coerceIn(0.0, 1.0).toFloat()
                         } else 0f
                         val litColor = closenessColor(c, darkTheme)
 
                         val litCount = if (hasData) {
-                            val frac = (day.weightKg!! - yMin) / (yMax - yMin)
+                            val frac = (displayWeight!! - yMin) / (yMax - yMin)
                             val full = (frac * 48).roundToInt().coerceIn(1, 48)
                             if (isToday) (full * todayColumnProgress).roundToInt().coerceIn(0, full) else full
                         } else 0
