@@ -123,12 +123,21 @@ private fun RateZoneBar(absRateKg: Double, rateZone: WeeklyRateZone, markerColor
     val greenColor = Color(0xFF4BB543)
     val amberColor = Color(0xFFFFC107)
     val redColor = Color(0xFFE53935)
+    val tooSlowFrac = (0.25 / barRange).toFloat()
+    val healthyFrac = (1.0 / barRange).toFloat()
+    val aggressiveFrac = (1.5 / barRange).toFloat()
+    val badgeColor = when {
+        markerFraction < tooSlowFrac -> dimColor
+        markerFraction < healthyFrac -> greenColor
+        markerFraction < aggressiveFrac -> amberColor
+        else -> redColor
+    }
     val textMeasurer = rememberTextMeasurer()
     val badgeStyle = TextStyle(
         fontFamily = FontFamily.Monospace,
         fontSize = 9.sp,
         letterSpacing = 0.8.sp,
-        color = markerColor,
+        color = badgeColor,
     )
 
     Canvas(modifier = Modifier.fillMaxWidth().height(34.dp)) {
@@ -168,7 +177,7 @@ private fun RateZoneBar(absRateKg: Double, rateZone: WeeklyRateZone, markerColor
             lineTo(cursorX + arrowHalf, trackY + arrowHeight)
             close()
         }
-        drawPath(arrowPath, color = markerColor)
+        drawPath(arrowPath, color = badgeColor)
 
         if (zoneBadge.isNotEmpty()) {
             val measured = textMeasurer.measure(zoneBadge, badgeStyle)
