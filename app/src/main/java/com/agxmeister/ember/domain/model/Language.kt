@@ -1,7 +1,7 @@
 package com.agxmeister.ember.domain.model
 
-enum class Language(val code: String, val displayCode: String) {
-    En("en", "EN"),
-    De("de", "DE"),
-    Fr("fr", "FR"),
+enum class Language(val code: String, val displayCode: String, val nativeName: String) {
+    En("en", "EN", "English"),
+    De("de", "DE", "Deutsch"),
+    Fr("fr", "FR", "Français"),
 }

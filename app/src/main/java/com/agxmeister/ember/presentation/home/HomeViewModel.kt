@@ -3,7 +3,6 @@ package com.agxmeister.ember.presentation.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.agxmeister.ember.domain.model.Cluster
-import com.agxmeister.ember.domain.model.Language
 import com.agxmeister.ember.domain.model.ThemeMode
 import com.agxmeister.ember.domain.model.WeighingFrequency
 import com.agxmeister.ember.domain.model.WeightUnit
@@ -34,7 +33,6 @@ data class HomeUiState(
     val targetKg: Double = 70.0,
     val tolerance: Double = 10.0,
     val themeMode: ThemeMode = ThemeMode.Auto,
-    val language: Language = Language.En,
 )
 
 @HiltViewModel
@@ -71,9 +69,8 @@ class HomeViewModel @Inject constructor(
         },
         getDailyCandles(),
         preferencesRepository.themeMode,
-        preferencesRepository.language,
         preferencesRepository.weighingFrequency,
-    ) { state, candles, themeMode, language, frequency ->
+    ) { state, candles, themeMode, frequency ->
         val previousWeight = if (state.currentCluster?.measurements.isNullOrEmpty()) {
             candles.filter { it.date < today }.maxByOrNull { it.date }?.close
         } else null
@@ -81,7 +78,6 @@ class HomeViewModel @Inject constructor(
             todayWeightKg = candles.find { it.date == today }?.close,
             defaultWeightKg = previousWeight ?: state.defaultWeightKg,
             themeMode = themeMode,
-            language = language,
             isWeekly = frequency == WeighingFrequency.Weekly,
         )
     }.stateIn(
@@ -102,9 +98,4 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun setLanguage(language: Language) {
-        viewModelScope.launch {
-            preferencesRepository.setLanguage(language)
-        }
-    }
 }

@@ -17,6 +17,7 @@ import com.agxmeister.ember.domain.model.WeighingFrequency
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -40,7 +41,7 @@ class UserPreferencesDataStore @Inject constructor(
     private val weighingFrequencyKey = stringPreferencesKey("weighing_frequency")
     private val notificationDayOfWeekKey = intPreferencesKey("notification_day_of_week")
     private val themeModeKey = stringPreferencesKey("theme_mode")
-    private val languageKey = stringPreferencesKey("language")
+    private val languageKey = stringPreferencesKey("language_explicit")
     private val goalStartDateKey = stringPreferencesKey("goal_start_date")
 
     val isOnboardingCompleted: Flow<Boolean> =
@@ -106,10 +107,12 @@ class UserPreferencesDataStore @Inject constructor(
     }
 
     val language: Flow<Language> = context.dataStore.data.map { prefs ->
-        when (prefs[languageKey]) {
-            Language.De.name -> Language.De
-            Language.Fr.name -> Language.Fr
-            else -> Language.En
+        val saved = prefs[languageKey]
+        if (saved != null) {
+            Language.entries.find { it.name == saved } ?: Language.En
+        } else {
+            val systemCode = Locale.getDefault().language
+            Language.entries.find { it.code == systemCode } ?: Language.En
         }
     }
 

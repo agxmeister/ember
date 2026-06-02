@@ -23,6 +23,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -56,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.agxmeister.ember.R
+import com.agxmeister.ember.domain.model.Language
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.model.WeighingFrequency
 import com.agxmeister.ember.presentation.theme.closenessColor
@@ -63,6 +65,7 @@ import com.agxmeister.ember.presentation.theme.closenessColor
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
+    val language by viewModel.language.collectAsStateWithLifecycle()
     val notificationsEnabled by viewModel.notificationsEnabled.collectAsStateWithLifecycle()
     val clusteringEnabled by viewModel.clusteringEnabled.collectAsStateWithLifecycle()
     val weightUnit by viewModel.weightUnit.collectAsStateWithLifecycle()
@@ -79,6 +82,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     val accentColor = closenessColor(accentCloseness, darkTheme)
     val accentDim = Color.hsl(8f + accentCloseness * 112f, saturation = 0.60f, lightness = 0.15f)
 
+    var showLanguageDialog by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
     var showGoalSheet by remember { mutableStateOf(false) }
     var showResetDialog by remember { mutableStateOf(false) }
@@ -121,6 +125,25 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                 }
             },
         )
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(appString(R.string.settings_language), style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { showLanguageDialog = true }
+                .padding(vertical = 8.dp),
+        ) {
+            Text(language.nativeName, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                appString(R.string.label_tap_to_adjust),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        HorizontalDivider()
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(appString(R.string.settings_unit), style = MaterialTheme.typography.titleMedium)
@@ -281,6 +304,45 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+        }
+
+        if (showLanguageDialog) {
+            AlertDialog(
+                onDismissRequest = { showLanguageDialog = false },
+                title = { Text(appString(R.string.settings_language)) },
+                text = {
+                    Column {
+                        Language.entries.forEach { lang ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        viewModel.onLanguageChanged(lang)
+                                        showLanguageDialog = false
+                                    }
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                RadioButton(
+                                    selected = language == lang,
+                                    onClick = {
+                                        viewModel.onLanguageChanged(lang)
+                                        showLanguageDialog = false
+                                    },
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(lang.nativeName, style = MaterialTheme.typography.bodyLarge)
+                            }
+                        }
+                    }
+                },
+                confirmButton = {},
+                dismissButton = {
+                    TextButton(onClick = { showLanguageDialog = false }) {
+                        Text(appString(R.string.label_cancel))
+                    }
+                },
+            )
         }
 
         if (showResetDialog) {

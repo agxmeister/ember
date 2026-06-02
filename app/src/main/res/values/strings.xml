@@ -42,6 +42,7 @@
     <string name="day_sun">Su</string>
 
     <!-- Settings -->
+    <string name="settings_language">Language</string>
     <string name="settings_title">Settings</string>
     <string name="settings_unit">Unit</string>
     <string name="settings_goal">Goal</string>

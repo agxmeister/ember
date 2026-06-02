@@ -3,6 +3,7 @@ package com.agxmeister.ember.presentation.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.agxmeister.ember.domain.model.Cluster
+import com.agxmeister.ember.domain.model.Language
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.model.WeighingFrequency
 import com.agxmeister.ember.domain.repository.MeasurementRepository
@@ -33,7 +34,7 @@ import kotlin.math.abs
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     getClusterTrends: GetClusterTrendsUseCase,
-    preferencesRepository: UserPreferencesRepository,
+    private val preferencesRepository: UserPreferencesRepository,
     measurementRepository: MeasurementRepository,
     private val setClusteringEnabled: SetClusteringEnabledUseCase,
     private val setGoalTarget: SetGoalTargetUseCase,
@@ -53,6 +54,13 @@ class SettingsViewModel @Inject constructor(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList(),
+        )
+
+    val language: StateFlow<Language> = preferencesRepository.language
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = Language.En,
         )
 
     val notificationsEnabled: StateFlow<Boolean> = preferencesRepository.notificationsEnabled
@@ -143,6 +151,10 @@ class SettingsViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = 0f,
     )
+
+    fun onLanguageChanged(language: Language) {
+        viewModelScope.launch { preferencesRepository.setLanguage(language) }
+    }
 
     fun onClusteringEnabledChanged(enabled: Boolean) {
         viewModelScope.launch { setClusteringEnabled(enabled) }

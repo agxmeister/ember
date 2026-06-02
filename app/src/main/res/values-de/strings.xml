@@ -37,6 +37,7 @@
     <string name="day_sat">Sa</string>
     <string name="day_sun">So</string>
 
+    <string name="settings_language">Sprache</string>
     <string name="settings_title">Einstellungen</string>
     <string name="settings_unit">Einheit</string>
     <string name="settings_goal">Ziel</string>

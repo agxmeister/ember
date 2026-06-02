@@ -55,7 +55,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.agxmeister.ember.R
 import com.agxmeister.ember.domain.model.DayCluster
-import com.agxmeister.ember.domain.model.Language
 import com.agxmeister.ember.domain.model.ThemeMode
 import com.agxmeister.ember.presentation.LocalAppResources
 import com.agxmeister.ember.presentation.appString
@@ -76,12 +75,6 @@ private fun ThemeMode.icon(): ImageVector = when (this) {
     ThemeMode.Light -> Icons.Outlined.LightMode
     ThemeMode.Dark -> Icons.Outlined.DarkMode
     ThemeMode.Auto -> Icons.Outlined.BrightnessAuto
-}
-
-private fun Language.next() = when (this) {
-    Language.En -> Language.De
-    Language.De -> Language.Fr
-    Language.Fr -> Language.En
 }
 
 @Composable
@@ -123,7 +116,7 @@ fun HomeScreen(
     val onBg = MaterialTheme.colorScheme.onBackground
 
     val appResources = LocalAppResources.current
-    val prompt = remember(state.language, state.isWeekly) {
+    val prompt = remember(appResources, state.isWeekly) {
         listOf(
             R.string.prompt_how_much_do_you_weigh,
             R.string.prompt_step_on_scale,
@@ -187,7 +180,7 @@ fun HomeScreen(
             }
         }
 
-        // Language + theme switcher pinned to top-right
+        // Theme switcher pinned to top-right
         Row(
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -195,18 +188,6 @@ fun HomeScreen(
                 .blur(radius = (checkmarkAlpha.value * 16).dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            IconButton(onClick = { viewModel.setLanguage(state.language.next()) }) {
-                Text(
-                    text = state.language.displayCode,
-                    style = TextStyle(
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp,
-                        color = onBg.copy(alpha = 0.55f),
-                    ),
-                )
-            }
             IconButton(onClick = { viewModel.setThemeMode(state.themeMode.next()) }) {
                 Icon(
                     imageVector = state.themeMode.icon(),
