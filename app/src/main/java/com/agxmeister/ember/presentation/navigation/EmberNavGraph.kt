@@ -58,7 +58,15 @@ fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
     onboardingCompleted ?: return
     hasCheckedIn ?: return
 
-    val hasCheckedInSnapshot = remember(onboardingCompleted) { hasCheckedIn }
+    // Computed once — no keys — so NavHost never recreates its graph mid-session.
+    // Both values are guaranteed non-null by the guards above.
+    val startDestination = remember {
+        when {
+            onboardingCompleted != true -> ROUTE_ONBOARDING
+            hasCheckedIn == true -> trendsRoute()
+            else -> Screen.Home.route
+        }
+    }
 
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -96,11 +104,7 @@ fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = when {
-                onboardingCompleted != true -> ROUTE_ONBOARDING
-                hasCheckedInSnapshot == true -> trendsRoute()
-                else -> Screen.Home.route
-            },
+            startDestination = startDestination,
             modifier = Modifier.padding(innerPadding),
         ) {
             composable(ROUTE_ONBOARDING) {
