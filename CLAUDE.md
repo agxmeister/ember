@@ -10,3 +10,7 @@
 ## Architecture
 - Clean architecture: data / domain / presentation layers
 - Domain layer owns interfaces; data layer implements them
+
+## Configuration
+- User-configurable algorithm constants live in `AlgorithmConfig` (`domain/model/AlgorithmConfig.kt`)
+- Add new tunable parameters there; expose via `UserPreferencesRepository.algorithmConfig` flow
