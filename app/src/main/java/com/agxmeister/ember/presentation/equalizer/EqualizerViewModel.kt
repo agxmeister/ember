@@ -2,6 +2,7 @@ package com.agxmeister.ember.presentation.equalizer
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.agxmeister.ember.domain.model.AlgorithmConfig
 import com.agxmeister.ember.domain.model.Measurement
 import com.agxmeister.ember.domain.model.WeighingFrequency
 import com.agxmeister.ember.domain.model.WeightUnit
@@ -196,9 +197,11 @@ class EqualizerViewModel @Inject constructor(
             preferencesRepository.weighingFrequency,
             preferencesRepository.goalStartDate,
             _windowOffset,
-        ) { freq, gsd, offset -> Triple(freq, gsd, offset) },
+            preferencesRepository.algorithmConfig,
+        ) { freq, gsd, offset, config -> Triple(freq, gsd, offset) to config },
         combine(getDailyCandles(), getWeeklyData(), _selectedDate) { c, w, s -> Triple(c, w, s) },
-    ) { (targetKg, initialWeightKg, weightUnit), (frequency, goalStartDateStr, rawOffset), (allCandles, allWeekly, selectedDate) ->
+    ) { (targetKg, initialWeightKg, weightUnit), (freqGsdOffset, algorithmConfig), (allCandles, allWeekly, selectedDate) ->
+        val (frequency, goalStartDateStr, rawOffset) = freqGsdOffset
         val recentWeight = allCandles.maxByOrNull { it.date }?.close
             ?: allWeekly.maxByOrNull { it.weekStart }?.median
             ?: initialWeightKg
@@ -289,8 +292,9 @@ class EqualizerViewModel @Inject constructor(
             trendLine = computeTrendLine(days)
             val lastMeasuredDayIdx = days.indexOfLast { it.weightKg != null }
             val hasRecentDay = lastMeasuredDayIdx >= days.size - 7
-            val rateDayWindowStart = todayDate.minus(DatePeriod(days = DAILY_RATE_WINDOW_DAYS - 1))
-            val rateDayWindow = (0 until DAILY_RATE_WINDOW_DAYS).map { offset ->
+            val regressionDays = algorithmConfig.regressionIntervalDays
+            val rateDayWindowStart = todayDate.minus(DatePeriod(days = regressionDays - 1))
+            val rateDayWindow = (0 until regressionDays).map { offset ->
                 val date = rateDayWindowStart.plus(DatePeriod(days = offset))
                 EqualizerDayData(date = date, weightKg = candleMap[date]?.close)
             }
@@ -365,8 +369,6 @@ class EqualizerViewModel @Inject constructor(
         ),
     )
 }
-
-private const val DAILY_RATE_WINDOW_DAYS = 28
 
 private fun computeTrendLine(days: List<EqualizerDayData>, minPoints: Int = 2): TrendLineData? {
     val measured = days.mapIndexedNotNull { idx, day ->

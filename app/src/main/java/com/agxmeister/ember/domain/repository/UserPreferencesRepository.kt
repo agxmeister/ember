@@ -1,5 +1,6 @@
 package com.agxmeister.ember.domain.repository
 
+import com.agxmeister.ember.domain.model.AlgorithmConfig
 import com.agxmeister.ember.domain.model.Language
 import com.agxmeister.ember.domain.model.ThemeMode
 import com.agxmeister.ember.domain.model.WeightGoal
@@ -24,6 +25,7 @@ interface UserPreferencesRepository {
     val goalStartDate: Flow<String>
     val themeMode: Flow<ThemeMode>
     val language: Flow<Language>
+    val algorithmConfig: Flow<AlgorithmConfig>
     suspend fun saveOnboardingData(
         weightKg: Double,
         goalTargetKg: Double,
@@ -50,5 +52,6 @@ interface UserPreferencesRepository {
     suspend fun setThemeMode(mode: ThemeMode)
     suspend fun setLanguage(language: Language)
     suspend fun setGoalStartDate(date: String)
+    suspend fun setAlgorithmConfig(config: AlgorithmConfig)
     suspend fun resetOnboarding()
 }

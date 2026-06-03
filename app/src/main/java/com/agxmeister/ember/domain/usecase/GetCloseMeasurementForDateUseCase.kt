@@ -20,13 +20,14 @@ class GetCloseMeasurementForDateUseCase @Inject constructor(
             measurementRepository.getAll(),
             preferencesRepository.dayStartHour,
             preferencesRepository.clusteringEnabled,
-        ) { allMeasurements, dayStartHour, clusteringEnabled ->
+            preferencesRepository.algorithmConfig,
+        ) { allMeasurements, dayStartHour, clusteringEnabled, config ->
             val tz = TimeZone.currentSystemDefault()
             val dayMeasurements = allMeasurements
                 .filter { it.timestamp.toLocalDateTime(tz).date == date }
                 .sortedBy { it.timestamp }
             if (dayMeasurements.isEmpty()) return@combine null
-            val normalizer = MeasurementNormalizer.build(allMeasurements, dayStartHour, clusteringEnabled)
+            val normalizer = MeasurementNormalizer.build(allMeasurements, dayStartHour, clusteringEnabled, config.minClusterSize)
             normalizer.selectClose(dayMeasurements)
         }
 }

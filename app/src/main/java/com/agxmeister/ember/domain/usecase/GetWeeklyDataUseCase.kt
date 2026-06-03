@@ -22,8 +22,9 @@ class GetWeeklyDataUseCase @Inject constructor(
             measurementRepository.getAll(),
             preferencesRepository.dayStartHour,
             preferencesRepository.clusteringEnabled,
-        ) { measurements, dayStartHour, clusteringEnabled ->
-            val normalizer = MeasurementNormalizer.build(measurements, dayStartHour, clusteringEnabled)
+            preferencesRepository.algorithmConfig,
+        ) { measurements, dayStartHour, clusteringEnabled, config ->
+            val normalizer = MeasurementNormalizer.build(measurements, dayStartHour, clusteringEnabled, config.minClusterSize)
             measurements
                 .groupBy { it.timestamp.toLocalDateTime(TimeZone.currentSystemDefault()).date.isoWeekStart() }
                 .toSortedMap()

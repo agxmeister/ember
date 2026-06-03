@@ -43,6 +43,8 @@ class UserPreferencesDataStore @Inject constructor(
     private val themeModeKey = stringPreferencesKey("theme_mode")
     private val languageKey = stringPreferencesKey("language_explicit")
     private val goalStartDateKey = stringPreferencesKey("goal_start_date")
+    private val regressionIntervalDaysKey = intPreferencesKey("regression_interval_days")
+    private val minClusterSizeKey = intPreferencesKey("min_cluster_size")
 
     val isOnboardingCompleted: Flow<Boolean> =
         context.dataStore.data.map { it[onboardingCompletedKey] ?: false }
@@ -118,6 +120,12 @@ class UserPreferencesDataStore @Inject constructor(
 
     val goalStartDate: Flow<String> =
         context.dataStore.data.map { it[goalStartDateKey] ?: "" }
+
+    val regressionIntervalDays: Flow<Int> =
+        context.dataStore.data.map { it[regressionIntervalDaysKey] ?: 28 }
+
+    val minClusterSize: Flow<Int> =
+        context.dataStore.data.map { it[minClusterSizeKey] ?: 14 }
 
     suspend fun saveOnboardingData(
         weightKg: Double,
@@ -221,6 +229,14 @@ class UserPreferencesDataStore @Inject constructor(
         context.dataStore.edit { prefs ->
             prefs[goalStartDateKey] = date
         }
+    }
+
+    suspend fun setRegressionIntervalDays(days: Int) {
+        context.dataStore.edit { it[regressionIntervalDaysKey] = days }
+    }
+
+    suspend fun setMinClusterSize(size: Int) {
+        context.dataStore.edit { it[minClusterSizeKey] = size }
     }
 
     suspend fun resetOnboarding() {

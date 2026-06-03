@@ -6,7 +6,6 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
 private const val OFFSET_SPAN_DAYS = 28
-private const val MIN_CLUSTER_SIZE = 14
 
 class MeasurementNormalizer(
     val homeCluster: DayCluster?,
@@ -29,6 +28,7 @@ class MeasurementNormalizer(
             measurements: List<Measurement>,
             dayStartHour: Int,
             clusteringEnabled: Boolean,
+            minClusterSize: Int = 14,
         ): MeasurementNormalizer {
             if (!clusteringEnabled || measurements.isEmpty()) {
                 return MeasurementNormalizer(null, emptyMap(), null)
@@ -48,7 +48,7 @@ class MeasurementNormalizer(
 
             val offsets: Map<DayCluster, Double> = if (spanDays >= OFFSET_SPAN_DAYS) {
                 val qualifiedAvg = byCluster
-                    .filter { (_, ms) -> ms.size >= MIN_CLUSTER_SIZE }
+                    .filter { (_, ms) -> ms.size >= minClusterSize }
                     .mapValues { (_, ms) -> ms.map { it.weightKg }.average() }
                 val homeAvg = qualifiedAvg[homeCluster]!!
                 DayCluster.entries.associateWith { cluster ->

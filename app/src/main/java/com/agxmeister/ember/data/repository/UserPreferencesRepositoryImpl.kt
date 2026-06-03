@@ -1,6 +1,7 @@
 package com.agxmeister.ember.data.repository
 
 import com.agxmeister.ember.data.local.preferences.UserPreferencesDataStore
+import com.agxmeister.ember.domain.model.AlgorithmConfig
 import com.agxmeister.ember.domain.model.Language
 import com.agxmeister.ember.domain.model.ThemeMode
 import com.agxmeister.ember.domain.model.WeightGoal
@@ -8,6 +9,7 @@ import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.model.WeighingFrequency
 import com.agxmeister.ember.domain.repository.UserPreferencesRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import javax.inject.Inject
 
 class UserPreferencesRepositoryImpl @Inject constructor(
@@ -29,6 +31,10 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     override val goalStartDate: Flow<String> = dataStore.goalStartDate
     override val themeMode: Flow<ThemeMode> = dataStore.themeMode
     override val language: Flow<Language> = dataStore.language
+    override val algorithmConfig: Flow<AlgorithmConfig> = combine(
+        dataStore.regressionIntervalDays,
+        dataStore.minClusterSize,
+    ) { regInterval, minCluster -> AlgorithmConfig(regInterval, minCluster) }
 
     override suspend fun saveOnboardingData(
         weightKg: Double,
@@ -98,6 +104,11 @@ class UserPreferencesRepositoryImpl @Inject constructor(
 
     override suspend fun setGoalStartDate(date: String) {
         dataStore.setGoalStartDate(date)
+    }
+
+    override suspend fun setAlgorithmConfig(config: AlgorithmConfig) {
+        dataStore.setRegressionIntervalDays(config.regressionIntervalDays)
+        dataStore.setMinClusterSize(config.minClusterSize)
     }
 
     override suspend fun resetOnboarding() {

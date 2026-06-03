@@ -21,7 +21,8 @@ class GetDailyCandlesUseCase @Inject constructor(
             measurementRepository.getAll(),
             preferencesRepository.dayStartHour,
             preferencesRepository.clusteringEnabled,
-        ) { measurements, dayStartHour, clusteringEnabled ->
+            preferencesRepository.algorithmConfig,
+        ) { measurements, dayStartHour, clusteringEnabled, config ->
             val tz = TimeZone.currentSystemDefault()
             val byDate = measurements
                 .groupBy { it.timestamp.toLocalDateTime(tz).date }
@@ -30,7 +31,7 @@ class GetDailyCandlesUseCase @Inject constructor(
 
             if (dates.isEmpty()) return@combine emptyList()
 
-            val normalizer = MeasurementNormalizer.build(measurements, dayStartHour, clusteringEnabled)
+            val normalizer = MeasurementNormalizer.build(measurements, dayStartHour, clusteringEnabled, config.minClusterSize)
 
             dates.mapIndexed { index, date ->
                 val dayMeasurements = byDate[date]!!.sortedBy { it.timestamp }
