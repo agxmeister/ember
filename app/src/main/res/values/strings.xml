@@ -56,6 +56,12 @@
     <string name="settings_initial_weight">Initial weight</string>
     <string name="settings_target_weight">Target weight</string>
     <string name="settings_goal_start_date">Goal start date</string>
+    <string name="settings_approximation">Approximation</string>
+    <string name="settings_approximation_summary">Regression: %1$d days · Min cluster: %2$d</string>
+    <string name="settings_adjust_approximation">Adjust approximation</string>
+    <string name="settings_regression_interval">Regression interval</string>
+    <string name="settings_min_cluster_size">Min cluster size</string>
+    <string name="label_days">days</string>
     <string name="settings_start_over">Define a new goal</string>
     <string name="settings_start_over_confirm_title">Define a new goal?</string>
     <string name="settings_start_over_confirm_message">All measurements will be deleted and you\'ll go through onboarding to set a new goal. This cannot be undone.</string>

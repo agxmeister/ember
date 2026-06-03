@@ -2,6 +2,7 @@ package com.agxmeister.ember.presentation.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.agxmeister.ember.domain.model.AlgorithmConfig
 import com.agxmeister.ember.domain.model.Cluster
 import com.agxmeister.ember.domain.model.Language
 import com.agxmeister.ember.domain.model.WeightUnit
@@ -13,6 +14,7 @@ import com.agxmeister.ember.domain.usecase.SetClusteringEnabledUseCase
 import com.agxmeister.ember.domain.usecase.SetNotificationDayOfWeekUseCase
 import com.agxmeister.ember.domain.usecase.SetNotificationTimeUseCase
 import com.agxmeister.ember.domain.usecase.SetNotificationsEnabledUseCase
+import com.agxmeister.ember.domain.usecase.SetAlgorithmConfigUseCase
 import com.agxmeister.ember.domain.usecase.SetGoalTargetUseCase
 import com.agxmeister.ember.domain.usecase.SetGoalUseCase
 import com.agxmeister.ember.domain.usecase.ResetDataUseCase
@@ -45,6 +47,7 @@ class SettingsViewModel @Inject constructor(
     private val setWeighingFrequency: SetWeighingFrequencyUseCase,
     private val setNotificationDayOfWeek: SetNotificationDayOfWeekUseCase,
     private val resetData: ResetDataUseCase,
+    private val setAlgorithmConfig: SetAlgorithmConfigUseCase,
     private val seedMeasuresCoordinator: SeedMeasuresCoordinator,
 ) : ViewModel() {
 
@@ -140,6 +143,13 @@ class SettingsViewModel @Inject constructor(
         initialValue = "",
     )
 
+    val algorithmConfig: StateFlow<AlgorithmConfig> = preferencesRepository.algorithmConfig
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = AlgorithmConfig(),
+        )
+
     val accentCloseness: StateFlow<Float> = combine(clusters, initialWeightKg, goalTargetKg) { c, initialKg, targetKg ->
         val lastWeight = c.flatMap { it.measurements }.maxByOrNull { it.timestamp }?.weightKg
         if (lastWeight != null && targetKg > 0) {
@@ -186,6 +196,10 @@ class SettingsViewModel @Inject constructor(
 
     fun onGoalChanged(initialWeightKg: Double, targetKg: Double, startDate: String) {
         viewModelScope.launch { setGoal(initialWeightKg, targetKg, startDate) }
+    }
+
+    fun onAlgorithmConfigChanged(config: AlgorithmConfig) {
+        viewModelScope.launch { setAlgorithmConfig(config) }
     }
 
     fun onResetData() {
