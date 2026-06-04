@@ -7,7 +7,6 @@ import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.repository.MeasurementRepository
 import com.agxmeister.ember.domain.usecase.CompleteOnboardingUseCase
 import com.agxmeister.ember.domain.usecase.ImportMeasurementsUseCase
-import com.agxmeister.ember.presentation.SeedMeasuresCoordinator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -42,7 +41,6 @@ class SeedMeasuresOnboardingViewModel @Inject constructor(
     private val completeOnboarding: CompleteOnboardingUseCase,
     private val importMeasurements: ImportMeasurementsUseCase,
     private val measurementRepository: MeasurementRepository,
-    private val seedMeasuresCoordinator: SeedMeasuresCoordinator,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SeedMeasuresOnboardingUiState())
@@ -82,7 +80,6 @@ class SeedMeasuresOnboardingViewModel @Inject constructor(
                 notificationMinute = state.notificationMinute,
                 goalStartDate = goalStartDate ?: java.time.LocalDate.now().toString(),
             )
-            seedMeasuresCoordinator.consume()
             measurementRepository.deleteAll()
             if (values.isNotEmpty()) {
                 importMeasurements(values, state.weightUnit)

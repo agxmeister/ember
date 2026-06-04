@@ -63,6 +63,7 @@
     <string name="settings_min_cluster_size">Min cluster size</string>
     <string name="label_days">days</string>
     <string name="settings_start_over">Define a new goal</string>
+    <string name="settings_start_over_with_import">Define a new goal with data import</string>
     <string name="settings_start_over_confirm_title">Define a new goal?</string>
     <string name="settings_start_over_confirm_message">All measurements will be deleted and you\'ll go through onboarding to set a new goal. This cannot be undone.</string>
 

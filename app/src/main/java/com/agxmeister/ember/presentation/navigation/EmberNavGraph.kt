@@ -13,7 +13,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavType
@@ -52,7 +54,6 @@ private val screens = listOf(Screen.Home, Screen.Trends)
 fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
     val onboardingCompleted by viewModel.isOnboardingCompleted.collectAsStateWithLifecycle()
     val hasCheckedIn by viewModel.hasCheckedIn.collectAsStateWithLifecycle()
-    val isSeedMeasuresPending by viewModel.isSeedMeasuresPending.collectAsStateWithLifecycle()
 
     // Don't render until both states are known (DataStore + DB reads are near-instant)
     onboardingCompleted ?: return
@@ -69,6 +70,15 @@ fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
     }
 
     val navController = rememberNavController()
+
+    var seedMeasuresMode by remember { mutableStateOf(false) }
+    val navigateToOnboarding: (Boolean) -> Unit = { seedMeasures ->
+        seedMeasuresMode = seedMeasures
+        navController.navigate(ROUTE_ONBOARDING) {
+            popUpTo(0) { inclusive = true }
+        }
+    }
+
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val showBottomBar = currentRoute != ROUTE_ONBOARDING
@@ -113,7 +123,7 @@ fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
                         popUpTo(ROUTE_ONBOARDING) { inclusive = true }
                     }
                 }
-                if (isSeedMeasuresPending) {
+                if (seedMeasuresMode) {
                     SeedMeasuresOnboardingScreen(onComplete = onComplete)
                 } else {
                     OnboardingScreen(onComplete = onComplete)
@@ -162,7 +172,7 @@ fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
                     },
                 )
             }
-            composable(Screen.Settings.route) { SettingsScreen() }
+            composable(Screen.Settings.route) { SettingsScreen(onNavigateToOnboarding = navigateToOnboarding) }
         }
     }
 }

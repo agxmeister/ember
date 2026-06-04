@@ -65,7 +65,10 @@ import com.agxmeister.ember.presentation.theme.closenessColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
+fun SettingsScreen(
+    onNavigateToOnboarding: (seedMeasures: Boolean) -> Unit = {},
+    viewModel: SettingsViewModel = hiltViewModel(),
+) {
     val language by viewModel.language.collectAsStateWithLifecycle()
     val notificationsEnabled by viewModel.notificationsEnabled.collectAsStateWithLifecycle()
     val clusteringEnabled by viewModel.clusteringEnabled.collectAsStateWithLifecycle()
@@ -89,7 +92,8 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     var showGoalSheet by remember { mutableStateOf(false) }
     var showResetDialog by remember { mutableStateOf(false) }
     var showApproximationDialog by remember { mutableStateOf(false) }
-    var seedMeasuresMode by remember { mutableStateOf(false) }
+    var showDefineGoalDialog by remember { mutableStateOf(false) }
+    var devMode by remember { mutableStateOf(false) }
     var titleTapCount by remember { mutableIntStateOf(0) }
 
     val dayLabels = listOf(
@@ -123,8 +127,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                 titleTapCount++
                 if (titleTapCount >= 7) {
                     titleTapCount = 0
-                    seedMeasuresMode = true
-                    showResetDialog = true
+                    devMode = !devMode
                 }
             },
         )
@@ -201,7 +204,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.error,
             modifier = Modifier
-                .clickable { seedMeasuresMode = false; showResetDialog = true }
+                .clickable { showResetDialog = true }
                 .padding(vertical = 4.dp),
         )
         Spacer(modifier = Modifier.height(24.dp))
@@ -309,6 +312,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             }
         }
 
+        if (devMode) {
         Spacer(modifier = Modifier.height(24.dp))
         HorizontalDivider()
         Spacer(modifier = Modifier.height(24.dp))
@@ -426,6 +430,41 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             )
         }
 
+        Spacer(modifier = Modifier.height(24.dp))
+        HorizontalDivider()
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            appString(R.string.settings_start_over_with_import),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.error,
+            modifier = Modifier
+                .clickable { showDefineGoalDialog = true }
+                .padding(bottom = 8.dp),
+        )
+
+        } // end devMode
+
+        if (showDefineGoalDialog) {
+            AlertDialog(
+                onDismissRequest = { showDefineGoalDialog = false },
+                title = { Text(appString(R.string.settings_start_over_confirm_title)) },
+                text = { Text(appString(R.string.settings_start_over_confirm_message)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showDefineGoalDialog = false
+                        viewModel.onResetData()
+                        onNavigateToOnboarding(true)
+                    }) { Text(appString(R.string.label_confirm)) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDefineGoalDialog = false }) {
+                        Text(appString(R.string.label_cancel))
+                    }
+                },
+            )
+        }
+
         if (showLanguageDialog) {
             AlertDialog(
                 onDismissRequest = { showLanguageDialog = false },
@@ -467,22 +506,18 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
 
         if (showResetDialog) {
             AlertDialog(
-                onDismissRequest = { showResetDialog = false; seedMeasuresMode = false },
+                onDismissRequest = { showResetDialog = false },
                 title = { Text(appString(R.string.settings_start_over_confirm_title)) },
                 text = { Text(appString(R.string.settings_start_over_confirm_message)) },
                 confirmButton = {
                     TextButton(onClick = {
                         showResetDialog = false
-                        if (seedMeasuresMode) {
-                            viewModel.onSeedMeasuresTriggered()
-                        } else {
-                            viewModel.onResetData()
-                        }
-                        seedMeasuresMode = false
+                        viewModel.onResetData()
+                        onNavigateToOnboarding(false)
                     }) { Text(appString(R.string.label_confirm)) }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showResetDialog = false; seedMeasuresMode = false }) {
+                    TextButton(onClick = { showResetDialog = false }) {
                         Text(appString(R.string.label_cancel))
                     }
                 },
