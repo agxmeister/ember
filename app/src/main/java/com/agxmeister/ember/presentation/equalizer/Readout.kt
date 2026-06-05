@@ -7,9 +7,19 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -125,6 +135,16 @@ private fun WeightDisplay(
         color = dimColor,
     )
 
+    var showTrendInfo by remember { mutableStateOf(false) }
+    if (showTrendInfo && trendMeasurementsNeeded != null) {
+        AlertDialog(
+            onDismissRequest = { showTrendInfo = false },
+            confirmButton = { TextButton(onClick = { showTrendInfo = false }) { Text(appString(R.string.label_ok)) } },
+            title = { Text(appString(R.string.trends_delta_target)) },
+            text = { Text(appString(R.string.trends_trend_pending_info, trendMeasurementsNeeded)) },
+        )
+    }
+
     Column(
         modifier = modifier.then(if (isFocused) Modifier.clickable(onClick = onTap) else Modifier),
     ) {
@@ -160,6 +180,18 @@ private fun WeightDisplay(
             }
             Row(verticalAlignment = Alignment.Bottom) {
                 val trendGlow = Shadow(color = trendColor.copy(alpha = 0.65f), blurRadius = 22f)
+                if (trendMeasurementsNeeded != null) {
+                    Icon(
+                        imageVector = Icons.Filled.Info,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .padding(end = 8.dp)
+                            .size(24.dp)
+                            .clickable { showTrendInfo = true },
+                        tint = Color(0xFF2196F3),
+                    )
+                }
                 if (arrow != null) {
                     Text(
                         text = arrow,
@@ -195,9 +227,6 @@ private fun WeightDisplay(
                 ),
                 modifier = Modifier.weight(1f),
             )
-            if (trendMeasurementsNeeded != null) {
-                Text(text = "$trendMeasurementsNeeded TO GO", style = labelStyle)
-            }
         }
     }
 }
