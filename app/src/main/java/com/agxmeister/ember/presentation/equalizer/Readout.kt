@@ -117,7 +117,7 @@ private fun WeightDisplay(
 
     val onBg = MaterialTheme.colorScheme.onBackground
     val glow = Shadow(color = displayColor.copy(alpha = 0.65f), blurRadius = 22f)
-    val dimColor = onBg.copy(alpha = 0.45f)
+    val dimColor = onBg.copy(alpha = 0.6f)
     val labelStyle = TextStyle(
         fontFamily = FontFamily.Monospace,
         fontSize = 11.sp,

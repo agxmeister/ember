@@ -63,7 +63,7 @@ internal fun StatCard(
                         fontFamily = FontFamily.Monospace,
                         fontSize = 9.sp,
                         letterSpacing = 0.8.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
                     ),
                 )
                 if (info != null) {

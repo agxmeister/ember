@@ -58,7 +58,7 @@ internal fun ProjectionCard(
         fontFamily = FontFamily.Monospace,
         fontSize = 9.sp,
         letterSpacing = 0.8.sp,
-        color = onSurface.copy(alpha = 0.35f),
+        color = onSurface.copy(alpha = 0.55f),
     )
     var showInfo by remember { mutableStateOf(false) }
     if (showInfo) {
