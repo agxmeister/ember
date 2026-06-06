@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -44,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import com.agxmeister.ember.R
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.presentation.appString
+import com.agxmeister.ember.presentation.theme.InfoAccent
 
 @Composable
 internal fun ProjectionCard(
@@ -67,6 +69,15 @@ internal fun ProjectionCard(
             confirmButton = { TextButton(onClick = { showInfo = false }) { Text(appString(R.string.label_ok)) } },
             title = { Text(appString(R.string.trends_projected_eta)) },
             text = { Text(appString(R.string.trends_projected_eta_info)) },
+        )
+    }
+    var showPendingInfo by remember { mutableStateOf(false) }
+    if (showPendingInfo && measurementsNeeded != null) {
+        AlertDialog(
+            onDismissRequest = { showPendingInfo = false },
+            confirmButton = { TextButton(onClick = { showPendingInfo = false }) { Text(appString(R.string.label_ok)) } },
+            title = { Text(appString(R.string.trends_projected_eta)) },
+            text = { Text(appString(R.string.trends_eta_pending_info, measurementsNeeded)) },
         )
     }
 
@@ -95,7 +106,12 @@ internal fun ProjectionCard(
                 ProjectionResult.Reached -> ReachedContent()
                 ProjectionResult.Unavailable.NotEnoughData,
                 ProjectionResult.Unavailable.WrongDirection,
-                ProjectionResult.Unavailable.TooFar -> UnavailableContent(projection, onSurface, measurementsNeeded)
+                ProjectionResult.Unavailable.TooFar -> UnavailableContent(
+                    projection = projection,
+                    onSurface = onSurface,
+                    measurementsNeeded = measurementsNeeded,
+                    onPendingInfo = { showPendingInfo = true },
+                )
             }
         }
     }
@@ -233,16 +249,13 @@ private fun ReachedContent() {
 }
 
 @Composable
-private fun UnavailableContent(projection: ProjectionResult, onSurface: Color, measurementsNeeded: Int?) {
-    val secondary = if (projection == ProjectionResult.Unavailable.NotEnoughData && measurementsNeeded != null) {
-        "$measurementsNeeded TO GO"
-    } else {
-        when (projection) {
-            ProjectionResult.Unavailable.WrongDirection -> appString(R.string.trends_eta_wrong_direction)
-            ProjectionResult.Unavailable.TooFar -> appString(R.string.trends_eta_too_far)
-            else -> appString(R.string.trends_eta_not_enough_data)
-        }
-    }
+private fun UnavailableContent(
+    projection: ProjectionResult,
+    onSurface: Color,
+    measurementsNeeded: Int?,
+    onPendingInfo: () -> Unit,
+) {
+    val isPending = projection == ProjectionResult.Unavailable.NotEnoughData && measurementsNeeded != null
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = ".-",
@@ -254,13 +267,27 @@ private fun UnavailableContent(projection: ProjectionResult, onSurface: Color, m
             ),
         )
         Spacer(Modifier.width(10.dp))
-        Text(
-            text = secondary,
-            style = TextStyle(
-                fontFamily = FontFamily.Monospace,
-                fontSize = 11.sp,
-                color = onSurface.copy(alpha = 0.40f),
-            ),
-        )
+        if (isPending) {
+            Icon(
+                imageVector = Icons.Filled.Info,
+                contentDescription = null,
+                modifier = Modifier.size(22.dp).clickable { onPendingInfo() },
+                tint = InfoAccent,
+            )
+        } else {
+            val secondary = when (projection) {
+                ProjectionResult.Unavailable.WrongDirection -> appString(R.string.trends_eta_wrong_direction)
+                ProjectionResult.Unavailable.TooFar -> appString(R.string.trends_eta_too_far)
+                else -> appString(R.string.trends_eta_not_enough_data)
+            }
+            Text(
+                text = secondary,
+                style = TextStyle(
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 11.sp,
+                    color = onSurface.copy(alpha = 0.40f),
+                ),
+            )
+        }
     }
 }

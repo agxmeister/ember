@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import com.agxmeister.ember.R
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.presentation.appString
+import com.agxmeister.ember.presentation.theme.InfoAccent
 import com.agxmeister.ember.presentation.theme.closenessColor
 import com.agxmeister.ember.presentation.theme.trendSpeedColor
 import kotlinx.datetime.LocalDate
@@ -187,9 +188,9 @@ private fun WeightDisplay(
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                             .padding(end = 8.dp)
-                            .size(24.dp)
+                            .size(22.dp)
                             .clickable { showTrendInfo = true },
-                        tint = Color(0xFF2196F3),
+                        tint = InfoAccent,
                     )
                 }
                 if (arrow != null) {

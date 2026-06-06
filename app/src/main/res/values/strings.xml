@@ -130,6 +130,7 @@
     <!-- Projection card -->
     <string name="trends_projected_eta">PROJECTED ETA</string>
     <string name="trends_projected_eta_info">Your projected goal date is based on your current trend. It updates as your weight changes.</string>
+    <string name="trends_eta_pending_info">Your projected goal date appears once Ember has enough measurements. Log %1$d more to see it.</string>
     <string name="trends_in_days">in %1$d days</string>
     <string name="trends_today">today</string>
     <string name="trends_goal_reached">Goal reached</string>

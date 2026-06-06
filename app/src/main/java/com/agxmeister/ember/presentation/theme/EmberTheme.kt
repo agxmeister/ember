@@ -8,6 +8,9 @@ import androidx.compose.ui.graphics.Color
 import kotlin.math.abs
 import kotlin.math.sqrt
 
+/** Accent color for tappable info ("i") affordances. */
+val InfoAccent = Color(0xFF2196F3)
+
 fun closenessColor(closeness: Float, darkTheme: Boolean = true): Color {
     val lightness = if (darkTheme) 0.57f else 0.40f
     return Color.hsl(hue = 8f + sqrt(closeness) * 112f, saturation = 0.82f, lightness = lightness)
