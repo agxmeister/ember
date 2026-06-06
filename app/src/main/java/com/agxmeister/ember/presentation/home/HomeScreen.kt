@@ -58,6 +58,7 @@ import com.agxmeister.ember.domain.model.DayCluster
 import com.agxmeister.ember.domain.model.ThemeMode
 import com.agxmeister.ember.presentation.LocalAppResources
 import com.agxmeister.ember.presentation.appString
+import com.agxmeister.ember.presentation.theme.InfoIconSize
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -171,7 +172,7 @@ fun HomeScreen(
                             Icon(
                                 imageVector = Icons.Outlined.HelpOutline,
                                 contentDescription = appString(R.string.cd_what_is_cluster, cluster.label),
-                                modifier = Modifier.size(16.dp),
+                                modifier = Modifier.size(InfoIconSize),
                                 tint = onBg.copy(alpha = 0.30f),
                             )
                         }

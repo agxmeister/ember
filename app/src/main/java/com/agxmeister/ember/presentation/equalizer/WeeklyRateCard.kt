@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.agxmeister.ember.R
 import com.agxmeister.ember.presentation.appString
+import com.agxmeister.ember.presentation.theme.InfoIconSize
 import kotlin.math.abs
 
 @Composable
@@ -97,7 +98,7 @@ internal fun WeeklyRateCard(
                 Icon(
                     imageVector = Icons.Outlined.HelpOutline,
                     contentDescription = null,
-                    modifier = Modifier.size(12.dp).clickable { showInfo = true },
+                    modifier = Modifier.size(InfoIconSize).clickable { showInfo = true },
                     tint = onSurface.copy(alpha = 0.35f),
                 )
             }

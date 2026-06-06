@@ -5,11 +5,15 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import kotlin.math.abs
 import kotlin.math.sqrt
 
 /** Accent color for tappable info ("i") affordances. */
 val InfoAccent = Color(0xFF2196F3)
+
+/** Size for tappable info/help ("i" and "?") icons. */
+val InfoIconSize = 18.dp
 
 fun closenessColor(closeness: Float, darkTheme: Boolean = true): Color {
     val lightness = if (darkTheme) 0.57f else 0.40f

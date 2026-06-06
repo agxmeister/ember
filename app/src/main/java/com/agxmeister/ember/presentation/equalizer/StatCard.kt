@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.agxmeister.ember.R
 import com.agxmeister.ember.presentation.appString
+import com.agxmeister.ember.presentation.theme.InfoIconSize
 
 @Composable
 internal fun StatCard(
@@ -70,7 +71,7 @@ internal fun StatCard(
                     Icon(
                         imageVector = Icons.Outlined.HelpOutline,
                         contentDescription = null,
-                        modifier = Modifier.size(12.dp).clickable { showInfo = true },
+                        modifier = Modifier.size(InfoIconSize).clickable { showInfo = true },
                         tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f),
                     )
                 }

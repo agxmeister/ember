@@ -46,6 +46,7 @@ import com.agxmeister.ember.R
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.presentation.appString
 import com.agxmeister.ember.presentation.theme.InfoAccent
+import com.agxmeister.ember.presentation.theme.InfoIconSize
 
 @Composable
 internal fun ProjectionCard(
@@ -96,7 +97,7 @@ internal fun ProjectionCard(
                 Icon(
                     imageVector = Icons.Outlined.HelpOutline,
                     contentDescription = null,
-                    modifier = Modifier.size(12.dp).clickable { showInfo = true },
+                    modifier = Modifier.size(InfoIconSize).clickable { showInfo = true },
                     tint = onSurface.copy(alpha = 0.35f),
                 )
             }
@@ -271,7 +272,7 @@ private fun UnavailableContent(
             Icon(
                 imageVector = Icons.Filled.Info,
                 contentDescription = null,
-                modifier = Modifier.size(22.dp).clickable { onPendingInfo() },
+                modifier = Modifier.size(InfoIconSize).clickable { onPendingInfo() },
                 tint = InfoAccent,
             )
         } else {

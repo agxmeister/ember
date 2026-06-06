@@ -34,6 +34,7 @@ import com.agxmeister.ember.R
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.presentation.appString
 import com.agxmeister.ember.presentation.theme.InfoAccent
+import com.agxmeister.ember.presentation.theme.InfoIconSize
 import com.agxmeister.ember.presentation.theme.closenessColor
 import com.agxmeister.ember.presentation.theme.trendSpeedColor
 import kotlinx.datetime.LocalDate
@@ -188,7 +189,7 @@ private fun WeightDisplay(
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                             .padding(end = 8.dp)
-                            .size(22.dp)
+                            .size(InfoIconSize)
                             .clickable { showTrendInfo = true },
                         tint = InfoAccent,
                     )
