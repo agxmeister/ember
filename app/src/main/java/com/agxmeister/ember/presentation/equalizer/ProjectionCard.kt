@@ -105,14 +105,13 @@ internal fun ProjectionCard(
             when (projection) {
                 is ProjectionResult.Eta -> EtaContent(Modifier.weight(1f), projection, onSurface)
                 ProjectionResult.Reached -> ReachedContent()
-                ProjectionResult.Unavailable.NotEnoughData,
+                ProjectionResult.Unavailable.NotEnoughData -> if (measurementsNeeded != null) {
+                    PendingContent(Modifier.weight(1f), onSurface, onInfo = { showPendingInfo = true })
+                } else {
+                    UnavailableContent(projection, onSurface)
+                }
                 ProjectionResult.Unavailable.WrongDirection,
-                ProjectionResult.Unavailable.TooFar -> UnavailableContent(
-                    projection = projection,
-                    onSurface = onSurface,
-                    measurementsNeeded = measurementsNeeded,
-                    onPendingInfo = { showPendingInfo = true },
-                )
+                ProjectionResult.Unavailable.TooFar -> UnavailableContent(projection, onSurface)
             }
         }
     }
@@ -180,16 +179,32 @@ private fun lerpColor(a: Color, b: Color, t: Float): Color {
 }
 
 @Composable
-private fun EtaJourney(progress: Float, onSurface: Color, modifier: Modifier = Modifier) {
+private fun EtaJourney(progress: Float?, onSurface: Color, modifier: Modifier = Modifier) {
     val colorStart = Color(0xFFE53935)
     val colorEnd = Color(0xFF4BB543)
-    val accent = lerpColor(colorStart, colorEnd, progress)
     val figurePainter = painterResource(R.drawable.ic_person_figure)
     Canvas(modifier = modifier) {
         val padH = 14.dp.toPx()
         val trackY = size.height - 12.dp.toPx()
         val trackStart = padH
         val trackEnd = size.width - padH
+
+        if (progress == null) {
+            // Empty scale: full neutral track plus start/goal caps. The cursor and
+            // figure appear once there's enough data to place them.
+            drawLine(
+                color = onSurface.copy(alpha = 0.16f),
+                start = Offset(trackStart, trackY),
+                end = Offset(trackEnd, trackY),
+                strokeWidth = 2.dp.toPx(),
+                cap = StrokeCap.Round,
+            )
+            drawCircle(color = colorStart.copy(alpha = 0.50f), radius = 3.5.dp.toPx(), center = Offset(trackStart, trackY))
+            drawCircle(color = colorEnd.copy(alpha = 0.50f), radius = 3.5.dp.toPx(), center = Offset(trackEnd, trackY))
+            return@Canvas
+        }
+
+        val accent = lerpColor(colorStart, colorEnd, progress)
         val cursorX = trackStart + (trackEnd - trackStart) * progress.coerceIn(0.02f, 0.98f)
 
         // Remaining track
@@ -250,13 +265,42 @@ private fun ReachedContent() {
 }
 
 @Composable
-private fun UnavailableContent(
-    projection: ProjectionResult,
-    onSurface: Color,
-    measurementsNeeded: Int?,
-    onPendingInfo: () -> Unit,
-) {
-    val isPending = projection == ProjectionResult.Unavailable.NotEnoughData && measurementsNeeded != null
+private fun PendingContent(modifier: Modifier = Modifier, onSurface: Color, onInfo: () -> Unit) {
+    Column(modifier = modifier) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = ".-",
+                style = TextStyle(
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = onSurface.copy(alpha = 0.30f),
+                ),
+            )
+            Spacer(Modifier.width(10.dp))
+            Icon(
+                imageVector = Icons.Filled.Info,
+                contentDescription = null,
+                modifier = Modifier.size(InfoIconSize).clickable { onInfo() },
+                tint = InfoAccent,
+            )
+        }
+        Spacer(Modifier.height(8.dp))
+        EtaJourney(
+            progress = null,
+            onSurface = onSurface,
+            modifier = Modifier.fillMaxWidth().weight(1f),
+        )
+    }
+}
+
+@Composable
+private fun UnavailableContent(projection: ProjectionResult, onSurface: Color) {
+    val secondary = when (projection) {
+        ProjectionResult.Unavailable.WrongDirection -> appString(R.string.trends_eta_wrong_direction)
+        ProjectionResult.Unavailable.TooFar -> appString(R.string.trends_eta_too_far)
+        else -> appString(R.string.trends_eta_not_enough_data)
+    }
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = ".-",
@@ -268,27 +312,13 @@ private fun UnavailableContent(
             ),
         )
         Spacer(Modifier.width(10.dp))
-        if (isPending) {
-            Icon(
-                imageVector = Icons.Filled.Info,
-                contentDescription = null,
-                modifier = Modifier.size(InfoIconSize).clickable { onPendingInfo() },
-                tint = InfoAccent,
-            )
-        } else {
-            val secondary = when (projection) {
-                ProjectionResult.Unavailable.WrongDirection -> appString(R.string.trends_eta_wrong_direction)
-                ProjectionResult.Unavailable.TooFar -> appString(R.string.trends_eta_too_far)
-                else -> appString(R.string.trends_eta_not_enough_data)
-            }
-            Text(
-                text = secondary,
-                style = TextStyle(
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 11.sp,
-                    color = onSurface.copy(alpha = 0.40f),
-                ),
-            )
-        }
+        Text(
+            text = secondary,
+            style = TextStyle(
+                fontFamily = FontFamily.Monospace,
+                fontSize = 11.sp,
+                color = onSurface.copy(alpha = 0.40f),
+            ),
+        )
     }
 }
