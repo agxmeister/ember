@@ -65,16 +65,6 @@ internal fun WeeklyRateCard(
         )
     }
 
-    val greenColor = Color(0xFF4BB543)
-    val amberColor = Color(0xFFFFC107)
-    val redColor = Color(0xFFE53935)
-    val markerColor = when (rateZone) {
-        WeeklyRateZone.Healthy -> greenColor
-        WeeklyRateZone.TooSlow -> onSurface.copy(alpha = 0.55f)
-        WeeklyRateZone.Aggressive -> amberColor
-        WeeklyRateZone.TooFast, WeeklyRateZone.WrongDirection -> redColor
-        WeeklyRateZone.Unavailable -> onSurface.copy(alpha = 0.15f)
-    }
     val zoneBadge = when (rateZone) {
         WeeklyRateZone.TooSlow -> appString(R.string.trends_rate_zone_too_slow)
         WeeklyRateZone.Healthy -> appString(R.string.trends_rate_zone_healthy)
@@ -103,22 +93,18 @@ internal fun WeeklyRateCard(
                 )
             }
             Spacer(Modifier.weight(1f))
-            if (weeklyRateKg != null) {
-                RateZoneBar(
-                    absRateKg = abs(weeklyRateKg),
-                    rateZone = rateZone,
-                    markerColor = markerColor,
-                    zoneBadge = zoneBadge,
-                )
-            }
+            RateZoneBar(
+                absRateKg = weeklyRateKg?.let { abs(it) },
+                zoneBadge = zoneBadge,
+            )
         }
     }
 }
 
 @Composable
-private fun RateZoneBar(absRateKg: Double, rateZone: WeeklyRateZone, markerColor: Color, zoneBadge: String) {
+private fun RateZoneBar(absRateKg: Double?, zoneBadge: String) {
     val barRange = 2.0
-    val markerFraction = (absRateKg / barRange).toFloat().coerceIn(0.02f, 0.98f)
+    val markerFraction = absRateKg?.let { (it / barRange).toFloat().coerceIn(0.02f, 0.98f) }
     val onSurface = MaterialTheme.colorScheme.onSurface
     val dimColor = onSurface.copy(alpha = 0.15f)
     val greenColor = Color(0xFF4BB543)
@@ -127,8 +113,9 @@ private fun RateZoneBar(absRateKg: Double, rateZone: WeeklyRateZone, markerColor
     val tooSlowFrac = (0.25 / barRange).toFloat()
     val healthyFrac = (1.0 / barRange).toFloat()
     val aggressiveFrac = (1.5 / barRange).toFloat()
+    val tooSlowColor = onSurface.copy(alpha = 0.6f)
     val badgeColor = when {
-        markerFraction < tooSlowFrac -> dimColor
+        markerFraction == null || markerFraction < tooSlowFrac -> tooSlowColor
         markerFraction < healthyFrac -> greenColor
         markerFraction < aggressiveFrac -> amberColor
         else -> redColor
@@ -169,26 +156,29 @@ private fun RateZoneBar(absRateKg: Double, rateZone: WeeklyRateZone, markerColor
             drawLine(dividerColor, start = Offset(x, barY), end = Offset(x, barY + barH), strokeWidth = dividerW)
         }
 
-        val cursorX = trackStart + trackWidth * markerFraction
-        val arrowHalf = 5.dp.toPx()
-        val arrowHeight = 8.dp.toPx()
-        val arrowPath = Path().apply {
-            moveTo(cursorX, trackY)
-            lineTo(cursorX - arrowHalf, trackY + arrowHeight)
-            lineTo(cursorX + arrowHalf, trackY + arrowHeight)
-            close()
-        }
-        drawPath(arrowPath, color = badgeColor)
+        // Cursor and zone badge appear once there's a rate to place on the scale.
+        if (markerFraction != null) {
+            val cursorX = trackStart + trackWidth * markerFraction
+            val arrowHalf = 5.dp.toPx()
+            val arrowHeight = 8.dp.toPx()
+            val arrowPath = Path().apply {
+                moveTo(cursorX, trackY)
+                lineTo(cursorX - arrowHalf, trackY + arrowHeight)
+                lineTo(cursorX + arrowHalf, trackY + arrowHeight)
+                close()
+            }
+            drawPath(arrowPath, color = badgeColor)
 
-        if (zoneBadge.isNotEmpty()) {
-            val measured = textMeasurer.measure(zoneBadge, badgeStyle)
-            val textW = measured.size.width.toFloat()
-            val textH = measured.size.height.toFloat()
-            val gap = 7.dp.toPx()
-            val textY = trackY - textH - gap
-            val rawX = cursorX - textW / 2f
-            val textX = rawX.coerceIn(trackStart, trackEnd - textW)
-            drawText(measured, topLeft = Offset(textX, textY))
+            if (zoneBadge.isNotEmpty()) {
+                val measured = textMeasurer.measure(zoneBadge, badgeStyle)
+                val textW = measured.size.width.toFloat()
+                val textH = measured.size.height.toFloat()
+                val gap = 7.dp.toPx()
+                val textY = trackY - textH - gap
+                val rawX = cursorX - textW / 2f
+                val textX = rawX.coerceIn(trackStart, trackEnd - textW)
+                drawText(measured, topLeft = Offset(textX, textY))
+            }
         }
     }
 }
