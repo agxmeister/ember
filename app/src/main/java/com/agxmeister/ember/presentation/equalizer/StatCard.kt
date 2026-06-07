@@ -56,7 +56,10 @@ internal fun StatCard(
         shape = RoundedCornerShape(10.dp),
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.height(InfoIconSize),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Text(
                     text = label,
                     modifier = Modifier.weight(1f),
