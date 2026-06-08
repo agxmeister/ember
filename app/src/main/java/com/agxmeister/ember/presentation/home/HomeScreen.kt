@@ -22,21 +22,20 @@ import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
-import androidx.compose.material3.TooltipBox
-import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.rememberTooltipState
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -158,24 +157,27 @@ fun HomeScreen(
                     ),
                 )
                 state.currentCluster?.let { cluster ->
-                    val tooltipState = rememberTooltipState(isPersistent = true)
-                    val scope = rememberCoroutineScope()
-                    TooltipBox(
-                        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                        tooltip = { PlainTooltip { Text(cluster.dayCluster.localizedDescription()) } },
-                        state = tooltipState,
+                    var showInfo by remember { mutableStateOf(false) }
+                    if (showInfo) {
+                        AlertDialog(
+                            onDismissRequest = { showInfo = false },
+                            confirmButton = {
+                                TextButton(onClick = { showInfo = false }) { Text(appString(R.string.label_ok)) }
+                            },
+                            title = { Text(cluster.label) },
+                            text = { Text(cluster.dayCluster.localizedDescription()) },
+                        )
+                    }
+                    IconButton(
+                        onClick = { showInfo = true },
+                        modifier = Modifier.size(28.dp),
                     ) {
-                        IconButton(
-                            onClick = { scope.launch { tooltipState.show() } },
-                            modifier = Modifier.size(28.dp),
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.HelpOutline,
-                                contentDescription = appString(R.string.cd_what_is_cluster, cluster.label),
-                                modifier = Modifier.size(InfoIconSize),
-                                tint = onBg.copy(alpha = 0.30f),
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Outlined.HelpOutline,
+                            contentDescription = appString(R.string.cd_what_is_cluster, cluster.label),
+                            modifier = Modifier.size(InfoIconSize),
+                            tint = onBg.copy(alpha = 0.30f),
+                        )
                     }
                 }
             }
