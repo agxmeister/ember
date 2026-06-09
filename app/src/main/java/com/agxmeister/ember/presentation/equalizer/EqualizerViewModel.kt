@@ -15,6 +15,7 @@ import com.agxmeister.ember.domain.usecase.GetMeasurementsForWeekUseCase
 import com.agxmeister.ember.domain.usecase.GetWeeklyDataUseCase
 import com.agxmeister.ember.domain.usecase.SaveMeasurementUseCase
 import com.agxmeister.ember.domain.usecase.isoWeekStart
+import com.agxmeister.ember.domain.util.median
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -455,11 +456,6 @@ private fun fillGaps(days: List<EqualizerDayData>, maxGap: Int = 5): List<Equali
         }
     }
     return days.mapIndexed { idx, day -> day.copy(weightKg = weights[idx]) }
-}
-
-private fun List<Double>.median(): Double {
-    val s = sorted()
-    return if (s.size % 2 == 0) (s[s.size / 2 - 1] + s[s.size / 2]) / 2.0 else s[s.size / 2]
 }
 
 private fun linearRegression(xs: List<Double>, ys: List<Double>): Pair<Double, Double>? {

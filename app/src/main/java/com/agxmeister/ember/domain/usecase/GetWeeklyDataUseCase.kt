@@ -4,6 +4,7 @@ import com.agxmeister.ember.domain.clustering.MeasurementNormalizer
 import com.agxmeister.ember.domain.model.WeeklyData
 import com.agxmeister.ember.domain.repository.MeasurementRepository
 import com.agxmeister.ember.domain.repository.UserPreferencesRepository
+import com.agxmeister.ember.domain.util.median
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.datetime.DatePeriod
@@ -38,8 +39,3 @@ class GetWeeklyDataUseCase @Inject constructor(
 }
 
 internal fun LocalDate.isoWeekStart(): LocalDate = minus(DatePeriod(days = dayOfWeek.value - 1))
-
-private fun List<Double>.median(): Double {
-    val s = sorted()
-    return if (s.size % 2 == 0) (s[s.size / 2 - 1] + s[s.size / 2]) / 2.0 else s[s.size / 2]
-}
