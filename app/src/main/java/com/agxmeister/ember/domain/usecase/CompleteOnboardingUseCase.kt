@@ -39,10 +39,6 @@ class CompleteOnboardingUseCase @Inject constructor(
             clusteringEnabled, derivedGoal, weightUnit,
             weighingFrequency, notificationDayOfWeek,
         )
-        if (weighingFrequency == WeighingFrequency.Daily) {
-            reminderScheduler.scheduleForTime(finalHour, finalMinute)
-        } else {
-            reminderScheduler.scheduleWeeklyForTime(notificationDayOfWeek, finalHour, finalMinute)
-        }
+        reminderScheduler.scheduleForFrequency(weighingFrequency, notificationDayOfWeek, finalHour, finalMinute)
     }
 }

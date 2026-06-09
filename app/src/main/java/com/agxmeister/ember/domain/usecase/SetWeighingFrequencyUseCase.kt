@@ -16,11 +16,7 @@ class SetWeighingFrequencyUseCase @Inject constructor(
         if (!notificationsEnabled) return
         val hour = preferencesRepository.notificationHour.first()
         val minute = preferencesRepository.notificationMinute.first()
-        if (frequency == WeighingFrequency.Weekly) {
-            val dayOfWeek = preferencesRepository.notificationDayOfWeek.first()
-            reminderScheduler.scheduleWeeklyForTime(dayOfWeek, hour, minute)
-        } else {
-            reminderScheduler.scheduleForTime(hour, minute)
-        }
+        val dayOfWeek = preferencesRepository.notificationDayOfWeek.first()
+        reminderScheduler.scheduleForFrequency(frequency, dayOfWeek, hour, minute)
     }
 }
