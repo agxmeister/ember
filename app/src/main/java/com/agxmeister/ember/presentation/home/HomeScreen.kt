@@ -22,7 +22,6 @@ import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,7 +29,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -57,6 +55,7 @@ import com.agxmeister.ember.domain.model.DayCluster
 import com.agxmeister.ember.domain.model.ThemeMode
 import com.agxmeister.ember.presentation.LocalAppResources
 import com.agxmeister.ember.presentation.appString
+import com.agxmeister.ember.presentation.common.InfoDialog
 import com.agxmeister.ember.presentation.theme.InfoIconSize
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -159,13 +158,10 @@ fun HomeScreen(
                 state.currentCluster?.let { cluster ->
                     var showInfo by remember { mutableStateOf(false) }
                     if (showInfo) {
-                        AlertDialog(
-                            onDismissRequest = { showInfo = false },
-                            confirmButton = {
-                                TextButton(onClick = { showInfo = false }) { Text(appString(R.string.label_ok)) }
-                            },
-                            title = { Text(cluster.label) },
-                            text = { Text(cluster.dayCluster.localizedDescription()) },
+                        InfoDialog(
+                            title = cluster.label,
+                            text = cluster.dayCluster.localizedDescription(),
+                            onDismiss = { showInfo = false },
                         )
                     }
                     IconButton(

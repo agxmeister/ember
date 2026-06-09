@@ -1,36 +1,18 @@
 package com.agxmeister.ember.presentation.equalizer
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.HelpOutline
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontFamily
@@ -39,7 +21,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.agxmeister.ember.R
 import com.agxmeister.ember.presentation.appString
-import com.agxmeister.ember.presentation.theme.InfoIconSize
+import com.agxmeister.ember.presentation.common.InfoDialog
+import com.agxmeister.ember.presentation.theme.DangerRed
+import com.agxmeister.ember.presentation.theme.SuccessGreen
+import com.agxmeister.ember.presentation.theme.WarningAmber
 import kotlin.math.abs
 
 @Composable
@@ -48,20 +33,12 @@ internal fun WeeklyRateCard(
     weeklyRateKg: Double?,
     rateZone: WeeklyRateZone,
 ) {
-    val onSurface = MaterialTheme.colorScheme.onSurface
-    val labelStyle = TextStyle(
-        fontFamily = FontFamily.Monospace,
-        fontSize = 9.sp,
-        letterSpacing = 0.8.sp,
-        color = onSurface.copy(alpha = 0.55f),
-    )
     var showInfo by remember { mutableStateOf(false) }
     if (showInfo) {
-        AlertDialog(
-            onDismissRequest = { showInfo = false },
-            confirmButton = { TextButton(onClick = { showInfo = false }) { Text(appString(R.string.label_ok)) } },
-            title = { Text(appString(R.string.trends_weekly_rate)) },
-            text = { Text(appString(R.string.trends_weekly_rate_info)) },
+        InfoDialog(
+            title = appString(R.string.trends_weekly_rate),
+            text = appString(R.string.trends_weekly_rate_info),
+            onDismiss = { showInfo = false },
         )
     }
 
@@ -73,31 +50,13 @@ internal fun WeeklyRateCard(
         WeeklyRateZone.WrongDirection -> appString(R.string.trends_rate_zone_wrong_direction)
         WeeklyRateZone.Unavailable -> ""
     }
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        shape = RoundedCornerShape(10.dp),
-    ) {
-        Column(modifier = Modifier.padding(12.dp).fillMaxHeight()) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = appString(R.string.trends_weekly_rate),
-                    style = labelStyle,
-                    modifier = Modifier.weight(1f),
-                )
-                Icon(
-                    imageVector = Icons.Outlined.HelpOutline,
-                    contentDescription = null,
-                    modifier = Modifier.size(InfoIconSize).clickable { showInfo = true },
-                    tint = onSurface.copy(alpha = 0.35f),
-                )
-            }
-            Spacer(Modifier.weight(1f))
-            RateZoneBar(
-                absRateKg = weeklyRateKg?.let { abs(it) },
-                zoneBadge = zoneBadge,
-            )
-        }
+    StatCardSurface(modifier = modifier) {
+        CardLabelRow(label = appString(R.string.trends_weekly_rate), onInfo = { showInfo = true })
+        Spacer(Modifier.weight(1f))
+        RateZoneBar(
+            absRateKg = weeklyRateKg?.let { abs(it) },
+            zoneBadge = zoneBadge,
+        )
     }
 }
 
@@ -107,18 +66,14 @@ private fun RateZoneBar(absRateKg: Double?, zoneBadge: String) {
     val markerFraction = absRateKg?.let { (it / barRange).toFloat().coerceIn(0.02f, 0.98f) }
     val onSurface = MaterialTheme.colorScheme.onSurface
     val dimColor = onSurface.copy(alpha = 0.15f)
-    val greenColor = Color(0xFF4BB543)
-    val amberColor = Color(0xFFFFC107)
-    val redColor = Color(0xFFE53935)
     val tooSlowFrac = (0.25 / barRange).toFloat()
     val healthyFrac = (1.0 / barRange).toFloat()
     val aggressiveFrac = (1.5 / barRange).toFloat()
-    val tooSlowColor = onSurface.copy(alpha = 0.6f)
     val badgeColor = when {
-        markerFraction == null || markerFraction < tooSlowFrac -> tooSlowColor
-        markerFraction < healthyFrac -> greenColor
-        markerFraction < aggressiveFrac -> amberColor
-        else -> redColor
+        markerFraction == null || markerFraction < tooSlowFrac -> onSurface.copy(alpha = 0.6f)
+        markerFraction < healthyFrac -> SuccessGreen
+        markerFraction < aggressiveFrac -> WarningAmber
+        else -> DangerRed
     }
     val textMeasurer = rememberTextMeasurer()
     val badgeStyle = TextStyle(
@@ -137,18 +92,14 @@ private fun RateZoneBar(absRateKg: Double?, zoneBadge: String) {
         val barH = 3.dp.toPx()
         val barY = trackY - barH / 2f
 
-        val tooSlowFrac = (0.25 / barRange).toFloat()
-        val healthyFrac = (1.0 / barRange).toFloat()
-        val aggressiveFrac = (1.5 / barRange).toFloat()
-
         val tooSlowX    = trackStart + trackWidth * tooSlowFrac
         val healthyX    = trackStart + trackWidth * healthyFrac
         val aggressiveX = trackStart + trackWidth * aggressiveFrac
 
-        drawRect(dimColor,                       topLeft = Offset(trackStart,   barY), size = Size(tooSlowX - trackStart,    barH))
-        drawRect(greenColor.copy(alpha = 0.35f), topLeft = Offset(tooSlowX,    barY), size = Size(healthyX - tooSlowX,      barH))
-        drawRect(amberColor.copy(alpha = 0.35f), topLeft = Offset(healthyX,    barY), size = Size(aggressiveX - healthyX,   barH))
-        drawRect(redColor.copy(alpha = 0.35f),   topLeft = Offset(aggressiveX, barY), size = Size(trackEnd - aggressiveX,   barH))
+        drawRect(dimColor,                          topLeft = Offset(trackStart,   barY), size = Size(tooSlowX - trackStart,    barH))
+        drawRect(SuccessGreen.copy(alpha = 0.35f),  topLeft = Offset(tooSlowX,    barY), size = Size(healthyX - tooSlowX,      barH))
+        drawRect(WarningAmber.copy(alpha = 0.35f),  topLeft = Offset(healthyX,    barY), size = Size(aggressiveX - healthyX,   barH))
+        drawRect(DangerRed.copy(alpha = 0.35f),     topLeft = Offset(aggressiveX, barY), size = Size(trackEnd - aggressiveX,   barH))
 
         val dividerColor = onSurface.copy(alpha = 0.50f)
         val dividerW = 1.5.dp.toPx()
@@ -159,15 +110,7 @@ private fun RateZoneBar(absRateKg: Double?, zoneBadge: String) {
         // Cursor and zone badge appear once there's a rate to place on the scale.
         if (markerFraction != null) {
             val cursorX = trackStart + trackWidth * markerFraction
-            val arrowHalf = 5.dp.toPx()
-            val arrowHeight = 8.dp.toPx()
-            val arrowPath = Path().apply {
-                moveTo(cursorX, trackY)
-                lineTo(cursorX - arrowHalf, trackY + arrowHeight)
-                lineTo(cursorX + arrowHalf, trackY + arrowHeight)
-                close()
-            }
-            drawPath(arrowPath, color = badgeColor)
+            drawCursorArrow(cursorX, trackY, badgeColor)
 
             if (zoneBadge.isNotEmpty()) {
                 val measured = textMeasurer.measure(zoneBadge, badgeStyle)

@@ -15,6 +15,11 @@ val InfoAccent = Color(0xFF2196F3)
 /** Size for tappable info/help ("i" and "?") icons. */
 val InfoIconSize = 18.dp
 
+/** Status accent colors shared by rate, streak, and projection indicators. */
+val SuccessGreen = Color(0xFF4BB543)
+val WarningAmber = Color(0xFFFFC107)
+val DangerRed = Color(0xFFE53935)
+
 fun closenessColor(closeness: Float, darkTheme: Boolean = true): Color {
     val lightness = if (darkTheme) 0.57f else 0.40f
     return Color.hsl(hue = 8f + sqrt(closeness) * 112f, saturation = 0.82f, lightness = lightness)

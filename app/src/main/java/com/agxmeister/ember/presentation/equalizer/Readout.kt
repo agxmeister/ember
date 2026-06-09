@@ -7,14 +7,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,8 +29,9 @@ import androidx.compose.ui.unit.sp
 import com.agxmeister.ember.R
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.presentation.appString
+import com.agxmeister.ember.presentation.common.InfoDialog
+import com.agxmeister.ember.presentation.common.InfoIcon
 import com.agxmeister.ember.presentation.theme.InfoAccent
-import com.agxmeister.ember.presentation.theme.InfoIconSize
 import com.agxmeister.ember.presentation.theme.closenessColor
 import com.agxmeister.ember.presentation.theme.trendSpeedColor
 import kotlinx.datetime.LocalDate
@@ -139,11 +136,10 @@ private fun WeightDisplay(
 
     var showTrendInfo by remember { mutableStateOf(false) }
     if (showTrendInfo && trendMeasurementsNeeded != null) {
-        AlertDialog(
-            onDismissRequest = { showTrendInfo = false },
-            confirmButton = { TextButton(onClick = { showTrendInfo = false }) { Text(appString(R.string.label_ok)) } },
-            title = { Text(appString(R.string.trends_delta_target)) },
-            text = { Text(appString(R.string.trends_trend_pending_info, trendMeasurementsNeeded)) },
+        InfoDialog(
+            title = appString(R.string.trends_delta_target),
+            text = appString(R.string.trends_trend_pending_info, trendMeasurementsNeeded),
+            onDismiss = { showTrendInfo = false },
         )
     }
 
@@ -183,14 +179,10 @@ private fun WeightDisplay(
             Row(verticalAlignment = Alignment.Bottom) {
                 val trendGlow = Shadow(color = trendColor.copy(alpha = 0.65f), blurRadius = 22f)
                 if (trendMeasurementsNeeded != null) {
-                    Icon(
-                        imageVector = Icons.Filled.Info,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .align(Alignment.CenterVertically)
-                            .padding(end = 8.dp)
-                            .size(InfoIconSize)
-                            .clickable { showTrendInfo = true },
+                    InfoIcon(
+                        onClick = { showTrendInfo = true },
+                        modifier = Modifier.align(Alignment.CenterVertically).padding(end = 8.dp),
+                        icon = Icons.Filled.Info,
                         tint = InfoAccent,
                     )
                 }
