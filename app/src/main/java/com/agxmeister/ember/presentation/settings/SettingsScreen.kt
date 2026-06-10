@@ -20,14 +20,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -133,27 +131,14 @@ fun SettingsScreen(
         )
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text(appString(R.string.settings_language), style = MaterialTheme.typography.titleMedium)
-        Spacer(modifier = Modifier.height(8.dp))
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { showLanguageDialog = true }
-                .padding(vertical = 8.dp),
-        ) {
-            Text(language.nativeName, style = MaterialTheme.typography.bodyLarge)
-            Text(
-                appString(R.string.label_tap_to_adjust),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        Spacer(modifier = Modifier.height(24.dp))
-        HorizontalDivider()
-        Spacer(modifier = Modifier.height(24.dp))
+        SettingsSectionHeader(appString(R.string.settings_language))
+        TappableSetting(
+            value = language.nativeName,
+            onClick = { showLanguageDialog = true },
+        )
+        SettingsDivider()
 
-        Text(appString(R.string.settings_unit), style = MaterialTheme.typography.titleMedium)
-        Spacer(modifier = Modifier.height(8.dp))
+        SettingsSectionHeader(appString(R.string.settings_unit))
         SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
             WeightUnit.entries.forEachIndexed { index, unit ->
                 SegmentedButton(
@@ -163,41 +148,26 @@ fun SettingsScreen(
                 ) { Text(unit.label) }
             }
         }
-        Spacer(modifier = Modifier.height(24.dp))
-        HorizontalDivider()
-        Spacer(modifier = Modifier.height(24.dp))
+        SettingsDivider()
 
-        Text(appString(R.string.settings_goal), style = MaterialTheme.typography.titleMedium)
-        Spacer(modifier = Modifier.height(8.dp))
+        SettingsSectionHeader(appString(R.string.settings_goal))
         val effectiveTargetKg = if (goalTargetKg > 0) goalTargetKg else initialWeightKg
         val goalStartLabel = goalStartDate.ifEmpty { null }?.let {
             runCatching {
                 LocalDate.parse(it).format(DateTimeFormatter.ofPattern("d MMM yyyy"))
             }.getOrNull()
         } ?: goalStartDate
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { showGoalSheet = true }
-                .padding(vertical = 8.dp),
-        ) {
-            Text(
-                appString(
-                    R.string.settings_goal_summary,
-                    goalStartLabel,
-                    weightUnit.fromKg(initialWeightKg).toInt(),
-                    weightUnit.label,
-                    weightUnit.fromKg(effectiveTargetKg).toInt(),
-                    weightUnit.label,
-                ),
-                style = MaterialTheme.typography.bodyLarge,
-            )
-            Text(
-                appString(R.string.label_tap_to_adjust),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+        TappableSetting(
+            value = appString(
+                R.string.settings_goal_summary,
+                goalStartLabel,
+                weightUnit.fromKg(initialWeightKg).toInt(),
+                weightUnit.label,
+                weightUnit.fromKg(effectiveTargetKg).toInt(),
+                weightUnit.label,
+            ),
+            onClick = { showGoalSheet = true },
+        )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             appString(R.string.settings_start_over),
@@ -207,37 +177,19 @@ fun SettingsScreen(
                 .clickable { showResetDialog = true }
                 .padding(vertical = 4.dp),
         )
-        Spacer(modifier = Modifier.height(24.dp))
-        HorizontalDivider()
-        Spacer(modifier = Modifier.height(24.dp))
+        SettingsDivider()
 
-        Text(appString(R.string.settings_tracking_mode), style = MaterialTheme.typography.titleMedium)
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(appString(R.string.label_clustering), style = MaterialTheme.typography.bodyLarge)
-                Text(
-                    if (clusteringEnabled) appString(R.string.label_clustering_on) else appString(R.string.label_clustering_off),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Switch(
-                checked = clusteringEnabled,
-                onCheckedChange = viewModel::onClusteringEnabledChanged,
-                modifier = Modifier.padding(start = 16.dp),
-            )
-        }
+        SettingsSectionHeader(appString(R.string.settings_tracking_mode))
+        SettingsToggleRow(
+            title = appString(R.string.label_clustering),
+            subtitle = if (clusteringEnabled) appString(R.string.label_clustering_on) else appString(R.string.label_clustering_off),
+            checked = clusteringEnabled,
+            onCheckedChange = viewModel::onClusteringEnabledChanged,
+        )
 
-        Spacer(modifier = Modifier.height(24.dp))
-        HorizontalDivider()
-        Spacer(modifier = Modifier.height(24.dp))
+        SettingsDivider()
 
-        Text(appString(R.string.settings_weighing_frequency), style = MaterialTheme.typography.titleMedium)
-        Spacer(modifier = Modifier.height(8.dp))
+        SettingsSectionHeader(appString(R.string.settings_weighing_frequency))
         SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
             SegmentedButton(
                 selected = weighingFrequency == WeighingFrequency.Daily,
@@ -250,30 +202,15 @@ fun SettingsScreen(
                 shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
             ) { Text(appString(R.string.label_weekly)) }
         }
-        Spacer(modifier = Modifier.height(24.dp))
-        HorizontalDivider()
-        Spacer(modifier = Modifier.height(24.dp))
+        SettingsDivider()
 
-        Text(appString(R.string.settings_reminder), style = MaterialTheme.typography.titleMedium)
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(appString(R.string.settings_reminders), style = MaterialTheme.typography.bodyLarge)
-                Text(
-                    if (notificationsEnabled) appString(R.string.label_on) else appString(R.string.label_off),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Switch(
-                checked = notificationsEnabled,
-                onCheckedChange = viewModel::onNotificationsEnabledChanged,
-                modifier = Modifier.padding(start = 16.dp),
-            )
-        }
+        SettingsSectionHeader(appString(R.string.settings_reminder))
+        SettingsToggleRow(
+            title = appString(R.string.settings_reminders),
+            subtitle = if (notificationsEnabled) appString(R.string.label_on) else appString(R.string.label_off),
+            checked = notificationsEnabled,
+            onCheckedChange = viewModel::onNotificationsEnabledChanged,
+        )
         if (notificationsEnabled) {
             Spacer(modifier = Modifier.height(8.dp))
             if (weighingFrequency == WeighingFrequency.Weekly) {
@@ -294,51 +231,24 @@ fun SettingsScreen(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
             }
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { showTimePicker = true }
-                    .padding(vertical = 8.dp),
-            ) {
-                Text(
-                    appString(R.string.settings_notification_time, notificationHour, notificationMinute),
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-                Text(
-                    appString(R.string.label_tap_to_adjust),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+            TappableSetting(
+                value = appString(R.string.settings_notification_time, notificationHour, notificationMinute),
+                onClick = { showTimePicker = true },
+            )
         }
 
         if (devMode) {
-        Spacer(modifier = Modifier.height(24.dp))
-        HorizontalDivider()
-        Spacer(modifier = Modifier.height(24.dp))
+        SettingsDivider()
 
-        Text(appString(R.string.settings_approximation), style = MaterialTheme.typography.titleMedium)
-        Spacer(modifier = Modifier.height(8.dp))
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { showApproximationDialog = true }
-                .padding(vertical = 8.dp),
-        ) {
-            Text(
-                appString(
-                    R.string.settings_approximation_summary,
-                    algorithmConfig.regressionIntervalDays,
-                    algorithmConfig.minClusterSize,
-                ),
-                style = MaterialTheme.typography.bodyLarge,
-            )
-            Text(
-                appString(R.string.label_tap_to_adjust),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+        SettingsSectionHeader(appString(R.string.settings_approximation))
+        TappableSetting(
+            value = appString(
+                R.string.settings_approximation_summary,
+                algorithmConfig.regressionIntervalDays,
+                algorithmConfig.minClusterSize,
+            ),
+            onClick = { showApproximationDialog = true },
+        )
 
         if (showApproximationDialog) {
             var regressionText by remember { mutableStateOf(algorithmConfig.regressionIntervalDays.toString()) }
@@ -430,9 +340,7 @@ fun SettingsScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
-        HorizontalDivider()
-        Spacer(modifier = Modifier.height(24.dp))
+        SettingsDivider()
 
         Text(
             appString(R.string.settings_start_over_with_import),
@@ -446,22 +354,13 @@ fun SettingsScreen(
         } // end devMode
 
         if (showDefineGoalDialog) {
-            AlertDialog(
-                onDismissRequest = { showDefineGoalDialog = false },
-                title = { Text(appString(R.string.settings_start_over_confirm_title)) },
-                text = { Text(appString(R.string.settings_start_over_confirm_message)) },
-                confirmButton = {
-                    TextButton(onClick = {
-                        showDefineGoalDialog = false
-                        viewModel.onResetData()
-                        onNavigateToOnboarding(true)
-                    }) { Text(appString(R.string.label_confirm)) }
+            StartOverConfirmDialog(
+                onConfirm = {
+                    showDefineGoalDialog = false
+                    viewModel.onResetData()
+                    onNavigateToOnboarding(true)
                 },
-                dismissButton = {
-                    TextButton(onClick = { showDefineGoalDialog = false }) {
-                        Text(appString(R.string.label_cancel))
-                    }
-                },
+                onDismiss = { showDefineGoalDialog = false },
             )
         }
 
@@ -505,22 +404,13 @@ fun SettingsScreen(
         }
 
         if (showResetDialog) {
-            AlertDialog(
-                onDismissRequest = { showResetDialog = false },
-                title = { Text(appString(R.string.settings_start_over_confirm_title)) },
-                text = { Text(appString(R.string.settings_start_over_confirm_message)) },
-                confirmButton = {
-                    TextButton(onClick = {
-                        showResetDialog = false
-                        viewModel.onResetData()
-                        onNavigateToOnboarding(false)
-                    }) { Text(appString(R.string.label_confirm)) }
+            StartOverConfirmDialog(
+                onConfirm = {
+                    showResetDialog = false
+                    viewModel.onResetData()
+                    onNavigateToOnboarding(false)
                 },
-                dismissButton = {
-                    TextButton(onClick = { showResetDialog = false }) {
-                        Text(appString(R.string.label_cancel))
-                    }
-                },
+                onDismiss = { showResetDialog = false },
             )
         }
 
