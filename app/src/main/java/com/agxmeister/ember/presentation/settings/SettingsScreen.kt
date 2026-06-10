@@ -83,7 +83,7 @@ fun SettingsScreen(
     val darkTheme = isSystemInDarkTheme()
     val accentCloseness by viewModel.accentCloseness.collectAsStateWithLifecycle()
     val accentColor = closenessColor(accentCloseness, darkTheme)
-    val accentDim = Color.hsl(8f + accentCloseness * 112f, saturation = 0.60f, lightness = 0.15f)
+    val accentDim = closenessColor(accentCloseness, darkTheme, saturation = 0.60f, lightness = 0.15f)
 
     var showLanguageDialog by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }

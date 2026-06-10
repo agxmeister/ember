@@ -5,6 +5,7 @@ import android.media.ToneGenerator
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -57,6 +58,7 @@ import com.agxmeister.ember.presentation.LocalAppResources
 import com.agxmeister.ember.presentation.appString
 import com.agxmeister.ember.presentation.common.InfoDialog
 import com.agxmeister.ember.presentation.theme.InfoIconSize
+import com.agxmeister.ember.presentation.theme.closenessColor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -110,7 +112,7 @@ fun HomeScreen(
     val colorWeight = state.todayWeightKg ?: defaultWeight
     val closeness = (1.0 - abs(colorWeight - state.targetKg) / state.tolerance)
         .coerceIn(0.0, 1.0).toFloat()
-    val accentColor = Color.hsl(hue = 8f + closeness * 112f, saturation = 0.82f, lightness = 0.57f)
+    val accentColor = closenessColor(closeness, isSystemInDarkTheme())
 
     val onBg = MaterialTheme.colorScheme.onBackground
 
