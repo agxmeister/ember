@@ -1,12 +1,10 @@
 package com.agxmeister.ember.domain.usecase
 
-import com.agxmeister.ember.domain.clustering.MeasurementNormalizer
+import com.agxmeister.ember.domain.clustering.NormalizedMeasurementsProvider
 import com.agxmeister.ember.domain.model.DailyCandle
-import com.agxmeister.ember.domain.repository.MeasurementRepository
-import com.agxmeister.ember.domain.repository.UserPreferencesRepository
 import com.agxmeister.ember.domain.util.median
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
@@ -14,25 +12,15 @@ import kotlinx.datetime.toLocalDateTime
 import javax.inject.Inject
 
 class GetDailyCandlesUseCase @Inject constructor(
-    private val measurementRepository: MeasurementRepository,
-    private val preferencesRepository: UserPreferencesRepository,
+    private val normalizedMeasurements: NormalizedMeasurementsProvider,
 ) {
     operator fun invoke(): Flow<List<DailyCandle>> =
-        combine(
-            measurementRepository.getAll(),
-            preferencesRepository.dayStartHour,
-            preferencesRepository.clusteringEnabled,
-            preferencesRepository.algorithmConfig,
-        ) { measurements, dayStartHour, clusteringEnabled, config ->
+        normalizedMeasurements().map { (measurements, normalizer) ->
             val tz = TimeZone.currentSystemDefault()
             val byDate = measurements
                 .groupBy { it.timestamp.toLocalDateTime(tz).date }
                 .toSortedMap()
             val dates = byDate.keys.toList()
-
-            if (dates.isEmpty()) return@combine emptyList()
-
-            val normalizer = MeasurementNormalizer.build(measurements, dayStartHour, clusteringEnabled, config.minClusterSize)
 
             dates.mapIndexed { index, date ->
                 val dayMeasurements = byDate[date]!!.sortedBy { it.timestamp }
