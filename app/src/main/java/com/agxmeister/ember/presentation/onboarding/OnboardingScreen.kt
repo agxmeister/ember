@@ -1,8 +1,6 @@
 package com.agxmeister.ember.presentation.onboarding
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.ColumnScope
@@ -12,11 +10,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SegmentedButton
@@ -24,7 +20,6 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.ui.graphics.Color
 import com.agxmeister.ember.R
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.model.WeighingFrequency
@@ -57,24 +52,7 @@ fun OnboardingScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val bg = MaterialTheme.colorScheme.background
-    val onBg = MaterialTheme.colorScheme.onBackground
-    MaterialTheme(
-        colorScheme = MaterialTheme.colorScheme.copy(
-            primary = onBg,
-            onPrimary = bg,
-            secondaryContainer = Color(0xFF282828),
-            onSecondaryContainer = Color.White,
-        ),
-    ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 32.dp, vertical = 48.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        StepProgressBar(totalSteps = 5, currentStep = state.step)
-        Spacer(Modifier.height(32.dp))
+    OnboardingScaffold(totalSteps = 5, currentStep = state.step) {
         when (state.step) {
             0 -> WeightStep(
                 weightKg = state.weightKg,
@@ -119,7 +97,6 @@ fun OnboardingScreen(
             )
         }
     }
-    }
 }
 
 @Composable
@@ -136,12 +113,9 @@ private fun ColumnScope.WeightStep(
     val isValid = text.isNotEmpty() && text.toIntOrNull()?.let { it in weightUnit.displayRange } == true
     val borderColor = MaterialTheme.colorScheme.outline
 
-    Text(appString(R.string.onboarding_welcome), style = MaterialTheme.typography.headlineSmall)
-    Spacer(Modifier.height(8.dp))
-    Text(
-        appString(R.string.onboarding_current_weight_question),
-        style = MaterialTheme.typography.bodyLarge,
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+    StepHeader(
+        title = appString(R.string.onboarding_welcome),
+        subtitle = appString(R.string.onboarding_current_weight_question),
     )
     Spacer(Modifier.weight(1f))
     BasicTextField(
@@ -201,12 +175,9 @@ private fun ColumnScope.GoalTargetStep(
     val diffKg = goalTargetKg - weightKg
     val diffDisplay = weightUnit.scaleDiff(kotlin.math.abs(diffKg)).toInt()
 
-    Text(appString(R.string.onboarding_target_weight_title), style = MaterialTheme.typography.headlineSmall)
-    Spacer(Modifier.height(8.dp))
-    Text(
-        appString(R.string.onboarding_goal_question),
-        style = MaterialTheme.typography.bodyLarge,
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+    StepHeader(
+        title = appString(R.string.onboarding_target_weight_title),
+        subtitle = appString(R.string.onboarding_goal_question),
     )
     if (diffDisplay > 0) {
         val hint = if (diffKg < 0) appString(R.string.onboarding_lose, diffDisplay, weightUnit.label)
@@ -289,12 +260,9 @@ private fun ColumnScope.FrequencyStep(
     onFrequencyChanged: (WeighingFrequency) -> Unit,
     onNext: () -> Unit,
 ) {
-    Text(appString(R.string.onboarding_how_often), style = MaterialTheme.typography.headlineSmall)
-    Spacer(Modifier.height(8.dp))
-    Text(
-        appString(R.string.onboarding_frequency_description),
-        style = MaterialTheme.typography.bodyLarge,
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+    StepHeader(
+        title = appString(R.string.onboarding_how_often),
+        subtitle = appString(R.string.onboarding_frequency_description),
     )
     Spacer(Modifier.weight(1f))
     Column(
@@ -346,12 +314,9 @@ private fun ColumnScope.TimeStep(
     )
 
     if (frequency == WeighingFrequency.Weekly) {
-        Text(appString(R.string.onboarding_weekly_reminder_title), style = MaterialTheme.typography.headlineSmall)
-        Spacer(Modifier.height(8.dp))
-        Text(
-            appString(R.string.onboarding_weekly_day_time),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+        StepHeader(
+            title = appString(R.string.onboarding_weekly_reminder_title),
+            subtitle = appString(R.string.onboarding_weekly_day_time),
         )
         Spacer(Modifier.height(32.dp))
         SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
@@ -364,38 +329,16 @@ private fun ColumnScope.TimeStep(
             }
         }
         Spacer(Modifier.height(24.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            IntWheelPicker(
-                initialValue = notificationHour,
-                range = 0..23,
-                label = { "%02d".format(it) },
-                onValueChanged = onNotificationHourChanged,
-                modifier = Modifier.width(100.dp),
-            )
-            Text(
-                ":",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(horizontal = 8.dp),
-            )
-            IntWheelPicker(
-                initialValue = notificationMinute,
-                range = 0..59,
-                label = { "%02d".format(it) },
-                onValueChanged = onNotificationMinuteChanged,
-                modifier = Modifier.width(100.dp),
-            )
-        }
+        TimePickerRow(
+            hour = notificationHour,
+            minute = notificationMinute,
+            onHourChanged = onNotificationHourChanged,
+            onMinuteChanged = onNotificationMinuteChanged,
+        )
     } else {
-        Text(appString(R.string.onboarding_morning_reminder_title), style = MaterialTheme.typography.headlineSmall)
-        Spacer(Modifier.height(8.dp))
-        Text(
-            appString(R.string.onboarding_day_start_question),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+        StepHeader(
+            title = appString(R.string.onboarding_morning_reminder_title),
+            subtitle = appString(R.string.onboarding_day_start_question),
         )
         Text(
             appString(R.string.onboarding_reminder_15_min),
@@ -403,31 +346,12 @@ private fun ColumnScope.TimeStep(
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
         )
         Spacer(Modifier.weight(1f))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            IntWheelPicker(
-                initialValue = dayStartHour,
-                range = 0..23,
-                label = { "%02d".format(it) },
-                onValueChanged = onDayStartHourChanged,
-                modifier = Modifier.width(100.dp),
-            )
-            Text(
-                ":",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(horizontal = 8.dp),
-            )
-            IntWheelPicker(
-                initialValue = dayStartMinute,
-                range = 0..59,
-                label = { "%02d".format(it) },
-                onValueChanged = onDayStartMinuteChanged,
-                modifier = Modifier.width(100.dp),
-            )
-        }
+        TimePickerRow(
+            hour = dayStartHour,
+            minute = dayStartMinute,
+            onHourChanged = onDayStartHourChanged,
+            onMinuteChanged = onDayStartMinuteChanged,
+        )
     }
     Spacer(Modifier.weight(1f))
     Button(onClick = onNext, modifier = Modifier.fillMaxWidth()) {
@@ -441,12 +365,9 @@ private fun ColumnScope.ClusteringStep(
     onClusteringEnabledChanged: (Boolean) -> Unit,
     onDone: () -> Unit,
 ) {
-    Text(appString(R.string.onboarding_smart_tracking), style = MaterialTheme.typography.headlineSmall)
-    Spacer(Modifier.height(8.dp))
-    Text(
-        appString(R.string.onboarding_clustering_description),
-        style = MaterialTheme.typography.bodyLarge,
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+    StepHeader(
+        title = appString(R.string.onboarding_smart_tracking),
+        subtitle = appString(R.string.onboarding_clustering_description),
     )
     Spacer(Modifier.weight(1f))
     Row(
@@ -474,26 +395,6 @@ private fun ColumnScope.ClusteringStep(
 }
 
 @Composable
-private fun StepProgressBar(totalSteps: Int, currentStep: Int, modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        repeat(totalSteps) { index ->
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(4.dp)
-                    .background(
-                        color = if (index < currentStep) Color.White.copy(alpha = 0.6f) else Color.White.copy(alpha = 0.2f),
-                        shape = RoundedCornerShape(2.dp),
-                    ),
-            )
-        }
-    }
-}
-
-@Composable
 fun SeedMeasuresOnboardingScreen(
     onComplete: () -> Unit,
     viewModel: SeedMeasuresOnboardingViewModel = hiltViewModel(),
@@ -504,70 +405,52 @@ fun SeedMeasuresOnboardingScreen(
         if (state.completed) onComplete()
     }
 
-    val bg = MaterialTheme.colorScheme.background
-    val onBg = MaterialTheme.colorScheme.onBackground
-    MaterialTheme(
-        colorScheme = MaterialTheme.colorScheme.copy(
-            primary = onBg,
-            onPrimary = bg,
-            secondaryContainer = Color(0xFF282828),
-            onSecondaryContainer = Color.White,
-        ),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 32.dp, vertical = 48.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            StepProgressBar(totalSteps = 6, currentStep = state.step)
-            Spacer(Modifier.height(32.dp))
-            when (state.step) {
-                0 -> WeightStep(
-                    weightKg = state.weightKg,
-                    weightUnit = state.weightUnit,
-                    onWeightChanged = viewModel::onWeightChanged,
-                    onUnitChanged = viewModel::onWeightUnitChanged,
-                    onNext = viewModel::onNextStep,
-                )
-                1 -> GoalTargetStep(
-                    weightKg = state.weightKg,
-                    goalTargetKg = state.goalTargetKg,
-                    weightUnit = state.weightUnit,
-                    onGoalTargetChanged = viewModel::onGoalTargetChanged,
-                    onNext = viewModel::onNextStep,
-                )
-                2 -> FrequencyStep(
-                    frequency = state.weighingFrequency,
-                    onFrequencyChanged = viewModel::onWeighingFrequencyChanged,
-                    onNext = viewModel::onNextStep,
-                )
-                3 -> TimeStep(
-                    frequency = state.weighingFrequency,
-                    dayStartHour = state.dayStartHour,
-                    dayStartMinute = state.dayStartMinute,
-                    notificationDayOfWeek = state.notificationDayOfWeek,
-                    notificationHour = state.notificationHour,
-                    notificationMinute = state.notificationMinute,
-                    onDayStartHourChanged = viewModel::onDayStartHourChanged,
-                    onDayStartMinuteChanged = viewModel::onDayStartMinuteChanged,
-                    onNotificationDayOfWeekChanged = viewModel::onNotificationDayOfWeekChanged,
-                    onNotificationHourChanged = viewModel::onNotificationHourChanged,
-                    onNotificationMinuteChanged = viewModel::onNotificationMinuteChanged,
-                    onNext = viewModel::onNextStep,
-                )
-                4 -> ClusteringStep(
-                    clusteringEnabled = state.clusteringEnabled,
-                    onClusteringEnabledChanged = viewModel::onClusteringEnabledChanged,
-                    onDone = viewModel::onNextStep,
-                )
-                5 -> MeasuresStep(
-                    weightUnit = state.weightUnit,
-                    measuresText = state.measuresText,
-                    onMeasuresTextChanged = viewModel::onMeasuresTextChanged,
-                    onDone = viewModel::complete,
-                )
-            }
+    OnboardingScaffold(totalSteps = 6, currentStep = state.step) {
+        when (state.step) {
+            0 -> WeightStep(
+                weightKg = state.weightKg,
+                weightUnit = state.weightUnit,
+                onWeightChanged = viewModel::onWeightChanged,
+                onUnitChanged = viewModel::onWeightUnitChanged,
+                onNext = viewModel::onNextStep,
+            )
+            1 -> GoalTargetStep(
+                weightKg = state.weightKg,
+                goalTargetKg = state.goalTargetKg,
+                weightUnit = state.weightUnit,
+                onGoalTargetChanged = viewModel::onGoalTargetChanged,
+                onNext = viewModel::onNextStep,
+            )
+            2 -> FrequencyStep(
+                frequency = state.weighingFrequency,
+                onFrequencyChanged = viewModel::onWeighingFrequencyChanged,
+                onNext = viewModel::onNextStep,
+            )
+            3 -> TimeStep(
+                frequency = state.weighingFrequency,
+                dayStartHour = state.dayStartHour,
+                dayStartMinute = state.dayStartMinute,
+                notificationDayOfWeek = state.notificationDayOfWeek,
+                notificationHour = state.notificationHour,
+                notificationMinute = state.notificationMinute,
+                onDayStartHourChanged = viewModel::onDayStartHourChanged,
+                onDayStartMinuteChanged = viewModel::onDayStartMinuteChanged,
+                onNotificationDayOfWeekChanged = viewModel::onNotificationDayOfWeekChanged,
+                onNotificationHourChanged = viewModel::onNotificationHourChanged,
+                onNotificationMinuteChanged = viewModel::onNotificationMinuteChanged,
+                onNext = viewModel::onNextStep,
+            )
+            4 -> ClusteringStep(
+                clusteringEnabled = state.clusteringEnabled,
+                onClusteringEnabledChanged = viewModel::onClusteringEnabledChanged,
+                onDone = viewModel::onNextStep,
+            )
+            5 -> MeasuresStep(
+                weightUnit = state.weightUnit,
+                measuresText = state.measuresText,
+                onMeasuresTextChanged = viewModel::onMeasuresTextChanged,
+                onDone = viewModel::complete,
+            )
         }
     }
 }
@@ -580,12 +463,9 @@ private fun ColumnScope.MeasuresStep(
     onDone: () -> Unit,
 ) {
     val borderColor = MaterialTheme.colorScheme.outline
-    Text("Import history", style = MaterialTheme.typography.headlineSmall)
-    Spacer(Modifier.height(8.dp))
-    Text(
-        "Enter comma-separated weights in ${weightUnit.label}. Last value = today, each earlier one = the previous day.",
-        style = MaterialTheme.typography.bodyLarge,
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+    StepHeader(
+        title = "Import history",
+        subtitle = "Enter comma-separated weights in ${weightUnit.label}. Last value = today, each earlier one = the previous day.",
     )
     Spacer(Modifier.weight(1f))
     BasicTextField(
