@@ -57,10 +57,7 @@ class HomeViewModel @Inject constructor(
             val tolerance = abs(savedInitialWeight - targetKg).coerceAtLeast(0.1)
             HomeUiState(
                 currentCluster = cluster,
-                defaultWeightKg = cluster.measurements
-                    .maxByOrNull { it.timestamp }
-                    ?.weightKg
-                    ?: savedInitialWeight,
+                defaultWeightKg = savedInitialWeight,
                 weightUnit = weightUnit,
                 isRechecking = isRechecking,
                 targetKg = targetKg,
@@ -71,9 +68,7 @@ class HomeViewModel @Inject constructor(
         preferencesRepository.themeMode,
         preferencesRepository.weighingFrequency,
     ) { state, candles, themeMode, frequency ->
-        val previousWeight = if (state.currentCluster?.measurements.isNullOrEmpty()) {
-            candles.filter { it.date < today }.maxByOrNull { it.date }?.close
-        } else null
+        val previousWeight = candles.filter { it.date < today }.maxByOrNull { it.date }?.rawClose
         state.copy(
             todayWeightKg = candles.find { it.date == today }?.close,
             defaultWeightKg = previousWeight ?: state.defaultWeightKg,
