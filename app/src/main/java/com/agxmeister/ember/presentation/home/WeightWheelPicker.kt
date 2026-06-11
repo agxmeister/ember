@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.agxmeister.ember.domain.model.WeightUnit
+import kotlin.math.roundToInt
 
 private val ITEM_HEIGHT = 56.dp
 val WeightPickerHeight = ITEM_HEIGHT * 3
@@ -36,7 +37,7 @@ fun WeightWheelPicker(
     val step = unit.step
     val count = ((unit.fromKg(MAX_KG) - minValue) / step).toInt() + 1
 
-    fun toIndex(kg: Double): Int = ((unit.fromKg(kg) - minValue) / step).toInt().coerceIn(0, count - 1)
+    fun toIndex(kg: Double): Int = ((unit.fromKg(kg) - minValue) / step).roundToInt().coerceIn(0, count - 1)
     fun fromIndex(index: Int): Double = unit.toKg(minValue + index * step)
 
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = (toIndex(initialWeightKg) - 1).coerceAtLeast(0))
