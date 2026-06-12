@@ -19,7 +19,10 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -41,13 +44,16 @@ fun EqualizerScreen(animateEntry: Boolean = false) {
 
     if (state.days.isEmpty()) return
 
-    val todayColumnProgress = remember { Animatable(if (animateEntry) 0f else 1f) }
+    var hasAnimated by rememberSaveable { mutableStateOf(false) }
+    val shouldAnimate = animateEntry && !hasAnimated
+    val todayColumnProgress = remember { Animatable(if (shouldAnimate) 0f else 1f) }
     LaunchedEffect(Unit) {
-        if (animateEntry) {
+        if (shouldAnimate) {
             todayColumnProgress.animateTo(
                 targetValue = 1f,
                 animationSpec = tween(durationMillis = 700, easing = FastOutSlowInEasing),
             )
+            hasAnimated = true
         }
     }
 
