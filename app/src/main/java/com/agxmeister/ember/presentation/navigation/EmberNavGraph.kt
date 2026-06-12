@@ -134,9 +134,9 @@ fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
                     onNavigateToTrends = {
                         navController.navigate(trendsRoute(animateEntry = true)) {
                             popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = false
+                                saveState = true
                             }
-                            launchSingleTop = false
+                            launchSingleTop = true
                             restoreState = false
                         }
                     },
