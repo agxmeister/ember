@@ -52,10 +52,11 @@
     <string name="settings_target_weight">Poids cible</string>
     <string name="settings_goal_start_date">Date de début</string>
     <string name="settings_approximation">Approximation</string>
-    <string name="settings_approximation_summary">Régression : %1$d jours · Cluster min. : %2$d</string>
+    <string name="settings_approximation_summary">Régression : %1$d jours · Cluster min. : %2$d · Fenêtre série : %3$d</string>
     <string name="settings_adjust_approximation">Ajuster l\'approximation</string>
     <string name="settings_regression_interval">Intervalle de régression</string>
     <string name="settings_min_cluster_size">Taille minimale du cluster</string>
+    <string name="settings_streak_window">Fenêtre de tendance de série</string>
     <string name="label_days">jours</string>
 
     <string name="onboarding_welcome">Bienvenue sur Ember</string>

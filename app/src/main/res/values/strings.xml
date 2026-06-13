@@ -57,10 +57,11 @@
     <string name="settings_target_weight">Target weight</string>
     <string name="settings_goal_start_date">Goal start date</string>
     <string name="settings_approximation">Approximation</string>
-    <string name="settings_approximation_summary">Regression: %1$d days · Min cluster: %2$d</string>
+    <string name="settings_approximation_summary">Regression: %1$d days · Min cluster: %2$d · Streak window: %3$d</string>
     <string name="settings_adjust_approximation">Adjust approximation</string>
     <string name="settings_regression_interval">Regression interval</string>
     <string name="settings_min_cluster_size">Min cluster size</string>
+    <string name="settings_streak_window">Streak trend window</string>
     <string name="label_days">days</string>
     <string name="settings_start_over">Define a new goal</string>
     <string name="settings_start_over_with_import">Define a new goal with data import</string>

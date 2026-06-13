@@ -246,6 +246,7 @@ fun SettingsScreen(
                 R.string.settings_approximation_summary,
                 algorithmConfig.regressionIntervalDays,
                 algorithmConfig.minClusterSize,
+                algorithmConfig.streakTrendWindow,
             ),
             onClick = { showApproximationDialog = true },
         )
@@ -253,10 +254,13 @@ fun SettingsScreen(
         if (showApproximationDialog) {
             var regressionText by remember { mutableStateOf(algorithmConfig.regressionIntervalDays.toString()) }
             var clusterText by remember { mutableStateOf(algorithmConfig.minClusterSize.toString()) }
+            var streakText by remember { mutableStateOf(algorithmConfig.streakTrendWindow.toString()) }
             val regressionVal = regressionText.toIntOrNull()
             val clusterVal = clusterText.toIntOrNull()
+            val streakVal = streakText.toIntOrNull()
             val isValid = regressionVal != null && regressionVal in 7..365 &&
-                clusterVal != null && clusterVal in 1..365
+                clusterVal != null && clusterVal in 1..365 &&
+                streakVal != null && streakVal in 2..365
             val borderColor = MaterialTheme.colorScheme.outline
             AlertDialog(
                 onDismissRequest = { showApproximationDialog = false },
@@ -316,6 +320,31 @@ fun SettingsScreen(
                                     )
                                 },
                         )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            appString(R.string.settings_streak_window),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        BasicTextField(
+                            value = streakText,
+                            onValueChange = { if (it.length <= 3 && it.all { c -> c.isDigit() }) streakText = it },
+                            textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            singleLine = true,
+                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                            modifier = Modifier
+                                .width(64.dp)
+                                .drawBehind {
+                                    drawLine(
+                                        color = borderColor,
+                                        start = Offset(0f, size.height),
+                                        end = Offset(size.width, size.height),
+                                        strokeWidth = 1.dp.toPx(),
+                                    )
+                                },
+                        )
                     }
                 },
                 confirmButton = {
@@ -325,6 +354,7 @@ fun SettingsScreen(
                                 AlgorithmConfig(
                                     regressionIntervalDays = regressionVal!!,
                                     minClusterSize = clusterVal!!,
+                                    streakTrendWindow = streakVal!!,
                                 )
                             )
                             showApproximationDialog = false

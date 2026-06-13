@@ -34,7 +34,10 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     override val algorithmConfig: Flow<AlgorithmConfig> = combine(
         dataStore.regressionIntervalDays,
         dataStore.minClusterSize,
-    ) { regInterval, minCluster -> AlgorithmConfig(regInterval, minCluster) }
+        dataStore.streakTrendWindow,
+    ) { regInterval, minCluster, streakWindow ->
+        AlgorithmConfig(regInterval, minCluster, streakWindow)
+    }
 
     override suspend fun saveOnboardingData(
         weightKg: Double,
@@ -109,6 +112,7 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     override suspend fun setAlgorithmConfig(config: AlgorithmConfig) {
         dataStore.setRegressionIntervalDays(config.regressionIntervalDays)
         dataStore.setMinClusterSize(config.minClusterSize)
+        dataStore.setStreakTrendWindow(config.streakTrendWindow)
     }
 
     override suspend fun resetOnboarding() {
