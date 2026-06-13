@@ -256,7 +256,7 @@ class EqualizerViewModel @Inject constructor(
             trendMeasurementsNeeded = if (weeklyRateKg == null) (7 - measuredIn28Weeks).coerceAtLeast(1) else null
 
             var s = 0
-            var w = currentWeekStart
+            var w = weeklyMap.keys.filter { it <= currentWeekStart }.maxOrNull() ?: currentWeekStart
             while (true) {
                 if (!weeklyMap.containsKey(w)) break
                 val wStart = w.minus(DatePeriod(days = (algorithmConfig.streakTrendWindow - 1) * 7))
@@ -306,7 +306,7 @@ class EqualizerViewModel @Inject constructor(
             trendMeasurementsNeeded = if (weeklyRateKg == null) (7 - measuredInRateWindow).coerceAtLeast(1) else null
 
             var s = 0
-            var d = todayDate
+            var d = candleMap.keys.filter { it <= todayDate }.maxOrNull() ?: todayDate
             while (true) {
                 if (!candleMap.containsKey(d)) break
                 val wStart = d.minus(DatePeriod(days = algorithmConfig.streakTrendWindow - 1))
