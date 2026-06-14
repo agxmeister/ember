@@ -35,6 +35,7 @@ import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import javax.inject.Inject
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 data class EqualizerDayData(
     val date: LocalDate,
@@ -65,6 +66,7 @@ data class EqualizerUiState(
     val selectedDate: LocalDate?,
     val streak: Int,
     val weeklyAvg: Double?,
+    val score: Int?,
     val isWeekly: Boolean,
     val trendLine: TrendLineData?,
     val weeklyRateKg: Double?,
@@ -214,6 +216,7 @@ class EqualizerViewModel @Inject constructor(
         val today: LocalDate
         val streak: Int
         val weeklyAvg: Double?
+        val scoreAvg: Double?
         val trendLine: TrendLineData?
         val weeklyRateKg: Double?
         val trendMeasurementsNeeded: Int?
@@ -272,6 +275,12 @@ class EqualizerViewModel @Inject constructor(
 
             val windowWeeks = days.mapNotNull { it.weightKg }
             weeklyAvg = if (windowWeeks.isNotEmpty()) windowWeeks.median() else null
+
+            val scoreStart = days.last().date.minus(DatePeriod(days = (algorithmConfig.scoreWindow - 1) * 7))
+            val scoreWeights = (0 until algorithmConfig.scoreWindow).mapNotNull { offset ->
+                weeklyMap[scoreStart.plus(DatePeriod(days = offset * 7))]?.median
+            }
+            scoreAvg = if (scoreWeights.isNotEmpty()) scoreWeights.median() else null
         } else {
             today = todayDate
 
@@ -322,6 +331,17 @@ class EqualizerViewModel @Inject constructor(
 
             val windowWeights = days.mapNotNull { it.weightKg }
             weeklyAvg = if (windowWeights.isNotEmpty()) windowWeights.median() else null
+
+            val scoreStart = days.last().date.minus(DatePeriod(days = algorithmConfig.scoreWindow - 1))
+            val scoreWeights = (0 until algorithmConfig.scoreWindow).mapNotNull { offset ->
+                candleMap[scoreStart.plus(DatePeriod(days = offset))]?.close
+            }
+            scoreAvg = if (scoreWeights.isNotEmpty()) scoreWeights.median() else null
+        }
+
+        val score = scoreAvg?.let { w ->
+            val c = (1.0 - abs(w - targetKg) / tolerance).coerceIn(0.0, 1.0)
+            (c * 100).roundToInt()
         }
 
         val projection = computeProjection(weeklyAvg, weeklyRateKg, targetKg, initialWeightKg, goalIsLoss, todayDate)
@@ -336,6 +356,7 @@ class EqualizerViewModel @Inject constructor(
             selectedDate = selectedDate,
             streak = streak,
             weeklyAvg = weeklyAvg,
+            score = score,
             isWeekly = isWeekly,
             trendLine = trendLine,
             weeklyRateKg = weeklyRateKg,
@@ -358,6 +379,7 @@ class EqualizerViewModel @Inject constructor(
             selectedDate = null,
             streak = 0,
             weeklyAvg = null,
+            score = null,
             isWeekly = false,
             trendLine = null,
             weeklyRateKg = null,

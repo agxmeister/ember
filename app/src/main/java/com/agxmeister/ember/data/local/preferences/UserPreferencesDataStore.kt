@@ -46,6 +46,7 @@ class UserPreferencesDataStore @Inject constructor(
     private val regressionIntervalDaysKey = intPreferencesKey("regression_interval_days")
     private val minClusterSizeKey = intPreferencesKey("min_cluster_size")
     private val streakTrendWindowKey = intPreferencesKey("streak_trend_window")
+    private val scoreWindowKey = intPreferencesKey("score_window")
 
     val isOnboardingCompleted: Flow<Boolean> =
         context.dataStore.data.map { it[onboardingCompletedKey] ?: false }
@@ -130,6 +131,9 @@ class UserPreferencesDataStore @Inject constructor(
 
     val streakTrendWindow: Flow<Int> =
         context.dataStore.data.map { it[streakTrendWindowKey] ?: 14 }
+
+    val scoreWindow: Flow<Int> =
+        context.dataStore.data.map { it[scoreWindowKey] ?: 14 }
 
     suspend fun saveOnboardingData(
         weightKg: Double,
@@ -241,6 +245,10 @@ class UserPreferencesDataStore @Inject constructor(
 
     suspend fun setMinClusterSize(size: Int) {
         context.dataStore.edit { it[minClusterSizeKey] = size }
+    }
+
+    suspend fun setScoreWindow(window: Int) {
+        context.dataStore.edit { it[scoreWindowKey] = window }
     }
 
     suspend fun setStreakTrendWindow(window: Int) {

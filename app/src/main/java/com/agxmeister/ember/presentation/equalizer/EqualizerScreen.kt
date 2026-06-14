@@ -33,7 +33,6 @@ import com.agxmeister.ember.presentation.theme.closenessColor
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.plus
 import kotlin.math.abs
-import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,10 +79,6 @@ fun EqualizerScreen(animateEntry: Boolean = false) {
         (1.0 - abs(w - state.targetKg) / state.tolerance).coerceIn(0.0, 1.0).toFloat()
     } ?: 0f
     val readoutColor = closenessColor(readoutCloseness, darkTheme)
-    val score = state.weeklyAvg?.let { w ->
-        val c = (1.0 - abs(w - state.targetKg) / state.tolerance).coerceIn(0.0, 1.0)
-        (c * 100).roundToInt()
-    }
 
     Column(
         modifier = Modifier
@@ -134,7 +129,7 @@ fun EqualizerScreen(animateEntry: Boolean = false) {
             )
             ScoreCard(
                 modifier = Modifier.weight(1f).fillMaxHeight(),
-                score = score,
+                score = state.score,
                 isWeekly = state.isWeekly,
             )
         }

@@ -52,11 +52,12 @@
     <string name="settings_target_weight">Zielgewicht</string>
     <string name="settings_goal_start_date">Startdatum</string>
     <string name="settings_approximation">Annäherung</string>
-    <string name="settings_approximation_summary">Regression: %1$d Tage · Min. Cluster: %2$d · Streak-Fenster: %3$d</string>
+    <string name="settings_approximation_summary">Regression: %1$d Tage · Min. Cluster: %2$d · Streak-Fenster: %3$d · Score-Fenster: %4$d</string>
     <string name="settings_adjust_approximation">Annäherung anpassen</string>
     <string name="settings_regression_interval">Regressionsintervall</string>
     <string name="settings_min_cluster_size">Min. Clustergröße</string>
     <string name="settings_streak_window">Streak-Trendfenster</string>
+    <string name="settings_score_window">Score-Fenster</string>
     <string name="label_days">Tage</string>
 
     <string name="onboarding_welcome">Willkommen bei Ember</string>
