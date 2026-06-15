@@ -216,7 +216,7 @@ class EqualizerViewModel @Inject constructor(
         val today: LocalDate
         val streak: Int
         val weeklyAvg: Double?
-        val scoreAvg: Double?
+        val score: Int?
         val trendLine: TrendLineData?
         val weeklyRateKg: Double?
         val trendMeasurementsNeeded: Int?
@@ -277,10 +277,11 @@ class EqualizerViewModel @Inject constructor(
             weeklyAvg = if (windowWeeks.isNotEmpty()) windowWeeks.median() else null
 
             val scoreStart = days.last().date.minus(DatePeriod(days = (algorithmConfig.scoreWindow - 1) * 7))
-            val scoreWeights = (0 until algorithmConfig.scoreWindow).mapNotNull { offset ->
-                weeklyMap[scoreStart.plus(DatePeriod(days = offset * 7))]?.median
+            val scoreWeeks = (0 until algorithmConfig.scoreWindow).map { offset ->
+                val weekStart = scoreStart.plus(DatePeriod(days = offset * 7))
+                EqualizerDayData(date = weekStart, weightKg = weeklyMap[weekStart]?.median)
             }
-            scoreAvg = if (scoreWeights.isNotEmpty()) scoreWeights.median() else null
+            score = computeScore(scoreWeeks, indexStepDays = 7, streak = streak, goalIsLoss = goalIsLoss)
         } else {
             today = todayDate
 
@@ -333,15 +334,11 @@ class EqualizerViewModel @Inject constructor(
             weeklyAvg = if (windowWeights.isNotEmpty()) windowWeights.median() else null
 
             val scoreStart = days.last().date.minus(DatePeriod(days = algorithmConfig.scoreWindow - 1))
-            val scoreWeights = (0 until algorithmConfig.scoreWindow).mapNotNull { offset ->
-                candleMap[scoreStart.plus(DatePeriod(days = offset))]?.close
+            val scoreDays = (0 until algorithmConfig.scoreWindow).map { offset ->
+                val date = scoreStart.plus(DatePeriod(days = offset))
+                EqualizerDayData(date = date, weightKg = candleMap[date]?.close)
             }
-            scoreAvg = if (scoreWeights.isNotEmpty()) scoreWeights.median() else null
-        }
-
-        val score = scoreAvg?.let { w ->
-            val c = (1.0 - abs(w - targetKg) / tolerance).coerceIn(0.0, 1.0)
-            (c * 100).roundToInt()
+            score = computeScore(scoreDays, indexStepDays = 1, streak = streak, goalIsLoss = goalIsLoss)
         }
 
         val projection = computeProjection(weeklyAvg, weeklyRateKg, targetKg, initialWeightKg, goalIsLoss, todayDate)
@@ -433,6 +430,42 @@ private fun computeProjection(
         goalIsLoss = goalIsLoss,
     )
 }
+
+private fun computeScore(
+    scoreDays: List<EqualizerDayData>,
+    indexStepDays: Int,
+    streak: Int,
+    goalIsLoss: Boolean,
+): Int? {
+    val window = scoreDays.size
+    val measuredCount = scoreDays.count { it.weightKg != null }
+    if (window == 0 || measuredCount == 0) return null
+
+    val factors = mutableListOf<Pair<Double, Double>>()
+
+    val momentum = computeWeeklyRate(scoreDays, indexStepDays)?.let { momentumQuality(it, goalIsLoss) }
+    if (momentum != null) factors += 0.5 to momentum
+
+    val consistency = (streak.toDouble() / window).coerceIn(0.0, 1.0)
+    factors += 0.25 to consistency
+
+    val adherence = (measuredCount.toDouble() / window).coerceIn(0.0, 1.0)
+    factors += 0.25 to adherence
+
+    val totalWeight = factors.sumOf { it.first }
+    val weighted = factors.sumOf { it.first * it.second } / totalWeight
+    return (weighted * 100).roundToInt()
+}
+
+private fun momentumQuality(weeklyRateKg: Double, goalIsLoss: Boolean): Double =
+    when (classifyWeeklyRate(weeklyRateKg, goalIsLoss)) {
+        WeeklyRateZone.Healthy -> 1.0
+        WeeklyRateZone.Aggressive -> 0.8
+        WeeklyRateZone.TooSlow -> 0.5
+        WeeklyRateZone.TooFast -> 0.4
+        WeeklyRateZone.WrongDirection -> 0.0
+        WeeklyRateZone.Unavailable -> 0.0
+    }
 
 private fun classifyWeeklyRate(weeklyRateKg: Double?, goalIsLoss: Boolean): WeeklyRateZone {
     if (weeklyRateKg == null) return WeeklyRateZone.Unavailable

@@ -114,8 +114,8 @@
     <string name="stat_today">HEUTE</string>
     <string name="stat_delta_target">Δ ZIEL</string>
     <string name="trends_score">WERT</string>
-    <string name="trends_score_info_daily">Dein Wert zeigt, wie nah dein 14-Tage-Durchschnitt an deinem Zielgewicht liegt.</string>
-    <string name="trends_score_info_weekly">Dein Wert zeigt, wie nah dein 14-Wochen-Durchschnitt an deinem Zielgewicht liegt.</string>
+    <string name="trends_score_info_daily">Dein Wert bewertet, wie gut du zuletzt vorankommst: das Tempo deiner Gewichtsänderung, wie stetig du dich deinem Ziel näherst und wie regelmäßig du dich wiegst.</string>
+    <string name="trends_score_info_weekly">Dein Wert bewertet, wie gut du zuletzt vorankommst: das Tempo deiner Gewichtsänderung, wie stetig du dich deinem Ziel näherst und wie regelmäßig du dich wiegst.</string>
     <string name="cd_delete">Löschen</string>
 
     <!-- Projection card -->

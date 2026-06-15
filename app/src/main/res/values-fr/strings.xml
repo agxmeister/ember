@@ -114,8 +114,8 @@
     <string name="stat_today">AUJOURD\'HUI</string>
     <string name="stat_delta_target">Δ OBJECTIF</string>
     <string name="trends_score">SCORE</string>
-    <string name="trends_score_info_daily">Votre score reflète la proximité de votre moyenne des 14 derniers jours par rapport à votre poids cible.</string>
-    <string name="trends_score_info_weekly">Votre score reflète la proximité de votre moyenne des 14 dernières semaines par rapport à votre poids cible.</string>
+    <string name="trends_score_info_daily">Votre score évalue la qualité de votre progression récente : le rythme de variation de votre poids, la régularité de votre tendance vers l\'objectif et la constance de vos pesées.</string>
+    <string name="trends_score_info_weekly">Votre score évalue la qualité de votre progression récente : le rythme de variation de votre poids, la régularité de votre tendance vers l\'objectif et la constance de vos pesées.</string>
     <string name="cd_delete">Supprimer</string>
 
     <!-- Projection card -->
