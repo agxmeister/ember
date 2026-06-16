@@ -5,4 +5,5 @@ data class AlgorithmConfig(
     val minClusterSize: Int = 14,
     val streakTrendWindow: Int = 14,
     val scoreWindow: Int = 14,
+    val volatilityWindow: Int = 14,
 )

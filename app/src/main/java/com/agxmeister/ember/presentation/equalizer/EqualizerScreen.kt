@@ -120,11 +120,9 @@ fun EqualizerScreen(animateEntry: Boolean = false) {
                 streak = state.streak,
                 isWeekly = state.isWeekly,
             )
-            DeltaTargetCard(
+            VolatilityCard(
                 modifier = Modifier.weight(1f).fillMaxHeight(),
-                weeklyAvg = state.weeklyAvg,
-                targetKg = state.targetKg,
-                tolerance = state.tolerance,
+                volatilityKg = state.volatilityKg,
                 weightUnit = state.weightUnit,
             )
             ScoreCard(

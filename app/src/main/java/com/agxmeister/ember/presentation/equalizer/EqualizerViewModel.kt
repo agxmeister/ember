@@ -36,6 +36,7 @@ import kotlinx.datetime.toLocalDateTime
 import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
 data class EqualizerDayData(
     val date: LocalDate,
@@ -67,6 +68,7 @@ data class EqualizerUiState(
     val streak: Int,
     val weeklyAvg: Double?,
     val score: Int?,
+    val volatilityKg: Double?,
     val isWeekly: Boolean,
     val trendLine: TrendLineData?,
     val weeklyRateKg: Double?,
@@ -217,6 +219,7 @@ class EqualizerViewModel @Inject constructor(
         val streak: Int
         val weeklyAvg: Double?
         val score: Int?
+        val volatilityKg: Double?
         val trendLine: TrendLineData?
         val weeklyRateKg: Double?
         val trendMeasurementsNeeded: Int?
@@ -282,6 +285,13 @@ class EqualizerViewModel @Inject constructor(
                 EqualizerDayData(date = weekStart, weightKg = weeklyMap[weekStart]?.median)
             }
             score = computeScore(scoreWeeks, indexStepDays = 7, streak = streak, goalIsLoss = goalIsLoss)
+
+            val volStart = days.last().date.minus(DatePeriod(days = (algorithmConfig.volatilityWindow - 1) * 7))
+            val volWeeks = (0 until algorithmConfig.volatilityWindow).map { offset ->
+                val weekStart = volStart.plus(DatePeriod(days = offset * 7))
+                EqualizerDayData(date = weekStart, weightKg = weeklyMap[weekStart]?.median)
+            }
+            volatilityKg = computeVolatility(volWeeks)
         } else {
             today = todayDate
 
@@ -339,6 +349,13 @@ class EqualizerViewModel @Inject constructor(
                 EqualizerDayData(date = date, weightKg = candleMap[date]?.close)
             }
             score = computeScore(scoreDays, indexStepDays = 1, streak = streak, goalIsLoss = goalIsLoss)
+
+            val volStart = days.last().date.minus(DatePeriod(days = algorithmConfig.volatilityWindow - 1))
+            val volDays = (0 until algorithmConfig.volatilityWindow).map { offset ->
+                val date = volStart.plus(DatePeriod(days = offset))
+                EqualizerDayData(date = date, weightKg = candleMap[date]?.close)
+            }
+            volatilityKg = computeVolatility(volDays)
         }
 
         val projection = computeProjection(weeklyAvg, weeklyRateKg, targetKg, initialWeightKg, goalIsLoss, todayDate)
@@ -354,6 +371,7 @@ class EqualizerViewModel @Inject constructor(
             streak = streak,
             weeklyAvg = weeklyAvg,
             score = score,
+            volatilityKg = volatilityKg,
             isWeekly = isWeekly,
             trendLine = trendLine,
             weeklyRateKg = weeklyRateKg,
@@ -377,6 +395,7 @@ class EqualizerViewModel @Inject constructor(
             streak = 0,
             weeklyAvg = null,
             score = null,
+            volatilityKg = null,
             isWeekly = false,
             trendLine = null,
             weeklyRateKg = null,
@@ -401,6 +420,21 @@ private fun computeTrendLine(days: List<EqualizerDayData>, minPoints: Int = 2): 
     val startKg = intercept
     val endKg = slope * (days.size - 1) + intercept
     return TrendLineData(startKg = startKg, endKg = endKg, diffKg = endKg - startKg)
+}
+
+private const val MIN_MEASURED_FOR_VOLATILITY = 4
+
+private fun computeVolatility(window: List<EqualizerDayData>): Double? {
+    val measured = window.mapIndexedNotNull { idx, day -> day.weightKg?.let { idx.toDouble() to it } }
+    if (measured.size < MIN_MEASURED_FOR_VOLATILITY) return null
+    val xs = measured.map { it.first }
+    val ys = measured.map { it.second }
+    val (slope, intercept) = linearRegression(xs, ys) ?: return null
+    val sumSquaredResiduals = measured.sumOf { (x, y) ->
+        val residual = y - (slope * x + intercept)
+        residual * residual
+    }
+    return sqrt(sumSquaredResiduals / measured.size)
 }
 
 private fun computeProjection(

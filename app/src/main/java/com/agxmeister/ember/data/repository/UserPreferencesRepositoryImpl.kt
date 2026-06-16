@@ -36,8 +36,9 @@ class UserPreferencesRepositoryImpl @Inject constructor(
         dataStore.minClusterSize,
         dataStore.streakTrendWindow,
         dataStore.scoreWindow,
-    ) { regInterval, minCluster, streakWindow, scoreWindow ->
-        AlgorithmConfig(regInterval, minCluster, streakWindow, scoreWindow)
+        dataStore.volatilityWindow,
+    ) { regInterval, minCluster, streakWindow, scoreWindow, volatilityWindow ->
+        AlgorithmConfig(regInterval, minCluster, streakWindow, scoreWindow, volatilityWindow)
     }
 
     override suspend fun saveOnboardingData(
@@ -115,6 +116,7 @@ class UserPreferencesRepositoryImpl @Inject constructor(
         dataStore.setMinClusterSize(config.minClusterSize)
         dataStore.setStreakTrendWindow(config.streakTrendWindow)
         dataStore.setScoreWindow(config.scoreWindow)
+        dataStore.setVolatilityWindow(config.volatilityWindow)
     }
 
     override suspend fun resetOnboarding() {

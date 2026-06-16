@@ -52,12 +52,13 @@
     <string name="settings_target_weight">Poids cible</string>
     <string name="settings_goal_start_date">Date de début</string>
     <string name="settings_approximation">Approximation</string>
-    <string name="settings_approximation_summary">Régression : %1$d jours · Cluster min. : %2$d · Fenêtre série : %3$d · Fenêtre score : %4$d</string>
+    <string name="settings_approximation_summary">Régression : %1$d jours · Cluster min. : %2$d · Fenêtre série : %3$d · Fenêtre score : %4$d · Fenêtre volatilité : %5$d</string>
     <string name="settings_adjust_approximation">Ajuster l\'approximation</string>
     <string name="settings_regression_interval">Intervalle de régression</string>
     <string name="settings_min_cluster_size">Taille minimale du cluster</string>
     <string name="settings_streak_window">Fenêtre de tendance de série</string>
     <string name="settings_score_window">Fenêtre de score</string>
+    <string name="settings_volatility_window">Fenêtre de volatilité</string>
     <string name="label_days">jours</string>
 
     <string name="onboarding_welcome">Bienvenue sur Ember</string>
@@ -112,7 +113,7 @@
     <string name="trends_this_week">CETTE SEMAINE</string>
     <string name="trends_7_day_trend">TENDANCE 7 J.</string>
     <string name="stat_today">AUJOURD\'HUI</string>
-    <string name="stat_delta_target">Δ OBJECTIF</string>
+    <string name="stat_volatility">VOLATILITÉ</string>
     <string name="trends_score">SCORE</string>
     <string name="trends_score_info_daily">Votre score évalue la qualité de votre progression récente : le rythme de variation de votre poids, la régularité de votre tendance vers l\'objectif et la constance de vos pesées.</string>
     <string name="trends_score_info_weekly">Votre score évalue la qualité de votre progression récente : le rythme de variation de votre poids, la régularité de votre tendance vers l\'objectif et la constance de vos pesées.</string>
