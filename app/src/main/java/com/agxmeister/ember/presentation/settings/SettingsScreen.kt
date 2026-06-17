@@ -70,6 +70,7 @@ fun SettingsScreen(
     val language by viewModel.language.collectAsStateWithLifecycle()
     val notificationsEnabled by viewModel.notificationsEnabled.collectAsStateWithLifecycle()
     val clusteringEnabled by viewModel.clusteringEnabled.collectAsStateWithLifecycle()
+    val helpIconsVisible by viewModel.helpIconsVisible.collectAsStateWithLifecycle()
     val weightUnit by viewModel.weightUnit.collectAsStateWithLifecycle()
     val initialWeightKg by viewModel.initialWeightKg.collectAsStateWithLifecycle()
     val goalTargetKg by viewModel.goalTargetKg.collectAsStateWithLifecycle()
@@ -135,6 +136,15 @@ fun SettingsScreen(
         TappableSetting(
             value = language.nativeName,
             onClick = { showLanguageDialog = true },
+        )
+        SettingsDivider()
+
+        SettingsSectionHeader(appString(R.string.settings_display))
+        SettingsToggleRow(
+            title = appString(R.string.settings_help_icons),
+            subtitle = if (helpIconsVisible) appString(R.string.label_on) else appString(R.string.label_off),
+            checked = helpIconsVisible,
+            onCheckedChange = viewModel::onHelpIconsVisibleChanged,
         )
         SettingsDivider()
 

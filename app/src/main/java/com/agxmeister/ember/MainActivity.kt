@@ -12,6 +12,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.agxmeister.ember.presentation.AppViewModel
 import com.agxmeister.ember.presentation.LocalAppResources
+import com.agxmeister.ember.presentation.common.LocalHelpIconsVisible
 import com.agxmeister.ember.presentation.navigation.EmberNavGraph
 import com.agxmeister.ember.presentation.theme.EmberTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -26,13 +27,17 @@ class MainActivity : ComponentActivity() {
             val appViewModel: AppViewModel = hiltViewModel()
             val isDark by appViewModel.isDarkTheme.collectAsStateWithLifecycle()
             val language by appViewModel.language.collectAsStateWithLifecycle()
+            val helpIconsVisible by appViewModel.helpIconsVisible.collectAsStateWithLifecycle()
             val localizedResources = remember(language) {
                 val config = Configuration(resources.configuration).also {
                     it.setLocale(Locale(language.code))
                 }
                 createConfigurationContext(config).resources
             }
-            CompositionLocalProvider(LocalAppResources provides localizedResources) {
+            CompositionLocalProvider(
+                LocalAppResources provides localizedResources,
+                LocalHelpIconsVisible provides helpIconsVisible,
+            ) {
                 EmberTheme(darkTheme = isDark) {
                     EmberNavGraph(viewModel = appViewModel)
                 }

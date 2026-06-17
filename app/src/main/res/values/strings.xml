@@ -44,6 +44,8 @@
     <!-- Settings -->
     <string name="settings_language">Language</string>
     <string name="settings_title">Settings</string>
+    <string name="settings_display">Display</string>
+    <string name="settings_help_icons">Help icons</string>
     <string name="settings_unit">Unit</string>
     <string name="settings_goal">Goal</string>
     <string name="settings_goal_summary">Started on %1$s at %2$d %3$s, target is %4$d %5$s</string>

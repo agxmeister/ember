@@ -10,12 +10,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.agxmeister.ember.R
 import com.agxmeister.ember.presentation.appString
 import com.agxmeister.ember.presentation.theme.InfoIconSize
+
+/** Whether help/info ("?") affordances are shown; toggled in settings, provided at the app root. */
+val LocalHelpIconsVisible = staticCompositionLocalOf { true }
 
 /** Standard informational dialog with a single dismiss ("OK") action. */
 @Composable
@@ -38,6 +42,7 @@ fun InfoIcon(
     icon: ImageVector = Icons.Outlined.HelpOutline,
     tint: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f),
 ) {
+    if (!LocalHelpIconsVisible.current) return
     Icon(
         imageVector = icon,
         contentDescription = null,

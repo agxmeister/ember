@@ -78,6 +78,13 @@ class SettingsViewModel @Inject constructor(
             initialValue = true,
         )
 
+    val helpIconsVisible: StateFlow<Boolean> = preferencesRepository.helpIconsVisible
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = true,
+        )
+
     val weightUnit: StateFlow<WeightUnit> = preferencesRepository.weightUnit
         .stateIn(
             scope = viewModelScope,
@@ -166,6 +173,10 @@ class SettingsViewModel @Inject constructor(
 
     fun onClusteringEnabledChanged(enabled: Boolean) {
         viewModelScope.launch { setClusteringEnabled(enabled) }
+    }
+
+    fun onHelpIconsVisibleChanged(visible: Boolean) {
+        viewModelScope.launch { preferencesRepository.setHelpIconsVisible(visible) }
     }
 
     fun onWeightUnitChanged(unit: WeightUnit) {

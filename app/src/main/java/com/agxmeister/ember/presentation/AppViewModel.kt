@@ -35,6 +35,9 @@ class AppViewModel @Inject constructor(
     val language: StateFlow<Language> = preferencesRepository.language
         .stateIn(viewModelScope, SharingStarted.Eagerly, Language.En)
 
+    val helpIconsVisible: StateFlow<Boolean> = preferencesRepository.helpIconsVisible
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
     val isDarkTheme: StateFlow<Boolean> = preferencesRepository.themeMode
         .map { mode ->
             when (mode) {

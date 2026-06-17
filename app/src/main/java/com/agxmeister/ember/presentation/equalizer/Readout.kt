@@ -172,14 +172,12 @@ private fun WeightDisplay(
             InfoIcon(
                 onClick = { showAvgInfo = true },
                 modifier = Modifier.padding(start = 4.dp),
-                tint = dimColor,
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(text = appString(R.string.trends_delta_target), style = labelStyle)
             InfoIcon(
                 onClick = { showTrendLabelInfo = true },
                 modifier = Modifier.padding(start = 4.dp),
-                tint = dimColor,
             )
         }
         Row(

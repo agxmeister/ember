@@ -57,6 +57,7 @@ import com.agxmeister.ember.domain.model.ThemeMode
 import com.agxmeister.ember.presentation.LocalAppResources
 import com.agxmeister.ember.presentation.appString
 import com.agxmeister.ember.presentation.common.InfoDialog
+import com.agxmeister.ember.presentation.common.LocalHelpIconsVisible
 import com.agxmeister.ember.presentation.theme.InfoIconSize
 import com.agxmeister.ember.presentation.theme.closenessColor
 import kotlinx.coroutines.delay
@@ -157,7 +158,7 @@ fun HomeScreen(
                         color = onBg.copy(alpha = 0.55f),
                     ),
                 )
-                state.currentCluster?.let { cluster ->
+                state.currentCluster?.takeIf { LocalHelpIconsVisible.current }?.let { cluster ->
                     var showInfo by remember { mutableStateOf(false) }
                     if (showInfo) {
                         InfoDialog(
