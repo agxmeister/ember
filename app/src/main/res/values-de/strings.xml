@@ -95,12 +95,15 @@
 
     <string name="trends_tgt_prefix">ZIEL</string>
     <string name="trends_delta_target">Δ TREND</string>
+    <string name="trends_trend_info">Der Trend zeigt, wie schnell sich dein Durchschnittsgewicht pro Woche ändert. ▼ bedeutet fallend, ▲ bedeutet steigend.</string>
     <string name="trends_tap_to_edit">ZUM BEARBEITEN TIPPEN</string>
     <string name="trends_tap_again_to_clear">NOCHMAL TIPPEN ZUM ENTFERNEN</string>
     <string name="trends_tap_a_day">TAG ANTIPPEN ZUM ÖFFNEN</string>
     <string name="trends_tap_a_week">WOCHE ANTIPPEN ZUM ÖFFNEN</string>
     <string name="trends_readout_day_avg">14-TAGE Ø</string>
     <string name="trends_readout_week_avg">14-WO Ø</string>
+    <string name="trends_avg_info_daily">Dies ist ein 14-Tage-Durchschnitt, der deine letzten Messungen zusammenfasst und tägliche Schwankungen glättet, sodass du dein echtes Gewicht statt des Rauschens von heute siehst.</string>
+    <string name="trends_avg_info_weekly">Dies ist ein 14-Wochen-Durchschnitt, der deine letzten Messungen zusammenfasst und wöchentliche Schwankungen glättet, sodass du dein echtes Gewicht statt des Rauschens dieser Woche siehst.</string>
     <string name="trends_readout_wk_prefix">WO</string>
     <string name="trends_day_and_time">Tag &amp; Uhrzeit</string>
     <string name="trends_tap_to_change">tippen zum ändern</string>
@@ -114,6 +117,8 @@
     <string name="trends_7_day_trend">7-TAGE-TREND</string>
     <string name="stat_today">HEUTE</string>
     <string name="stat_volatility">SCHWANKUNG</string>
+    <string name="stat_volatility_info_daily">Die Schwankung misst, wie stark dein Gewicht von Tag zu Tag schwankt. Niedrigere Werte bedeuten gleichmäßigere Messungen, höhere Werte mehr Streuung.</string>
+    <string name="stat_volatility_info_weekly">Die Schwankung misst, wie stark dein Gewicht von Woche zu Woche schwankt. Niedrigere Werte bedeuten gleichmäßigere Messungen, höhere Werte mehr Streuung.</string>
     <string name="trends_score">WERT</string>
     <string name="trends_score_info_daily">Dein Wert bewertet, wie gut du zuletzt vorankommst: das Tempo deiner Gewichtsänderung, wie stetig du dich deinem Ziel näherst und wie regelmäßig du dich wiegst.</string>
     <string name="trends_score_info_weekly">Dein Wert bewertet, wie gut du zuletzt vorankommst: das Tempo deiner Gewichtsänderung, wie stetig du dich deinem Ziel näherst und wie regelmäßig du dich wiegst.</string>

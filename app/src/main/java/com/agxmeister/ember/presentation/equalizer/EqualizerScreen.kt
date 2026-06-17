@@ -124,6 +124,7 @@ fun EqualizerScreen(animateEntry: Boolean = false) {
                 modifier = Modifier.weight(1f).fillMaxHeight(),
                 volatilityKg = state.volatilityKg,
                 weightUnit = state.weightUnit,
+                isWeekly = state.isWeekly,
             )
             ScoreCard(
                 modifier = Modifier.weight(1f).fillMaxHeight(),

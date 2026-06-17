@@ -5,6 +5,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -73,6 +74,7 @@ internal fun Readout(
             displayColor = displayColor,
             weightUnit = weightUnit,
             isFocused = isFocused,
+            isWeekly = isWeekly,
             onTap = onTap,
         )
         EqualizerCard(
@@ -106,6 +108,7 @@ private fun WeightDisplay(
     displayColor: Color,
     weightUnit: WeightUnit,
     isFocused: Boolean,
+    isWeekly: Boolean,
     onTap: () -> Unit,
 ) {
     val darkTheme = isSystemInDarkTheme()
@@ -143,12 +146,41 @@ private fun WeightDisplay(
         )
     }
 
+    var showAvgInfo by remember { mutableStateOf(false) }
+    if (showAvgInfo) {
+        InfoDialog(
+            title = label,
+            text = appString(if (isWeekly) R.string.trends_avg_info_weekly else R.string.trends_avg_info_daily),
+            onDismiss = { showAvgInfo = false },
+        )
+    }
+
+    var showTrendLabelInfo by remember { mutableStateOf(false) }
+    if (showTrendLabelInfo) {
+        InfoDialog(
+            title = appString(R.string.trends_delta_target),
+            text = appString(R.string.trends_trend_info),
+            onDismiss = { showTrendLabelInfo = false },
+        )
+    }
+
     Column(
         modifier = modifier.then(if (isFocused) Modifier.clickable(onClick = onTap) else Modifier),
     ) {
-        Row(modifier = Modifier.fillMaxWidth()) {
-            Text(text = label, style = labelStyle, modifier = Modifier.weight(1f))
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(text = label, style = labelStyle)
+            InfoIcon(
+                onClick = { showAvgInfo = true },
+                modifier = Modifier.padding(start = 4.dp),
+                tint = dimColor,
+            )
+            Spacer(modifier = Modifier.weight(1f))
             Text(text = appString(R.string.trends_delta_target), style = labelStyle)
+            InfoIcon(
+                onClick = { showTrendLabelInfo = true },
+                modifier = Modifier.padding(start = 4.dp),
+                tint = dimColor,
+            )
         }
         Row(
             modifier = Modifier.fillMaxWidth(),

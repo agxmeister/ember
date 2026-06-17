@@ -24,11 +24,13 @@ internal fun VolatilityCard(
     modifier: Modifier = Modifier,
     volatilityKg: Double?,
     weightUnit: WeightUnit,
+    isWeekly: Boolean,
 ) {
     val darkTheme = isSystemInDarkTheme()
     StatCard(
         modifier = modifier,
         label = appString(R.string.stat_volatility),
+        info = appString(if (isWeekly) R.string.stat_volatility_info_weekly else R.string.stat_volatility_info_daily),
     ) {
         val display = volatilityKg?.let { weightUnit.scaleDiff(it) }
         val color = volatilityKg?.let {

@@ -106,12 +106,15 @@
     <string name="trends_tgt_prefix">TGT</string>
     <string name="trends_delta_target">Δ TREND</string>
     <string name="trends_trend_pending_info">Your weekly trend appears once Ember has enough measurements. Log %1$d more to see how fast you\'re moving.</string>
+    <string name="trends_trend_info">The trend shows how fast your average weight is changing each week. ▼ means it\'s falling, ▲ means it\'s rising.</string>
     <string name="trends_tap_to_edit">TAP TO EDIT</string>
     <string name="trends_tap_again_to_clear">TAP AGAIN TO CLEAR</string>
     <string name="trends_tap_a_day">TAP A DAY TO OPEN</string>
     <string name="trends_tap_a_week">TAP A WEEK TO OPEN</string>
     <string name="trends_readout_day_avg">14-DAY AVG</string>
     <string name="trends_readout_week_avg">14-WK AVG</string>
+    <string name="trends_avg_info_daily">This is a 14-day average that blends your recent weigh-ins, smoothing out daily ups and downs so you see your real weight instead of today\'s noise.</string>
+    <string name="trends_avg_info_weekly">This is a 14-week average that blends your recent weigh-ins, smoothing out week-to-week swings so you see your real weight instead of this week\'s noise.</string>
     <string name="trends_readout_wk_prefix">WK</string>
     <string name="trends_day_and_time">day &amp; time</string>
     <string name="trends_tap_to_change">tap to change</string>
@@ -125,6 +128,8 @@
     <string name="trends_7_day_trend">7-DAY TREND</string>
     <string name="stat_today">TODAY</string>
     <string name="stat_volatility">VOLATILITY</string>
+    <string name="stat_volatility_info_daily">Volatility measures how much your weight bounces around from day to day. Lower numbers mean steadier readings; higher numbers mean more scatter.</string>
+    <string name="stat_volatility_info_weekly">Volatility measures how much your weight bounces around from week to week. Lower numbers mean steadier readings; higher numbers mean more scatter.</string>
     <string name="trends_score">SCORE</string>
     <string name="trends_score_info_daily">Your score grades how well you\'re progressing lately: the pace of your weight change, how steadily you trend toward your goal, and how consistently you weigh in.</string>
     <string name="trends_score_info_weekly">Your score grades how well you\'re progressing lately: the pace of your weight change, how steadily you trend toward your goal, and how consistently you weigh in.</string>

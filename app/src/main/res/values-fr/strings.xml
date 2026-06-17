@@ -95,12 +95,15 @@
 
     <string name="trends_tgt_prefix">OBJ</string>
     <string name="trends_delta_target">Δ TENDANCE</string>
+    <string name="trends_trend_info">La tendance indique à quelle vitesse votre poids moyen évolue chaque semaine. ▼ signifie qu\'il baisse, ▲ qu\'il monte.</string>
     <string name="trends_tap_to_edit">APPUYER POUR MODIFIER</string>
     <string name="trends_tap_again_to_clear">APPUYER À NOUVEAU POUR EFFACER</string>
     <string name="trends_tap_a_day">APPUYER SUR UN JOUR</string>
     <string name="trends_tap_a_week">APPUYER SUR UNE SEMAINE</string>
     <string name="trends_readout_day_avg">MOY. 14 JOURS</string>
     <string name="trends_readout_week_avg">MOY. 14 SEM.</string>
+    <string name="trends_avg_info_daily">Il s\'agit d\'une moyenne sur 14 jours qui combine vos dernières pesées et lisse les variations quotidiennes, pour voir votre vrai poids plutôt que le bruit du jour.</string>
+    <string name="trends_avg_info_weekly">Il s\'agit d\'une moyenne sur 14 semaines qui combine vos dernières pesées et lisse les variations hebdomadaires, pour voir votre vrai poids plutôt que le bruit de la semaine.</string>
     <string name="trends_readout_wk_prefix">SEM.</string>
     <string name="trends_day_and_time">jour &amp; heure</string>
     <string name="trends_tap_to_change">appuyer pour modifier</string>
@@ -114,6 +117,8 @@
     <string name="trends_7_day_trend">TENDANCE 7 J.</string>
     <string name="stat_today">AUJOURD\'HUI</string>
     <string name="stat_volatility">VOLATILITÉ</string>
+    <string name="stat_volatility_info_daily">La volatilité mesure à quel point votre poids fluctue d\'un jour à l\'autre. Des valeurs plus basses indiquent des mesures plus stables, des valeurs plus hautes plus de dispersion.</string>
+    <string name="stat_volatility_info_weekly">La volatilité mesure à quel point votre poids fluctue d\'une semaine à l\'autre. Des valeurs plus basses indiquent des mesures plus stables, des valeurs plus hautes plus de dispersion.</string>
     <string name="trends_score">SCORE</string>
     <string name="trends_score_info_daily">Votre score évalue la qualité de votre progression récente : le rythme de variation de votre poids, la régularité de votre tendance vers l\'objectif et la constance de vos pesées.</string>
     <string name="trends_score_info_weekly">Votre score évalue la qualité de votre progression récente : le rythme de variation de votre poids, la régularité de votre tendance vers l\'objectif et la constance de vos pesées.</string>
