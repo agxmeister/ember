@@ -24,6 +24,7 @@ internal fun ScoreCard(
         modifier = modifier,
         label = appString(R.string.trends_score),
         info = appString(if (isWeekly) R.string.trends_score_info_weekly else R.string.trends_score_info_daily),
+        helpKey = "trends_score",
     ) {
         val scoreColor = closenessColor((score ?: 0) / 100f, darkTheme)
         Text(

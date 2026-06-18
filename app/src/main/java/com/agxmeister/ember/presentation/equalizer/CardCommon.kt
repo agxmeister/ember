@@ -44,10 +44,11 @@ internal fun CardLabelRow(
     label: String,
     modifier: Modifier = Modifier,
     onInfo: (() -> Unit)? = null,
+    helpKey: String? = null,
 ) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         Text(text = label, modifier = Modifier.weight(1f), style = cardLabelStyle())
-        if (onInfo != null) InfoIcon(onClick = onInfo)
+        if (onInfo != null && helpKey != null) InfoIcon(onClick = onInfo, helpKey = helpKey)
     }
 }
 

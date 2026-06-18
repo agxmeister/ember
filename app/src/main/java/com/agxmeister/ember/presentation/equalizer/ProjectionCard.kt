@@ -67,7 +67,7 @@ internal fun ProjectionCard(
     }
 
     StatCardSurface(modifier = modifier) {
-        CardLabelRow(label = appString(R.string.trends_projected_eta), onInfo = { showInfo = true })
+        CardLabelRow(label = appString(R.string.trends_projected_eta), onInfo = { showInfo = true }, helpKey = "trends_projected_eta")
         Spacer(Modifier.height(6.dp))
         when (projection) {
             is ProjectionResult.Eta -> EtaContent(Modifier.weight(1f), projection, onSurface)
@@ -227,7 +227,7 @@ private fun PendingContent(modifier: Modifier = Modifier, onSurface: Color, onIn
                 ),
             )
             Spacer(Modifier.width(10.dp))
-            InfoIcon(onClick = onInfo, icon = Icons.Filled.Info, tint = InfoAccent)
+            InfoIcon(onClick = onInfo, helpKey = "trends_projection_pending", icon = Icons.Filled.Info, tint = InfoAccent, seenTint = InfoAccent)
         }
         Spacer(Modifier.height(8.dp))
         EtaJourney(

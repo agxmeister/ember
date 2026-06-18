@@ -20,7 +20,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.outlined.BrightnessAuto
 import androidx.compose.material.icons.outlined.DarkMode
-import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Button
@@ -57,8 +56,7 @@ import com.agxmeister.ember.domain.model.ThemeMode
 import com.agxmeister.ember.presentation.LocalAppResources
 import com.agxmeister.ember.presentation.appString
 import com.agxmeister.ember.presentation.common.InfoDialog
-import com.agxmeister.ember.presentation.common.LocalHelpIconsVisible
-import com.agxmeister.ember.presentation.theme.InfoIconSize
+import com.agxmeister.ember.presentation.common.InfoIcon
 import com.agxmeister.ember.presentation.theme.closenessColor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -158,7 +156,7 @@ fun HomeScreen(
                         color = onBg.copy(alpha = 0.55f),
                     ),
                 )
-                state.currentCluster?.takeIf { LocalHelpIconsVisible.current }?.let { cluster ->
+                state.currentCluster?.let { cluster ->
                     var showInfo by remember { mutableStateOf(false) }
                     if (showInfo) {
                         InfoDialog(
@@ -167,17 +165,13 @@ fun HomeScreen(
                             onDismiss = { showInfo = false },
                         )
                     }
-                    IconButton(
+                    InfoIcon(
                         onClick = { showInfo = true },
-                        modifier = Modifier.size(28.dp),
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.HelpOutline,
-                            contentDescription = appString(R.string.cd_what_is_cluster, cluster.label),
-                            modifier = Modifier.size(InfoIconSize),
-                            tint = onBg.copy(alpha = 0.30f),
-                        )
-                    }
+                        helpKey = "home_cluster",
+                        modifier = Modifier.padding(start = 4.dp),
+                        tint = onBg.copy(alpha = 0.6f),
+                        seenTint = onBg.copy(alpha = 0.30f),
+                    )
                 }
             }
         }

@@ -13,6 +13,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.agxmeister.ember.presentation.AppViewModel
 import com.agxmeister.ember.presentation.LocalAppResources
 import com.agxmeister.ember.presentation.common.LocalHelpIconsVisible
+import com.agxmeister.ember.presentation.common.LocalMarkHelpSeen
+import com.agxmeister.ember.presentation.common.LocalSeenHelpKeys
 import com.agxmeister.ember.presentation.navigation.EmberNavGraph
 import com.agxmeister.ember.presentation.theme.EmberTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -28,6 +30,7 @@ class MainActivity : ComponentActivity() {
             val isDark by appViewModel.isDarkTheme.collectAsStateWithLifecycle()
             val language by appViewModel.language.collectAsStateWithLifecycle()
             val helpIconsVisible by appViewModel.helpIconsVisible.collectAsStateWithLifecycle()
+            val seenHelpKeys by appViewModel.seenHelpKeys.collectAsStateWithLifecycle()
             val localizedResources = remember(language) {
                 val config = Configuration(resources.configuration).also {
                     it.setLocale(Locale(language.code))
@@ -37,6 +40,8 @@ class MainActivity : ComponentActivity() {
             CompositionLocalProvider(
                 LocalAppResources provides localizedResources,
                 LocalHelpIconsVisible provides helpIconsVisible,
+                LocalSeenHelpKeys provides seenHelpKeys,
+                LocalMarkHelpSeen provides appViewModel::markHelpSeen,
             ) {
                 EmberTheme(darkTheme = isDark) {
                     EmberNavGraph(viewModel = appViewModel)

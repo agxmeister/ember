@@ -17,6 +17,7 @@ internal fun StatCard(
     modifier: Modifier = Modifier,
     label: String,
     info: String? = null,
+    helpKey: String? = null,
     content: @Composable () -> Unit,
 ) {
     var showInfo by remember { mutableStateOf(false) }
@@ -28,6 +29,7 @@ internal fun StatCard(
             label = label,
             modifier = Modifier.height(InfoIconSize),
             onInfo = if (info != null) ({ showInfo = true }) else null,
+            helpKey = helpKey,
         )
         Spacer(modifier = Modifier.height(4.dp))
         content()

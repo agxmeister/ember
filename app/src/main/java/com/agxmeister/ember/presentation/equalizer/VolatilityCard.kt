@@ -31,6 +31,7 @@ internal fun VolatilityCard(
         modifier = modifier,
         label = appString(R.string.stat_volatility),
         info = appString(if (isWeekly) R.string.stat_volatility_info_weekly else R.string.stat_volatility_info_daily),
+        helpKey = "stat_volatility",
     ) {
         val display = volatilityKg?.let { weightUnit.scaleDiff(it) }
         val color = volatilityKg?.let {

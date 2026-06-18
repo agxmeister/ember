@@ -17,6 +17,7 @@ internal fun StreakCard(
         modifier = modifier,
         label = appString(R.string.trends_streak),
         info = appString(if (isWeekly) R.string.trends_streak_info_weekly else R.string.trends_streak_info_daily),
+        helpKey = "trends_streak",
     ) {
         val streakColor = if (streak >= 5) SuccessGreen else MaterialTheme.colorScheme.onSurface
         StatValueRow(

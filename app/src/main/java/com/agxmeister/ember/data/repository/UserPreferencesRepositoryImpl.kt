@@ -24,6 +24,7 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     override val notificationsEnabled: Flow<Boolean> = dataStore.notificationsEnabled
     override val clusteringEnabled: Flow<Boolean> = dataStore.clusteringEnabled
     override val helpIconsVisible: Flow<Boolean> = dataStore.helpIconsVisible
+    override val seenHelpKeys: Flow<Set<String>> = dataStore.seenHelpKeys
     override val weightGoal: Flow<WeightGoal> = dataStore.weightGoal
     override val weightUnit: Flow<WeightUnit> = dataStore.weightUnit
     override val weighingFrequency: Flow<WeighingFrequency> = dataStore.weighingFrequency
@@ -74,6 +75,10 @@ class UserPreferencesRepositoryImpl @Inject constructor(
 
     override suspend fun setHelpIconsVisible(visible: Boolean) {
         dataStore.setHelpIconsVisible(visible)
+    }
+
+    override suspend fun markHelpSeen(key: String) {
+        dataStore.markHelpSeen(key)
     }
 
     override suspend fun setWeightGoal(goal: WeightGoal) {

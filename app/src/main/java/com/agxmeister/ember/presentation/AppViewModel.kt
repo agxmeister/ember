@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -21,7 +22,7 @@ import javax.inject.Inject
 class AppViewModel @Inject constructor(
     isOnboardingCompleted: IsOnboardingCompletedUseCase,
     hasRecentMeasurement: HasRecentMeasurementUseCase,
-    preferencesRepository: UserPreferencesRepository,
+    private val preferencesRepository: UserPreferencesRepository,
 ) : ViewModel() {
 
     val isOnboardingCompleted: StateFlow<Boolean?> = isOnboardingCompleted()
@@ -37,6 +38,13 @@ class AppViewModel @Inject constructor(
 
     val helpIconsVisible: StateFlow<Boolean> = preferencesRepository.helpIconsVisible
         .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
+    val seenHelpKeys: StateFlow<Set<String>> = preferencesRepository.seenHelpKeys
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptySet())
+
+    fun markHelpSeen(key: String) {
+        viewModelScope.launch { preferencesRepository.markHelpSeen(key) }
+    }
 
     val isDarkTheme: StateFlow<Boolean> = preferencesRepository.themeMode
         .map { mode ->

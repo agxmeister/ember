@@ -51,7 +51,7 @@ internal fun WeeklyRateCard(
         WeeklyRateZone.Unavailable -> ""
     }
     StatCardSurface(modifier = modifier) {
-        CardLabelRow(label = appString(R.string.trends_weekly_rate), onInfo = { showInfo = true })
+        CardLabelRow(label = appString(R.string.trends_weekly_rate), onInfo = { showInfo = true }, helpKey = "trends_weekly_rate")
         Spacer(Modifier.weight(1f))
         RateZoneBar(
             absRateKg = weeklyRateKg?.let { abs(it) },

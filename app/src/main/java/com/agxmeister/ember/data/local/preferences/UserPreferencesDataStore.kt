@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.agxmeister.ember.domain.model.Language
 import com.agxmeister.ember.domain.model.ThemeMode
@@ -37,6 +38,7 @@ class UserPreferencesDataStore @Inject constructor(
     private val notificationsEnabledKey = booleanPreferencesKey("notifications_enabled")
     private val clusteringEnabledKey = booleanPreferencesKey("clustering_enabled")
     private val helpIconsVisibleKey = booleanPreferencesKey("help_icons_visible")
+    private val seenHelpKeysKey = stringSetPreferencesKey("seen_help_keys")
     private val weightGoalKey = stringPreferencesKey("weight_goal")
     private val weightUnitKey = stringPreferencesKey("weight_unit")
     private val weighingFrequencyKey = stringPreferencesKey("weighing_frequency")
@@ -76,6 +78,9 @@ class UserPreferencesDataStore @Inject constructor(
 
     val helpIconsVisible: Flow<Boolean> =
         context.dataStore.data.map { it[helpIconsVisibleKey] ?: true }
+
+    val seenHelpKeys: Flow<Set<String>> =
+        context.dataStore.data.map { it[seenHelpKeysKey] ?: emptySet() }
 
     val weightGoal: Flow<WeightGoal> =
         context.dataStore.data.map { prefs ->
@@ -196,6 +201,12 @@ class UserPreferencesDataStore @Inject constructor(
     suspend fun setHelpIconsVisible(visible: Boolean) {
         context.dataStore.edit { prefs ->
             prefs[helpIconsVisibleKey] = visible
+        }
+    }
+
+    suspend fun markHelpSeen(key: String) {
+        context.dataStore.edit { prefs ->
+            prefs[seenHelpKeysKey] = (prefs[seenHelpKeysKey] ?: emptySet()) + key
         }
     }
 

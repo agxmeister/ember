@@ -18,6 +18,7 @@ interface UserPreferencesRepository {
     val notificationsEnabled: Flow<Boolean>
     val clusteringEnabled: Flow<Boolean>
     val helpIconsVisible: Flow<Boolean>
+    val seenHelpKeys: Flow<Set<String>>
     val weightGoal: Flow<WeightGoal>
     val weightUnit: Flow<WeightUnit>
     val weighingFrequency: Flow<WeighingFrequency>
@@ -44,6 +45,7 @@ interface UserPreferencesRepository {
     suspend fun setNotificationsEnabled(enabled: Boolean)
     suspend fun setClusteringEnabled(enabled: Boolean)
     suspend fun setHelpIconsVisible(visible: Boolean)
+    suspend fun markHelpSeen(key: String)
     suspend fun setWeightGoal(goal: WeightGoal)
     suspend fun setWeightUnit(unit: WeightUnit)
     suspend fun setNotificationTime(hour: Int, minute: Int)

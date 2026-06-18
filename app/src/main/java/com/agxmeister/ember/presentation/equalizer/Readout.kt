@@ -171,12 +171,14 @@ private fun WeightDisplay(
             Text(text = label, style = labelStyle)
             InfoIcon(
                 onClick = { showAvgInfo = true },
+                helpKey = "trends_avg",
                 modifier = Modifier.padding(start = 4.dp),
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(text = appString(R.string.trends_delta_target), style = labelStyle)
             InfoIcon(
                 onClick = { showTrendLabelInfo = true },
+                helpKey = "trends_trend_label",
                 modifier = Modifier.padding(start = 4.dp),
             )
         }
@@ -211,9 +213,11 @@ private fun WeightDisplay(
                 if (trendMeasurementsNeeded != null) {
                     InfoIcon(
                         onClick = { showTrendInfo = true },
+                        helpKey = "trends_trend_pending",
                         modifier = Modifier.align(Alignment.CenterVertically).padding(end = 8.dp),
                         icon = Icons.Filled.Info,
                         tint = InfoAccent,
+                        seenTint = InfoAccent,
                     )
                 }
                 if (arrow != null) {
