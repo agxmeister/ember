@@ -146,7 +146,10 @@ fun HomeScreen(
                     fontWeight = FontWeight.Bold,
                 ),
             )
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.padding(top = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Text(
                     text = state.currentCluster?.label ?: "",
                     style = TextStyle(
