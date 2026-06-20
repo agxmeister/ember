@@ -8,6 +8,7 @@
 - Smart tracking: groups readings into time-of-day clusters and normalizes them so the time of weigh-in doesn't skew trends; the home screen shows the current cluster.
 - Trends screen visualizes progress — equalizer/candle view, weekly medians, a closeness score, streaks, delta to target, weekly rate-of-change zones, and a projected ETA to the goal.
 - Progress-aware coloring: UI accents shift with how close the latest weight is to the target.
+- Contextual help dialogs throughout the UI; their icons are highlighted until first opened, and can be hidden entirely via a setting.
 - Guided onboarding, plus a "start over" flow that can import historical weigh-ins.
 - Light / dark / auto theme.
 - Localized in English, German, and French, with in-app language switching.
