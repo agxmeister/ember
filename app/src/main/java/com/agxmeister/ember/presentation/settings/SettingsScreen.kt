@@ -1,7 +1,6 @@
 package com.agxmeister.ember.presentation.settings
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -32,10 +31,8 @@ import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTimePickerState
-import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -55,21 +52,18 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.agxmeister.ember.R
-import com.agxmeister.ember.domain.model.AlgorithmConfig
 import com.agxmeister.ember.domain.model.Language
-import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.domain.model.WeighingFrequency
-import com.agxmeister.ember.presentation.theme.closenessColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onNavigateToOnboarding: (seedMeasures: Boolean) -> Unit = {},
+    onNavigateToAdditional: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val language by viewModel.language.collectAsStateWithLifecycle()
     val notificationsEnabled by viewModel.notificationsEnabled.collectAsStateWithLifecycle()
-    val clusteringEnabled by viewModel.clusteringEnabled.collectAsStateWithLifecycle()
     val helpIconsVisible by viewModel.helpIconsVisible.collectAsStateWithLifecycle()
     val weightUnit by viewModel.weightUnit.collectAsStateWithLifecycle()
     val initialWeightKg by viewModel.initialWeightKg.collectAsStateWithLifecycle()
@@ -79,21 +73,12 @@ fun SettingsScreen(
     val notificationMinute by viewModel.notificationMinute.collectAsStateWithLifecycle()
     val weighingFrequency by viewModel.weighingFrequency.collectAsStateWithLifecycle()
     val notificationDayOfWeek by viewModel.notificationDayOfWeek.collectAsStateWithLifecycle()
-    val algorithmConfig by viewModel.algorithmConfig.collectAsStateWithLifecycle()
-
-    val darkTheme = isSystemInDarkTheme()
     val accentCloseness by viewModel.accentCloseness.collectAsStateWithLifecycle()
-    val accentColor = closenessColor(accentCloseness, darkTheme)
-    val accentDim = closenessColor(accentCloseness, darkTheme, saturation = 0.60f, lightness = 0.15f)
 
     var showLanguageDialog by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
     var showGoalSheet by remember { mutableStateOf(false) }
     var showResetDialog by remember { mutableStateOf(false) }
-    var showApproximationDialog by remember { mutableStateOf(false) }
-    var showDefineGoalDialog by remember { mutableStateOf(false) }
-    var devMode by remember { mutableStateOf(false) }
-    var titleTapCount by remember { mutableIntStateOf(0) }
 
     val dayLabels = listOf(
         appString(R.string.day_mon),
@@ -105,14 +90,7 @@ fun SettingsScreen(
         appString(R.string.day_sun),
     )
 
-    MaterialTheme(
-        colorScheme = MaterialTheme.colorScheme.copy(
-            primary = accentColor,
-            onPrimary = Color(0xFF0A0A0A),
-            secondaryContainer = accentDim,
-            onSecondaryContainer = accentColor,
-        ),
-    ) {
+    SettingsAccentTheme(accentCloseness) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -122,22 +100,8 @@ fun SettingsScreen(
         Text(
             appString(R.string.settings_title),
             style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.clickable {
-                titleTapCount++
-                if (titleTapCount >= 7) {
-                    titleTapCount = 0
-                    devMode = !devMode
-                }
-            },
         )
         Spacer(modifier = Modifier.height(24.dp))
-
-        SettingsSectionHeader(appString(R.string.settings_language))
-        TappableSetting(
-            value = language.nativeName,
-            onClick = { showLanguageDialog = true },
-        )
-        SettingsDivider()
 
         SettingsSectionHeader(appString(R.string.settings_display))
         SettingsToggleRow(
@@ -148,70 +112,11 @@ fun SettingsScreen(
         )
         SettingsDivider()
 
-        SettingsSectionHeader(appString(R.string.settings_unit))
-        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-            WeightUnit.entries.forEachIndexed { index, unit ->
-                SegmentedButton(
-                    selected = weightUnit == unit,
-                    onClick = { viewModel.onWeightUnitChanged(unit) },
-                    shape = SegmentedButtonDefaults.itemShape(index = index, count = WeightUnit.entries.size),
-                ) { Text(unit.label) }
-            }
-        }
-        SettingsDivider()
-
-        SettingsSectionHeader(appString(R.string.settings_goal))
-        val effectiveTargetKg = if (goalTargetKg > 0) goalTargetKg else initialWeightKg
-        val goalStartLabel = goalStartDate.ifEmpty { null }?.let {
-            runCatching {
-                LocalDate.parse(it).format(DateTimeFormatter.ofPattern("d MMM yyyy"))
-            }.getOrNull()
-        } ?: goalStartDate
+        SettingsSectionHeader(appString(R.string.settings_language))
         TappableSetting(
-            value = appString(
-                R.string.settings_goal_summary,
-                goalStartLabel,
-                weightUnit.fromKg(initialWeightKg).toInt(),
-                weightUnit.label,
-                weightUnit.fromKg(effectiveTargetKg).toInt(),
-                weightUnit.label,
-            ),
-            onClick = { showGoalSheet = true },
+            value = language.nativeName,
+            onClick = { showLanguageDialog = true },
         )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            appString(R.string.settings_start_over),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.error,
-            modifier = Modifier
-                .clickable { showResetDialog = true }
-                .padding(vertical = 4.dp),
-        )
-        SettingsDivider()
-
-        SettingsSectionHeader(appString(R.string.settings_tracking_mode))
-        SettingsToggleRow(
-            title = appString(R.string.label_clustering),
-            subtitle = if (clusteringEnabled) appString(R.string.label_clustering_on) else appString(R.string.label_clustering_off),
-            checked = clusteringEnabled,
-            onCheckedChange = viewModel::onClusteringEnabledChanged,
-        )
-
-        SettingsDivider()
-
-        SettingsSectionHeader(appString(R.string.settings_weighing_frequency))
-        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-            SegmentedButton(
-                selected = weighingFrequency == WeighingFrequency.Daily,
-                onClick = { viewModel.onWeighingFrequencyChanged(WeighingFrequency.Daily) },
-                shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
-            ) { Text(appString(R.string.label_daily)) }
-            SegmentedButton(
-                selected = weighingFrequency == WeighingFrequency.Weekly,
-                onClick = { viewModel.onWeighingFrequencyChanged(WeighingFrequency.Weekly) },
-                shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
-            ) { Text(appString(R.string.label_weekly)) }
-        }
         SettingsDivider()
 
         SettingsSectionHeader(appString(R.string.settings_reminder))
@@ -246,223 +151,41 @@ fun SettingsScreen(
                 onClick = { showTimePicker = true },
             )
         }
-
-        if (devMode) {
         SettingsDivider()
 
-        SettingsSectionHeader(appString(R.string.settings_approximation))
+        SettingsSectionHeader(appString(R.string.settings_goal))
+        val effectiveTargetKg = if (goalTargetKg > 0) goalTargetKg else initialWeightKg
+        val goalStartLabel = goalStartDate.ifEmpty { null }?.let {
+            runCatching {
+                LocalDate.parse(it).format(DateTimeFormatter.ofPattern("d MMM yyyy"))
+            }.getOrNull()
+        } ?: goalStartDate
         TappableSetting(
             value = appString(
-                R.string.settings_approximation_summary,
-                algorithmConfig.regressionIntervalDays,
-                algorithmConfig.minClusterSize,
-                algorithmConfig.streakTrendWindow,
-                algorithmConfig.scoreWindow,
-                algorithmConfig.volatilityWindow,
+                R.string.settings_goal_summary,
+                goalStartLabel,
+                weightUnit.fromKg(initialWeightKg).toInt(),
+                weightUnit.label,
+                weightUnit.fromKg(effectiveTargetKg).toInt(),
+                weightUnit.label,
             ),
-            onClick = { showApproximationDialog = true },
+            onClick = { showGoalSheet = true },
         )
-
-        if (showApproximationDialog) {
-            var regressionText by remember { mutableStateOf(algorithmConfig.regressionIntervalDays.toString()) }
-            var clusterText by remember { mutableStateOf(algorithmConfig.minClusterSize.toString()) }
-            var streakText by remember { mutableStateOf(algorithmConfig.streakTrendWindow.toString()) }
-            var scoreText by remember { mutableStateOf(algorithmConfig.scoreWindow.toString()) }
-            var volatilityText by remember { mutableStateOf(algorithmConfig.volatilityWindow.toString()) }
-            val regressionVal = regressionText.toIntOrNull()
-            val clusterVal = clusterText.toIntOrNull()
-            val streakVal = streakText.toIntOrNull()
-            val scoreVal = scoreText.toIntOrNull()
-            val volatilityVal = volatilityText.toIntOrNull()
-            val isValid = regressionVal != null && regressionVal in 7..365 &&
-                clusterVal != null && clusterVal in 1..365 &&
-                streakVal != null && streakVal in 2..365 &&
-                scoreVal != null && scoreVal in 1..365 &&
-                volatilityVal != null && volatilityVal in 2..365
-            val borderColor = MaterialTheme.colorScheme.outline
-            AlertDialog(
-                onDismissRequest = { showApproximationDialog = false },
-                title = { Text(appString(R.string.settings_adjust_approximation)) },
-                text = {
-                    Column {
-                        Text(
-                            appString(R.string.settings_regression_interval),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            BasicTextField(
-                                value = regressionText,
-                                onValueChange = { if (it.length <= 3 && it.all { c -> c.isDigit() }) regressionText = it },
-                                textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                singleLine = true,
-                                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                                modifier = Modifier
-                                    .width(64.dp)
-                                    .drawBehind {
-                                        drawLine(
-                                            color = borderColor,
-                                            start = Offset(0f, size.height),
-                                            end = Offset(size.width, size.height),
-                                            strokeWidth = 1.dp.toPx(),
-                                        )
-                                    },
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(appString(R.string.label_days), style = MaterialTheme.typography.bodyMedium)
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            appString(R.string.settings_min_cluster_size),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        BasicTextField(
-                            value = clusterText,
-                            onValueChange = { if (it.length <= 3 && it.all { c -> c.isDigit() }) clusterText = it },
-                            textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            singleLine = true,
-                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                            modifier = Modifier
-                                .width(64.dp)
-                                .drawBehind {
-                                    drawLine(
-                                        color = borderColor,
-                                        start = Offset(0f, size.height),
-                                        end = Offset(size.width, size.height),
-                                        strokeWidth = 1.dp.toPx(),
-                                    )
-                                },
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            appString(R.string.settings_streak_window),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        BasicTextField(
-                            value = streakText,
-                            onValueChange = { if (it.length <= 3 && it.all { c -> c.isDigit() }) streakText = it },
-                            textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            singleLine = true,
-                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                            modifier = Modifier
-                                .width(64.dp)
-                                .drawBehind {
-                                    drawLine(
-                                        color = borderColor,
-                                        start = Offset(0f, size.height),
-                                        end = Offset(size.width, size.height),
-                                        strokeWidth = 1.dp.toPx(),
-                                    )
-                                },
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            appString(R.string.settings_score_window),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        BasicTextField(
-                            value = scoreText,
-                            onValueChange = { if (it.length <= 3 && it.all { c -> c.isDigit() }) scoreText = it },
-                            textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            singleLine = true,
-                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                            modifier = Modifier
-                                .width(64.dp)
-                                .drawBehind {
-                                    drawLine(
-                                        color = borderColor,
-                                        start = Offset(0f, size.height),
-                                        end = Offset(size.width, size.height),
-                                        strokeWidth = 1.dp.toPx(),
-                                    )
-                                },
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            appString(R.string.settings_volatility_window),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        BasicTextField(
-                            value = volatilityText,
-                            onValueChange = { if (it.length <= 3 && it.all { c -> c.isDigit() }) volatilityText = it },
-                            textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            singleLine = true,
-                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                            modifier = Modifier
-                                .width(64.dp)
-                                .drawBehind {
-                                    drawLine(
-                                        color = borderColor,
-                                        start = Offset(0f, size.height),
-                                        end = Offset(size.width, size.height),
-                                        strokeWidth = 1.dp.toPx(),
-                                    )
-                                },
-                        )
-                    }
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            viewModel.onAlgorithmConfigChanged(
-                                AlgorithmConfig(
-                                    regressionIntervalDays = regressionVal!!,
-                                    minClusterSize = clusterVal!!,
-                                    streakTrendWindow = streakVal!!,
-                                    scoreWindow = scoreVal!!,
-                                    volatilityWindow = volatilityVal!!,
-                                )
-                            )
-                            showApproximationDialog = false
-                        },
-                        enabled = isValid,
-                    ) { Text(appString(R.string.label_save)) }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showApproximationDialog = false }) {
-                        Text(appString(R.string.label_cancel))
-                    }
-                },
-            )
-        }
-
-        SettingsDivider()
-
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
-            appString(R.string.settings_start_over_with_import),
+            appString(R.string.settings_start_over),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.error,
             modifier = Modifier
-                .clickable { showDefineGoalDialog = true }
-                .padding(bottom = 8.dp),
+                .clickable { showResetDialog = true }
+                .padding(vertical = 4.dp),
         )
+        SettingsDivider()
 
-        } // end devMode
-
-        if (showDefineGoalDialog) {
-            StartOverConfirmDialog(
-                onConfirm = {
-                    showDefineGoalDialog = false
-                    viewModel.onResetData()
-                    onNavigateToOnboarding(true)
-                },
-                onDismiss = { showDefineGoalDialog = false },
-            )
-        }
+        SettingsNavLabel(
+            text = appString(R.string.settings_go_to_additional),
+            onClick = onNavigateToAdditional,
+        )
 
         if (showLanguageDialog) {
             AlertDialog(
@@ -698,6 +421,6 @@ fun SettingsScreen(
             }
         }
 
-}
+    }
     }
 }

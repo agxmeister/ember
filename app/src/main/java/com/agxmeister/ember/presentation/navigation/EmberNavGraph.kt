@@ -36,8 +36,12 @@ import com.agxmeister.ember.presentation.home.HomeScreen
 import com.agxmeister.ember.presentation.onboarding.OnboardingScreen
 import com.agxmeister.ember.presentation.onboarding.SeedMeasuresOnboardingScreen
 import com.agxmeister.ember.presentation.settings.SettingsScreen
+import com.agxmeister.ember.presentation.settings.SettingsAdditionalScreen
+import com.agxmeister.ember.presentation.settings.SettingsDevelopmentScreen
 
 private const val ROUTE_ONBOARDING = "onboarding"
+private const val ROUTE_SETTINGS_ADDITIONAL = "settings_additional"
+private const val ROUTE_SETTINGS_DEVELOPMENT = "settings_development"
 
 sealed class Screen(val route: String, @StringRes val labelRes: Int, val icon: ImageVector) {
     data object Home : Screen("home", R.string.nav_home, Icons.Default.Home)
@@ -146,7 +150,7 @@ fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
                                 saveState = true
                             }
                             launchSingleTop = true
-                            restoreState = true
+                            restoreState = false
                         }
                     },
                 )
@@ -172,7 +176,24 @@ fun EmberNavGraph(viewModel: AppViewModel = hiltViewModel()) {
                     },
                 )
             }
-            composable(Screen.Settings.route) { SettingsScreen(onNavigateToOnboarding = navigateToOnboarding) }
+            composable(Screen.Settings.route) {
+                SettingsScreen(
+                    onNavigateToOnboarding = navigateToOnboarding,
+                    onNavigateToAdditional = { navController.navigate(ROUTE_SETTINGS_ADDITIONAL) },
+                )
+            }
+            composable(ROUTE_SETTINGS_ADDITIONAL) {
+                SettingsAdditionalScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToDevelopment = { navController.navigate(ROUTE_SETTINGS_DEVELOPMENT) },
+                )
+            }
+            composable(ROUTE_SETTINGS_DEVELOPMENT) {
+                SettingsDevelopmentScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToOnboarding = navigateToOnboarding,
+                )
+            }
         }
     }
 }

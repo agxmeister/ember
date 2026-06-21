@@ -25,6 +25,7 @@
     <string name="label_save">Save</string>
     <string name="label_ok">OK</string>
     <string name="label_cancel">Cancel</string>
+    <string name="label_back">Back</string>
     <string name="label_confirm">Confirm</string>
     <string name="label_next">Next</string>
     <string name="label_day">Day</string>
@@ -44,6 +45,10 @@
     <!-- Settings -->
     <string name="settings_language">Language</string>
     <string name="settings_title">Settings</string>
+    <string name="settings_additional_title">Additional settings</string>
+    <string name="settings_development_title">Development settings</string>
+    <string name="settings_go_to_additional">Go to additional settings</string>
+    <string name="settings_go_to_development">Go to development settings</string>
     <string name="settings_display">Display</string>
     <string name="settings_help_icons">Help icons</string>
     <string name="settings_unit">Unit</string>

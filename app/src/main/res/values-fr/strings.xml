@@ -23,6 +23,7 @@
     <string name="label_save">Enregistrer</string>
     <string name="label_ok">OK</string>
     <string name="label_cancel">Annuler</string>
+    <string name="label_back">Retour</string>
     <string name="label_next">Suivant</string>
     <string name="label_day">Jour</string>
     <string name="label_clustering">Regroupement par heure</string>
@@ -39,6 +40,10 @@
 
     <string name="settings_language">Langue</string>
     <string name="settings_title">Paramètres</string>
+    <string name="settings_additional_title">Paramètres supplémentaires</string>
+    <string name="settings_development_title">Paramètres de développement</string>
+    <string name="settings_go_to_additional">Aller aux paramètres supplémentaires</string>
+    <string name="settings_go_to_development">Aller aux paramètres de développement</string>
     <string name="settings_display">Affichage</string>
     <string name="settings_help_icons">Icônes d\'aide</string>
     <string name="settings_unit">Unité</string>
