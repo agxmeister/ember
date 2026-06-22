@@ -88,8 +88,8 @@
     <string name="onboarding_clustering_description">Ember kann deine Messungen nach Tageszeit gruppieren — Morgen, Mittag, Abend und Nacht. So vergleichst du Gleiches mit Gleichem und siehst deinen tatsächlichen Trend klarer.</string>
     <string name="onboarding_get_started">Loslegen</string>
 
-    <string name="nav_home">Start</string>
-    <string name="nav_trends">Trends</string>
+    <string name="nav_home">Wiegen</string>
+    <string name="nav_trends">Verlauf</string>
     <string name="nav_settings">Einstellungen</string>
 
     <string name="cluster_eos_description">Du wiegst dich normalerweise früh morgens. Eos ist die Göttin der Morgenröte.</string>

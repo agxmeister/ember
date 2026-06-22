@@ -99,8 +99,8 @@
     <string name="onboarding_get_started">Get started</string>
 
     <!-- Navigation -->
-    <string name="nav_home">Home</string>
-    <string name="nav_trends">Trends</string>
+    <string name="nav_home">Check-in</string>
+    <string name="nav_trends">Monitor</string>
     <string name="nav_settings">Settings</string>
 
     <!-- Cluster descriptions -->

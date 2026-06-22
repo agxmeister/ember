@@ -88,8 +88,8 @@
     <string name="onboarding_clustering_description">Ember peut regrouper vos mesures par heure de la journée — matin, midi, soir et nuit. Cela vous permet de comparer des mesures similaires pour une meilleure vision de votre tendance réelle.</string>
     <string name="onboarding_get_started">Commencer</string>
 
-    <string name="nav_home">Accueil</string>
-    <string name="nav_trends">Tendances</string>
+    <string name="nav_home">Pesée</string>
+    <string name="nav_trends">Suivi</string>
     <string name="nav_settings">Paramètres</string>
 
     <string name="cluster_eos_description">Vous vous pesez généralement tôt le matin. Éos est la déesse de l\'aurore.</string>
