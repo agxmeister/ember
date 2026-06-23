@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ember</string>
+    <string name="notification_channel_name">Recordatorios de pesaje</string>
+
+    <!-- Home prompts -->
+    <string name="prompt_how_much_do_you_weigh">¿Cuánto pesas?</string>
+    <string name="prompt_step_on_scale">Súbete a la báscula.</string>
+    <string name="prompt_time_to_check_in">Hora de pesarte.</string>
+    <string name="prompt_whats_the_number">¿Cuál es el número de hoy?</string>
+    <string name="prompt_ready_to_weigh_in">¿Listo para pesarte?</string>
+    <string name="prompt_lets_see_where_you_are">Veamos cómo vas.</string>
+    <string name="prompt_daily_check_in_awaits">Tu registro diario te espera.</string>
+    <string name="prompt_weekly_check_in_awaits">Tu registro semanal te espera.</string>
+    <string name="action_check_in">REGISTRAR</string>
+    <string name="action_re_check">VOLVER A PESAR</string>
+    <string name="cd_what_is_cluster">¿Qué es %1$s?</string>
+
+    <!-- Shared labels -->
+    <string name="label_daily">Diario</string>
+    <string name="label_weekly">Semanal</string>
+    <string name="label_on">Activado</string>
+    <string name="label_off">Desactivado</string>
+    <string name="label_tap_to_adjust">Toca para ajustar</string>
+    <string name="label_save">Guardar</string>
+    <string name="label_ok">OK</string>
+    <string name="label_cancel">Cancelar</string>
+    <string name="label_back">Atrás</string>
+    <string name="label_confirm">Confirmar</string>
+    <string name="label_next">Siguiente</string>
+    <string name="label_day">Día</string>
+    <string name="label_clustering">Agrupación por hora del día</string>
+    <string name="label_clustering_on">Activado — tendencias por franja horaria</string>
+    <string name="label_clustering_off">Desactivado — promedios diarios</string>
+
+    <!-- Day abbreviations -->
+    <string name="day_mon">Lu</string>
+    <string name="day_tue">Ma</string>
+    <string name="day_wed">Mi</string>
+    <string name="day_thu">Ju</string>
+    <string name="day_fri">Vi</string>
+    <string name="day_sat">Sá</string>
+    <string name="day_sun">Do</string>
+
+    <!-- Settings -->
+    <string name="settings_language">Idioma</string>
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_additional_title">Ajustes adicionales</string>
+    <string name="settings_development_title">Ajustes de desarrollo</string>
+    <string name="settings_go_to_additional">Ir a ajustes adicionales</string>
+    <string name="settings_go_to_development">Ir a ajustes de desarrollo</string>
+    <string name="settings_display">Visualización</string>
+    <string name="settings_help_icons">Iconos de ayuda</string>
+    <string name="settings_unit">Unidad</string>
+    <string name="settings_goal">Objetivo</string>
+    <string name="settings_goal_summary">Iniciado el %1$s con %2$d %3$s, objetivo %4$d %5$s</string>
+    <string name="settings_tracking_mode">Modo de seguimiento</string>
+    <string name="settings_weighing_frequency">Frecuencia de pesaje</string>
+    <string name="settings_reminder">Recordatorio</string>
+    <string name="settings_reminders">Recordatorios</string>
+    <string name="settings_notification_time">Hora del recordatorio: %1$02d:%2$02d</string>
+    <string name="settings_adjust_goal">Ajustar objetivo</string>
+    <string name="settings_initial_weight">Peso inicial</string>
+    <string name="settings_target_weight">Peso objetivo</string>
+    <string name="settings_goal_start_date">Fecha de inicio</string>
+    <string name="settings_approximation">Aproximación</string>
+    <string name="settings_approximation_summary">Regresión: %1$d días · Clúster mín.: %2$d · Ventana de racha: %3$d · Ventana de puntuación: %4$d · Ventana de volatilidad: %5$d</string>
+    <string name="settings_adjust_approximation">Ajustar aproximación</string>
+    <string name="settings_regression_interval">Intervalo de regresión</string>
+    <string name="settings_min_cluster_size">Tamaño mínimo del clúster</string>
+    <string name="settings_streak_window">Ventana de tendencia de racha</string>
+    <string name="settings_score_window">Ventana de puntuación</string>
+    <string name="settings_volatility_window">Ventana de volatilidad</string>
+    <string name="label_days">días</string>
+    <string name="settings_start_over">Definir un nuevo objetivo</string>
+    <string name="settings_start_over_with_import">Definir un nuevo objetivo con importación de datos</string>
+    <string name="settings_start_over_confirm_title">¿Definir un nuevo objetivo?</string>
+    <string name="settings_start_over_confirm_message">Se eliminarán todas las mediciones y volverás a hacer la introducción para establecer un nuevo objetivo. Esto no se puede deshacer.</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_welcome">Bienvenido a Ember</string>
+    <string name="onboarding_current_weight_question">¿Cuál es tu peso actual, aproximadamente?</string>
+    <string name="onboarding_target_weight_title">Peso objetivo</string>
+    <string name="onboarding_goal_question">¿Qué peso quieres alcanzar?</string>
+    <string name="onboarding_lose">Perder %1$d %2$s</string>
+    <string name="onboarding_gain">Ganar %1$d %2$s</string>
+    <string name="onboarding_same_weight">Igual que el peso actual</string>
+    <string name="onboarding_how_often">¿Con qué frecuencia te pesarás?</string>
+    <string name="onboarding_frequency_description">El seguimiento diario ofrece la tendencia más clara, pero el semanal también funciona bien si se adapta mejor a tu rutina.</string>
+    <string name="onboarding_daily_description">Me pesaré cada día</string>
+    <string name="onboarding_weekly_description">Me pesaré una vez por semana</string>
+    <string name="onboarding_weekly_reminder_title">Recordatorio semanal</string>
+    <string name="onboarding_weekly_day_time">Elige el día y la hora de tu recordatorio semanal de pesaje.</string>
+    <string name="onboarding_morning_reminder_title">Recordatorio matutino</string>
+    <string name="onboarding_day_start_question">¿A qué hora sueles empezar el día?</string>
+    <string name="onboarding_reminder_15_min">Recibirás un recordatorio para pesarte 15 minutos después.</string>
+    <string name="onboarding_smart_tracking">Seguimiento inteligente</string>
+    <string name="onboarding_clustering_description">Ember puede agrupar tus mediciones por hora del día: mañana, mediodía, tarde y noche. Esto te permite comparar mediciones similares, ofreciéndote una imagen más clara de tu tendencia real en lugar de las fluctuaciones diarias naturales.</string>
+    <string name="onboarding_get_started">Empezar</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Registro</string>
+    <string name="nav_trends">Seguimiento</string>
+    <string name="nav_settings">Ajustes</string>
+
+    <!-- Cluster descriptions -->
+    <string name="cluster_eos_description">Sueles pesarte temprano por la mañana. Eos es la diosa del amanecer.</string>
+    <string name="cluster_helios_description">Sueles pesarte a media mañana. Helios es el dios del sol.</string>
+    <string name="cluster_hesperus_description">Sueles pesarte por la tarde o al anochecer. Héspero es la estrella vespertina.</string>
+    <string name="cluster_selene_description">Sueles pesarte por la noche. Selene es la diosa de la luna.</string>
+
+    <!-- Trends / Equalizer -->
+    <string name="trends_tgt_prefix">OBJ</string>
+    <string name="trends_delta_target">Δ TENDENCIA</string>
+    <string name="trends_trend_pending_info">Tu tendencia semanal aparece cuando Ember tiene suficientes mediciones. Registra %1$d más para ver con qué rapidez avanzas.</string>
+    <string name="trends_trend_info">La tendencia muestra con qué rapidez cambia tu peso medio cada semana. ▼ significa que baja, ▲ que sube.</string>
+    <string name="trends_tap_to_edit">TOCA PARA EDITAR</string>
+    <string name="trends_tap_again_to_clear">TOCA DE NUEVO PARA BORRAR</string>
+    <string name="trends_tap_a_day">TOCA UN DÍA PARA ABRIR</string>
+    <string name="trends_tap_a_week">TOCA UNA SEMANA PARA ABRIR</string>
+    <string name="trends_readout_day_avg">MEDIA 14 DÍAS</string>
+    <string name="trends_readout_week_avg">MEDIA 14 SEM.</string>
+    <string name="trends_avg_info_daily">Es una media de 14 días que combina tus pesajes recientes, suavizando las subidas y bajadas diarias para que veas tu peso real en lugar del ruido de hoy.</string>
+    <string name="trends_avg_info_weekly">Es una media de 14 semanas que combina tus pesajes recientes, suavizando las oscilaciones de una semana a otra para que veas tu peso real en lugar del ruido de esta semana.</string>
+    <string name="trends_readout_wk_prefix">SEM.</string>
+    <string name="trends_day_and_time">día y hora</string>
+    <string name="trends_tap_to_change">toca para cambiar</string>
+    <string name="trends_taken_at">tomado a las</string>
+    <string name="trends_streak">RACHA</string>
+    <string name="trends_streak_info_daily">Tu racha cuenta cuántos días consecutivos la tendencia de tu peso se ha movido hacia tu objetivo.</string>
+    <string name="trends_streak_info_weekly">Tu racha cuenta cuántas semanas consecutivas la tendencia de tu peso se ha movido hacia tu objetivo.</string>
+    <string name="trends_days">días</string>
+    <string name="trends_wks">sem.</string>
+    <string name="trends_this_week">ESTA SEMANA</string>
+    <string name="trends_7_day_trend">TENDENCIA 7 DÍAS</string>
+    <string name="stat_today">HOY</string>
+    <string name="stat_volatility">VOLATILIDAD</string>
+    <string name="stat_volatility_info_daily">La volatilidad mide cuánto fluctúa tu peso de un día a otro. Valores más bajos indican lecturas más estables; valores más altos indican mayor dispersión.</string>
+    <string name="stat_volatility_info_weekly">La volatilidad mide cuánto fluctúa tu peso de una semana a otra. Valores más bajos indican lecturas más estables; valores más altos indican mayor dispersión.</string>
+    <string name="trends_score">PUNTUACIÓN</string>
+    <string name="trends_score_info_daily">Tu puntuación evalúa lo bien que estás progresando últimamente: el ritmo de cambio de tu peso, con qué constancia avanzas hacia tu objetivo y con qué regularidad te pesas.</string>
+    <string name="trends_score_info_weekly">Tu puntuación evalúa lo bien que estás progresando últimamente: el ritmo de cambio de tu peso, con qué constancia avanzas hacia tu objetivo y con qué regularidad te pesas.</string>
+    <string name="cd_delete">Eliminar</string>
+
+    <!-- Projection card -->
+    <string name="trends_projected_eta">FECHA ESTIMADA</string>
+    <string name="trends_projected_eta_info">Tu fecha estimada para el objetivo se basa en tu tendencia actual. Se actualiza a medida que cambia tu peso.</string>
+    <string name="trends_eta_pending_info">Tu fecha estimada para el objetivo aparece cuando Ember tiene suficientes mediciones. Registra %1$d más para verla.</string>
+    <string name="trends_in_days">en %1$d días</string>
+    <string name="trends_today">hoy</string>
+    <string name="trends_goal_reached">Objetivo alcanzado</string>
+    <string name="trends_eta_not_enough_data">se necesitan más mediciones</string>
+    <string name="trends_eta_wrong_direction">tendencia en sentido equivocado</string>
+    <string name="trends_eta_too_noisy">tendencia demasiado irregular</string>
+    <string name="trends_eta_too_far">más de 2 años</string>
+
+    <!-- Weekly rate card -->
+    <string name="trends_weekly_rate">RITMO SEMANAL</string>
+    <string name="trends_weekly_rate_info">Tu ritmo semanal muestra con qué rapidez cambia tu peso. Un ritmo saludable es de 0,25 a 1,0 kg por semana.</string>
+    <string name="trends_rate_zone_too_slow">DEMASIADO LENTO</string>
+    <string name="trends_rate_zone_healthy">EN BUEN RITMO</string>
+    <string name="trends_rate_zone_aggressive">AGRESIVO</string>
+    <string name="trends_rate_zone_too_fast">DEMASIADO RÁPIDO</string>
+    <string name="trends_rate_zone_wrong_direction">SENTIDO ERRÓNEO</string>
+
+    <!-- Notifications -->
+    <string name="notification_title">Hora de pesarte</string>
+    <string name="notification_text">No olvides tu medición %1$s.</string>
+</resources>
