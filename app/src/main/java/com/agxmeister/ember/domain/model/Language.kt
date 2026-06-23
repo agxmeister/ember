@@ -4,4 +4,5 @@ enum class Language(val code: String, val displayCode: String, val nativeName: S
     En("en", "EN", "English"),
     De("de", "DE", "Deutsch"),
     Fr("fr", "FR", "Français"),
+    It("it", "IT", "Italiano"),
 }
