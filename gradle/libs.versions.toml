@@ -14,6 +14,7 @@ coroutines = "1.9.0"
 kotlinx-datetime = "0.6.1"
 activity-compose = "1.9.3"
 datastore = "1.1.1"
+aptabase = "0.0.8"
 
 [libraries]
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
@@ -37,6 +38,7 @@ workmanager = { group = "androidx.work", name = "work-runtime-ktx", version.ref 
 coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinx-datetime" }
 datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
+aptabase = { group = "com.github.aptabase", name = "aptabase-kotlin", version.ref = "aptabase" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

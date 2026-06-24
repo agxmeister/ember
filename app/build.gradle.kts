@@ -17,6 +17,9 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+
+        val aptabaseKey = (project.findProperty("APTABASE_KEY") as String?).orEmpty()
+        buildConfigField("String", "APTABASE_KEY", "\"$aptabaseKey\"")
     }
 
     buildTypes {
@@ -37,6 +40,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     room {
@@ -68,6 +72,7 @@ dependencies {
     implementation(libs.coroutines.android)
     implementation(libs.kotlinx.datetime)
     implementation(libs.datastore.preferences)
+    implementation(libs.aptabase)
 
     debugImplementation(libs.compose.ui.tooling)
 }
