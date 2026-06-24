@@ -46,6 +46,10 @@
     <string name="settings_go_to_development">Zu Entwicklereinstellungen</string>
     <string name="settings_display">Anzeige</string>
     <string name="settings_help_icons">Hilfesymbole</string>
+    <string name="settings_privacy">Datenschutz</string>
+    <string name="settings_analytics">Anonyme Nutzungsdaten</string>
+    <string name="label_analytics_on">Ein — hilft, die App zu verbessern, keine persönlichen Daten</string>
+    <string name="label_analytics_off">Aus</string>
     <string name="settings_unit">Einheit</string>
     <string name="settings_goal">Ziel</string>
     <string name="settings_goal_summary">Gestartet am %1$s mit %2$d %3$s, Ziel %4$d %5$s</string>

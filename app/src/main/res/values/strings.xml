@@ -51,6 +51,10 @@
     <string name="settings_go_to_development">Go to development settings</string>
     <string name="settings_display">Display</string>
     <string name="settings_help_icons">Help icons</string>
+    <string name="settings_privacy">Privacy</string>
+    <string name="settings_analytics">Anonymous usage data</string>
+    <string name="label_analytics_on">On — helps improve the app, no personal data</string>
+    <string name="label_analytics_off">Off</string>
     <string name="settings_unit">Unit</string>
     <string name="settings_goal">Goal</string>
     <string name="settings_goal_summary">Started on %1$s at %2$d %3$s, target is %4$d %5$s</string>

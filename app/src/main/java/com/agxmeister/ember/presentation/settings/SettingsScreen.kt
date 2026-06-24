@@ -65,6 +65,7 @@ fun SettingsScreen(
     val language by viewModel.language.collectAsStateWithLifecycle()
     val notificationsEnabled by viewModel.notificationsEnabled.collectAsStateWithLifecycle()
     val helpIconsVisible by viewModel.helpIconsVisible.collectAsStateWithLifecycle()
+    val analyticsEnabled by viewModel.analyticsEnabled.collectAsStateWithLifecycle()
     val weightUnit by viewModel.weightUnit.collectAsStateWithLifecycle()
     val initialWeightKg by viewModel.initialWeightKg.collectAsStateWithLifecycle()
     val goalTargetKg by viewModel.goalTargetKg.collectAsStateWithLifecycle()
@@ -109,6 +110,15 @@ fun SettingsScreen(
             subtitle = if (helpIconsVisible) appString(R.string.label_on) else appString(R.string.label_off),
             checked = helpIconsVisible,
             onCheckedChange = viewModel::onHelpIconsVisibleChanged,
+        )
+        SettingsDivider()
+
+        SettingsSectionHeader(appString(R.string.settings_privacy))
+        SettingsToggleRow(
+            title = appString(R.string.settings_analytics),
+            subtitle = if (analyticsEnabled) appString(R.string.label_analytics_on) else appString(R.string.label_analytics_off),
+            checked = analyticsEnabled,
+            onCheckedChange = viewModel::onAnalyticsEnabledChanged,
         )
         SettingsDivider()
 

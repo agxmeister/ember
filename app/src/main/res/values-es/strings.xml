@@ -51,6 +51,10 @@
     <string name="settings_go_to_development">Ir a ajustes de desarrollo</string>
     <string name="settings_display">Visualización</string>
     <string name="settings_help_icons">Iconos de ayuda</string>
+    <string name="settings_privacy">Privacidad</string>
+    <string name="settings_analytics">Datos de uso anónimos</string>
+    <string name="label_analytics_on">Activado: ayuda a mejorar la app, sin datos personales</string>
+    <string name="label_analytics_off">Desactivado</string>
     <string name="settings_unit">Unidad</string>
     <string name="settings_goal">Objetivo</string>
     <string name="settings_goal_summary">Iniciado el %1$s con %2$d %3$s, objetivo %4$d %5$s</string>

@@ -85,6 +85,13 @@ class SettingsViewModel @Inject constructor(
             initialValue = true,
         )
 
+    val analyticsEnabled: StateFlow<Boolean> = preferencesRepository.analyticsEnabled
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = true,
+        )
+
     val weightUnit: StateFlow<WeightUnit> = preferencesRepository.weightUnit
         .stateIn(
             scope = viewModelScope,
@@ -177,6 +184,10 @@ class SettingsViewModel @Inject constructor(
 
     fun onHelpIconsVisibleChanged(visible: Boolean) {
         viewModelScope.launch { preferencesRepository.setHelpIconsVisible(visible) }
+    }
+
+    fun onAnalyticsEnabledChanged(enabled: Boolean) {
+        viewModelScope.launch { preferencesRepository.setAnalyticsEnabled(enabled) }
     }
 
     fun onWeightUnitChanged(unit: WeightUnit) {
