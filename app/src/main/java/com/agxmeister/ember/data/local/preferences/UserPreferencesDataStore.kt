@@ -38,6 +38,7 @@ class UserPreferencesDataStore @Inject constructor(
     private val notificationsEnabledKey = booleanPreferencesKey("notifications_enabled")
     private val clusteringEnabledKey = booleanPreferencesKey("clustering_enabled")
     private val helpIconsVisibleKey = booleanPreferencesKey("help_icons_visible")
+    private val analyticsEnabledKey = booleanPreferencesKey("analytics_enabled")
     private val seenHelpKeysKey = stringSetPreferencesKey("seen_help_keys")
     private val weightGoalKey = stringPreferencesKey("weight_goal")
     private val weightUnitKey = stringPreferencesKey("weight_unit")
@@ -78,6 +79,9 @@ class UserPreferencesDataStore @Inject constructor(
 
     val helpIconsVisible: Flow<Boolean> =
         context.dataStore.data.map { it[helpIconsVisibleKey] ?: true }
+
+    val analyticsEnabled: Flow<Boolean> =
+        context.dataStore.data.map { it[analyticsEnabledKey] ?: true }
 
     val seenHelpKeys: Flow<Set<String>> =
         context.dataStore.data.map { it[seenHelpKeysKey] ?: emptySet() }
@@ -201,6 +205,12 @@ class UserPreferencesDataStore @Inject constructor(
     suspend fun setHelpIconsVisible(visible: Boolean) {
         context.dataStore.edit { prefs ->
             prefs[helpIconsVisibleKey] = visible
+        }
+    }
+
+    suspend fun setAnalyticsEnabled(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[analyticsEnabledKey] = enabled
         }
     }
 
