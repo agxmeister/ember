@@ -2,6 +2,8 @@ package com.agxmeister.ember.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.agxmeister.ember.domain.analytics.AnalyticsEvent
+import com.agxmeister.ember.domain.analytics.AnalyticsTracker
 import com.agxmeister.ember.domain.model.Cluster
 import com.agxmeister.ember.domain.model.ThemeMode
 import com.agxmeister.ember.domain.model.WeighingFrequency
@@ -15,6 +17,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -42,6 +45,7 @@ class HomeViewModel @Inject constructor(
     private val hasRecentMeasurement: HasRecentMeasurementUseCase,
     private val getDailyCandles: GetDailyCandlesUseCase,
     private val preferencesRepository: UserPreferencesRepository,
+    private val analytics: AnalyticsTracker,
 ) : ViewModel() {
 
     private val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
@@ -84,6 +88,12 @@ class HomeViewModel @Inject constructor(
     fun save(weightKg: Double) {
         viewModelScope.launch {
             addMeasurement(weightKg)
+            analytics.track(
+                AnalyticsEvent.WeighInLogged(
+                    frequency = preferencesRepository.weighingFrequency.first(),
+                    clusteringEnabled = preferencesRepository.clusteringEnabled.first(),
+                )
+            )
         }
     }
 
