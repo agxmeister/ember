@@ -37,7 +37,6 @@ import com.agxmeister.ember.presentation.appString
 import com.agxmeister.ember.presentation.common.InfoDialog
 import com.agxmeister.ember.presentation.common.InfoIcon
 import com.agxmeister.ember.presentation.theme.DangerRed
-import com.agxmeister.ember.presentation.theme.InfoAccent
 import com.agxmeister.ember.presentation.theme.SuccessGreen
 
 @Composable
@@ -227,7 +226,13 @@ private fun PendingContent(modifier: Modifier = Modifier, onSurface: Color, onIn
                 ),
             )
             Spacer(Modifier.width(10.dp))
-            InfoIcon(onClick = onInfo, helpKey = "trends_projection_pending", icon = Icons.Filled.Info, tint = InfoAccent, seenTint = InfoAccent)
+            InfoIcon(
+                onClick = onInfo,
+                helpKey = "trends_projection_pending",
+                icon = Icons.Filled.Info,
+                tint = onSurface.copy(alpha = 0.6f),
+                seenTint = onSurface.copy(alpha = 0.6f),
+            )
         }
         Spacer(Modifier.height(8.dp))
         EtaJourney(

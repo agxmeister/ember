@@ -9,9 +9,6 @@ import androidx.compose.ui.unit.dp
 import kotlin.math.abs
 import kotlin.math.sqrt
 
-/** Accent color for tappable info ("i") affordances. */
-val InfoAccent = Color(0xFF2196F3)
-
 /** Size for tappable info/help ("i" and "?") icons. */
 val InfoIconSize = 18.dp
 

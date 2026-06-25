@@ -32,7 +32,6 @@ import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.presentation.appString
 import com.agxmeister.ember.presentation.common.InfoDialog
 import com.agxmeister.ember.presentation.common.InfoIcon
-import com.agxmeister.ember.presentation.theme.InfoAccent
 import com.agxmeister.ember.presentation.theme.closenessColor
 import com.agxmeister.ember.presentation.theme.trendSpeedColor
 import kotlinx.datetime.LocalDate
@@ -216,8 +215,8 @@ private fun WeightDisplay(
                         helpKey = "trends_trend_pending",
                         modifier = Modifier.align(Alignment.CenterVertically).padding(end = 8.dp),
                         icon = Icons.Filled.Info,
-                        tint = InfoAccent,
-                        seenTint = InfoAccent,
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        seenTint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     )
                 }
                 if (arrow != null) {
