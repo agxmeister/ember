@@ -161,6 +161,7 @@
     <!-- Weekly rate card -->
     <string name="trends_weekly_rate">WEEKLY RATE</string>
     <string name="trends_weekly_rate_info">Your weekly rate shows how fast your weight is changing. A healthy rate is 0.25–1.0 kg per week.</string>
+    <string name="trends_weekly_rate_pending_info">Your weekly rate appears once Ember has enough measurements. Log %1$d more to see it.</string>
     <string name="trends_rate_zone_too_slow">TOO SLOW</string>
     <string name="trends_rate_zone_healthy">ON PACE</string>
     <string name="trends_rate_zone_aggressive">AGGRESSIVE</string>

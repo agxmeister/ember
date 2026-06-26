@@ -143,6 +143,7 @@ fun EqualizerScreen(animateEntry: Boolean = false) {
             modifier = Modifier.fillMaxWidth().weight(1f),
             weeklyRateKg = state.weeklyRateKg,
             rateZone = state.rateZone,
+            measurementsNeeded = state.trendMeasurementsNeeded,
         )
     }
 

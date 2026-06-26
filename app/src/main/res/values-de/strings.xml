@@ -149,6 +149,7 @@
     <!-- Weekly rate card -->
     <string name="trends_weekly_rate">WÖCHENTLICHE RATE</string>
     <string name="trends_weekly_rate_info">Deine wöchentliche Rate zeigt, wie schnell sich dein Gewicht verändert. Eine gesunde Rate liegt bei 0,25–1,0 kg pro Woche.</string>
+    <string name="trends_weekly_rate_pending_info">Deine wöchentliche Rate erscheint, sobald Ember genügend Messungen hat. Erfasse noch %1$d weitere, um sie zu sehen.</string>
     <string name="trends_rate_zone_too_slow">ZU LANGSAM</string>
     <string name="trends_rate_zone_healthy">IM PLAN</string>
     <string name="trends_rate_zone_aggressive">AGGRESSIV</string>

@@ -3,9 +3,12 @@ package com.agxmeister.ember.presentation.equalizer
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -38,16 +41,32 @@ internal fun StatCardSurface(
     }
 }
 
-/** Stat card header: a label with an optional trailing help icon opening [onInfo]. */
+/**
+ * Stat card header: a label with an optional trailing help icon opening [onInfo]. When the card
+ * has no data to show yet, a pending "i" affordance (opening [onPending]) sits next to the label.
+ */
 @Composable
 internal fun CardLabelRow(
     label: String,
     modifier: Modifier = Modifier,
     onInfo: (() -> Unit)? = null,
     helpKey: String? = null,
+    onPending: (() -> Unit)? = null,
+    pendingHelpKey: String? = null,
 ) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        Text(text = label, modifier = Modifier.weight(1f), style = cardLabelStyle())
+        Text(text = label, style = cardLabelStyle())
+        if (onPending != null && pendingHelpKey != null) {
+            InfoIcon(
+                onClick = onPending,
+                helpKey = pendingHelpKey,
+                modifier = Modifier.padding(start = 10.dp),
+                icon = Icons.Filled.Info,
+                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                seenTint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+            )
+        }
+        Spacer(Modifier.weight(1f))
         if (onInfo != null && helpKey != null) InfoIcon(onClick = onInfo, helpKey = helpKey)
     }
 }

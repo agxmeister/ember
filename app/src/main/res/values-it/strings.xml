@@ -161,6 +161,7 @@
     <!-- Weekly rate card -->
     <string name="trends_weekly_rate">RITMO SETTIMANALE</string>
     <string name="trends_weekly_rate_info">Il ritmo settimanale mostra quanto velocemente cambia il tuo peso. Un ritmo sano è di 0,25–1,0 kg a settimana.</string>
+    <string name="trends_weekly_rate_pending_info">Il ritmo settimanale appare quando Ember ha abbastanza misurazioni. Registrane altre %1$d per vederlo.</string>
     <string name="trends_rate_zone_too_slow">TROPPO LENTO</string>
     <string name="trends_rate_zone_healthy">IN LINEA</string>
     <string name="trends_rate_zone_aggressive">AGGRESSIVO</string>

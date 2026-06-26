@@ -149,6 +149,7 @@
     <!-- Weekly rate card -->
     <string name="trends_weekly_rate">RYTHME HEBDO</string>
     <string name="trends_weekly_rate_info">Votre rythme hebdomadaire indique la vitesse de changement de votre poids. Un rythme sain est de 0,25 à 1,0 kg par semaine.</string>
+    <string name="trends_weekly_rate_pending_info">Votre rythme hebdomadaire apparaît une fois qu\'Ember a assez de mesures. Enregistrez-en %1$d de plus pour le voir.</string>
     <string name="trends_rate_zone_too_slow">TROP LENT</string>
     <string name="trends_rate_zone_healthy">EN BONNE VOIE</string>
     <string name="trends_rate_zone_aggressive">AGRESSIF</string>

@@ -32,6 +32,7 @@ internal fun WeeklyRateCard(
     modifier: Modifier = Modifier,
     weeklyRateKg: Double?,
     rateZone: WeeklyRateZone,
+    measurementsNeeded: Int? = null,
 ) {
     var showInfo by remember { mutableStateOf(false) }
     if (showInfo) {
@@ -39,6 +40,15 @@ internal fun WeeklyRateCard(
             title = appString(R.string.trends_weekly_rate),
             text = appString(R.string.trends_weekly_rate_info),
             onDismiss = { showInfo = false },
+        )
+    }
+
+    var showPendingInfo by remember { mutableStateOf(false) }
+    if (showPendingInfo) {
+        InfoDialog(
+            title = appString(R.string.trends_weekly_rate),
+            text = appString(R.string.trends_weekly_rate_pending_info, measurementsNeeded ?: 1),
+            onDismiss = { showPendingInfo = false },
         )
     }
 
@@ -51,7 +61,14 @@ internal fun WeeklyRateCard(
         WeeklyRateZone.Unavailable -> ""
     }
     StatCardSurface(modifier = modifier) {
-        CardLabelRow(label = appString(R.string.trends_weekly_rate), onInfo = { showInfo = true }, helpKey = "trends_weekly_rate")
+        val pending = weeklyRateKg == null
+        CardLabelRow(
+            label = appString(R.string.trends_weekly_rate),
+            onInfo = { showInfo = true },
+            helpKey = "trends_weekly_rate",
+            onPending = if (pending) ({ showPendingInfo = true }) else null,
+            pendingHelpKey = if (pending) "trends_weekly_rate_pending" else null,
+        )
         Spacer(Modifier.weight(1f))
         RateZoneBar(
             absRateKg = weeklyRateKg?.let { abs(it) },
