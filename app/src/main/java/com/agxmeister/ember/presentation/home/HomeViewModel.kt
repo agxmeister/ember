@@ -12,6 +12,7 @@ import com.agxmeister.ember.domain.repository.UserPreferencesRepository
 import com.agxmeister.ember.domain.usecase.AddMeasurementUseCase
 import com.agxmeister.ember.domain.usecase.GetCurrentClusterUseCase
 import com.agxmeister.ember.domain.usecase.GetDailyCandlesUseCase
+import com.agxmeister.ember.domain.usecase.GetLoggingCoverageUseCase
 import com.agxmeister.ember.domain.usecase.HasRecentMeasurementUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -44,6 +45,7 @@ class HomeViewModel @Inject constructor(
     private val addMeasurement: AddMeasurementUseCase,
     private val hasRecentMeasurement: HasRecentMeasurementUseCase,
     private val getDailyCandles: GetDailyCandlesUseCase,
+    private val getLoggingCoverage: GetLoggingCoverageUseCase,
     private val preferencesRepository: UserPreferencesRepository,
     private val analytics: AnalyticsTracker,
 ) : ViewModel() {
@@ -88,10 +90,12 @@ class HomeViewModel @Inject constructor(
     fun save(weightKg: Double) {
         viewModelScope.launch {
             addMeasurement(weightKg)
+            val frequency = preferencesRepository.weighingFrequency.first()
             analytics.track(
                 AnalyticsEvent.WeighInLogged(
-                    frequency = preferencesRepository.weighingFrequency.first(),
+                    frequency = frequency,
                     clusteringEnabled = preferencesRepository.clusteringEnabled.first(),
+                    loggingCoverage = getLoggingCoverage(frequency),
                 )
             )
         }
