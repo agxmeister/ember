@@ -49,10 +49,10 @@ class UserPreferencesDataStore @Inject constructor(
     private val goalStartDateKey = stringPreferencesKey("goal_start_date")
     private val regressionIntervalDaysKey = intPreferencesKey("regression_interval_days")
     private val minClusterSizeKey = intPreferencesKey("min_cluster_size")
-    private val streakWindowKey = intPreferencesKey("streak_trend_window")
+    private val streakWindowKey = intPreferencesKey("streak_window")
     private val scoreWindowKey = intPreferencesKey("score_window")
     private val volatilityWindowKey = intPreferencesKey("volatility_window")
-    private val staleCutoffPeriodsKey = intPreferencesKey("trend_stale_periods")
+    private val staleCutoffPeriodsKey = intPreferencesKey("stale_cutoff_periods")
 
     val isOnboardingCompleted: Flow<Boolean> =
         context.dataStore.data.map { it[onboardingCompletedKey] ?: false }
