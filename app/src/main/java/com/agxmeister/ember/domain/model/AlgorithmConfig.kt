@@ -6,5 +6,5 @@ data class AlgorithmConfig(
     val streakWindow: Int = 14,
     val scoreWindow: Int = 14,
     val volatilityWindow: Int = 14,
-    val trendStalePeriods: Int = 7,
+    val staleCutoffPeriods: Int = 7,
 )

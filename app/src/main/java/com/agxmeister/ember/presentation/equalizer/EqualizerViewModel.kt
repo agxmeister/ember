@@ -247,9 +247,9 @@ class EqualizerViewModel @Inject constructor(
                 EqualizerDayData(date = weekStart, weightKg = weeklyMap[weekStart]?.median)
             }
 
-            trendLine = computeTrendLine(days, maxStalePeriods = algorithmConfig.trendStalePeriods)
+            trendLine = computeTrendLine(days, maxStalePeriods = algorithmConfig.staleCutoffPeriods)
             val lastMeasuredWeekIdx = days.indexOfLast { it.weightKg != null }
-            val hasRecentWeek = lastMeasuredWeekIdx >= days.size - 7
+            val hasRecentWeek = lastMeasuredWeekIdx >= days.size - algorithmConfig.staleCutoffPeriods
             val rateWeekWindowStart = currentWeekStart.minus(DatePeriod(days = 27 * 7))
             val rateWeekWindow = (0..27).map { offset ->
                 val weekStart = rateWeekWindowStart.plus(DatePeriod(days = offset * 7))
@@ -310,9 +310,9 @@ class EqualizerViewModel @Inject constructor(
                 EqualizerDayData(date = date, weightKg = candle?.close, rawWeightKg = candle?.rawClose)
             }
 
-            trendLine = computeTrendLine(days, maxStalePeriods = algorithmConfig.trendStalePeriods)
+            trendLine = computeTrendLine(days, maxStalePeriods = algorithmConfig.staleCutoffPeriods)
             val lastMeasuredDayIdx = days.indexOfLast { it.weightKg != null }
-            val hasRecentDay = lastMeasuredDayIdx >= days.size - 7
+            val hasRecentDay = lastMeasuredDayIdx >= days.size - algorithmConfig.staleCutoffPeriods
             val regressionDays = algorithmConfig.regressionIntervalDays
             val rateDayWindowStart = todayDate.minus(DatePeriod(days = regressionDays - 1))
             val rateDayWindow = (0 until regressionDays).map { offset ->

@@ -68,14 +68,14 @@
     <string name="settings_target_weight">Peso objetivo</string>
     <string name="settings_goal_start_date">Fecha de inicio</string>
     <string name="settings_approximation">Aproximación</string>
-    <string name="settings_approximation_summary">Regresión: %1$d días · Clúster mín.: %2$d · Ventana de racha: %3$d · Ventana de puntuación: %4$d · Ventana de volatilidad: %5$d · Umbral de tendencia: %6$d</string>
+    <string name="settings_approximation_summary">Regresión: %1$d días · Clúster mín.: %2$d · Ventana de racha: %3$d · Ventana de puntuación: %4$d · Ventana de volatilidad: %5$d · Umbral de obsolescencia: %6$d</string>
     <string name="settings_adjust_approximation">Ajustar aproximación</string>
     <string name="settings_regression_interval">Intervalo de regresión</string>
     <string name="settings_min_cluster_size">Tamaño mínimo del clúster</string>
     <string name="settings_streak_window">Ventana de racha</string>
     <string name="settings_score_window">Ventana de puntuación</string>
     <string name="settings_volatility_window">Ventana de volatilidad</string>
-    <string name="settings_trend_stale_window">Umbral de tendencia (períodos)</string>
+    <string name="settings_stale_cutoff_window">Umbral de obsolescencia (períodos)</string>
     <string name="label_days">días</string>
     <string name="settings_start_over">Definir un nuevo objetivo</string>
     <string name="settings_start_over_with_import">Definir un nuevo objetivo con importación de datos</string>

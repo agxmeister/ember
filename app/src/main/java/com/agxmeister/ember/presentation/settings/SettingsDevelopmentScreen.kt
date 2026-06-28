@@ -68,7 +68,7 @@ fun SettingsDevelopmentScreen(
                 algorithmConfig.streakWindow,
                 algorithmConfig.scoreWindow,
                 algorithmConfig.volatilityWindow,
-                algorithmConfig.trendStalePeriods,
+                algorithmConfig.staleCutoffPeriods,
             ),
             onClick = { showApproximationDialog = true },
         )
@@ -79,19 +79,19 @@ fun SettingsDevelopmentScreen(
             var streakText by remember { mutableStateOf(algorithmConfig.streakWindow.toString()) }
             var scoreText by remember { mutableStateOf(algorithmConfig.scoreWindow.toString()) }
             var volatilityText by remember { mutableStateOf(algorithmConfig.volatilityWindow.toString()) }
-            var trendStaleText by remember { mutableStateOf(algorithmConfig.trendStalePeriods.toString()) }
+            var staleCutoffText by remember { mutableStateOf(algorithmConfig.staleCutoffPeriods.toString()) }
             val regressionVal = regressionText.toIntOrNull()
             val clusterVal = clusterText.toIntOrNull()
             val streakVal = streakText.toIntOrNull()
             val scoreVal = scoreText.toIntOrNull()
             val volatilityVal = volatilityText.toIntOrNull()
-            val trendStaleVal = trendStaleText.toIntOrNull()
+            val staleCutoffVal = staleCutoffText.toIntOrNull()
             val isValid = regressionVal != null && regressionVal in 7..365 &&
                 clusterVal != null && clusterVal in 1..365 &&
                 streakVal != null && streakVal in 2..365 &&
                 scoreVal != null && scoreVal in 1..365 &&
                 volatilityVal != null && volatilityVal in 2..365 &&
-                trendStaleVal != null && trendStaleVal in 1..14
+                staleCutoffVal != null && staleCutoffVal in 1..14
             val borderColor = MaterialTheme.colorScheme.outline
             AlertDialog(
                 onDismissRequest = { showApproximationDialog = false },
@@ -228,14 +228,14 @@ fun SettingsDevelopmentScreen(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            appString(R.string.settings_trend_stale_window),
+                            appString(R.string.settings_stale_cutoff_window),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         BasicTextField(
-                            value = trendStaleText,
-                            onValueChange = { if (it.length <= 3 && it.all { c -> c.isDigit() }) trendStaleText = it },
+                            value = staleCutoffText,
+                            onValueChange = { if (it.length <= 3 && it.all { c -> c.isDigit() }) staleCutoffText = it },
                             textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             singleLine = true,
@@ -263,7 +263,7 @@ fun SettingsDevelopmentScreen(
                                     streakWindow = streakVal!!,
                                     scoreWindow = scoreVal!!,
                                     volatilityWindow = volatilityVal!!,
-                                    trendStalePeriods = trendStaleVal!!,
+                                    staleCutoffPeriods = staleCutoffVal!!,
                                 )
                             )
                             showApproximationDialog = false

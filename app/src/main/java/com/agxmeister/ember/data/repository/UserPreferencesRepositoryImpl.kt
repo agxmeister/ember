@@ -40,7 +40,7 @@ class UserPreferencesRepositoryImpl @Inject constructor(
         dataStore.streakWindow,
         dataStore.scoreWindow,
         dataStore.volatilityWindow,
-        dataStore.trendStalePeriods,
+        dataStore.staleCutoffPeriods,
     ) { values ->
         AlgorithmConfig(values[0], values[1], values[2], values[3], values[4], values[5])
     }
@@ -133,7 +133,7 @@ class UserPreferencesRepositoryImpl @Inject constructor(
         dataStore.setStreakWindow(config.streakWindow)
         dataStore.setScoreWindow(config.scoreWindow)
         dataStore.setVolatilityWindow(config.volatilityWindow)
-        dataStore.setTrendStalePeriods(config.trendStalePeriods)
+        dataStore.setStaleCutoffPeriods(config.staleCutoffPeriods)
     }
 
     override suspend fun resetOnboarding() {

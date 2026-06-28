@@ -68,14 +68,14 @@
     <string name="settings_target_weight">Peso obiettivo</string>
     <string name="settings_goal_start_date">Data di inizio</string>
     <string name="settings_approximation">Approssimazione</string>
-    <string name="settings_approximation_summary">Regressione: %1$d giorni · Cluster min.: %2$d · Finestra serie: %3$d · Finestra punteggio: %4$d · Finestra volatilità: %5$d · Soglia tendenza: %6$d</string>
+    <string name="settings_approximation_summary">Regressione: %1$d giorni · Cluster min.: %2$d · Finestra serie: %3$d · Finestra punteggio: %4$d · Finestra volatilità: %5$d · Soglia di obsolescenza: %6$d</string>
     <string name="settings_adjust_approximation">Regola approssimazione</string>
     <string name="settings_regression_interval">Intervallo di regressione</string>
     <string name="settings_min_cluster_size">Dimensione minima del cluster</string>
     <string name="settings_streak_window">Finestra serie</string>
     <string name="settings_score_window">Finestra punteggio</string>
     <string name="settings_volatility_window">Finestra volatilità</string>
-    <string name="settings_trend_stale_window">Soglia tendenza (periodi)</string>
+    <string name="settings_stale_cutoff_window">Soglia di obsolescenza (periodi)</string>
     <string name="label_days">giorni</string>
     <string name="settings_start_over">Definisci un nuovo obiettivo</string>
     <string name="settings_start_over_with_import">Definisci un nuovo obiettivo con importazione dati</string>

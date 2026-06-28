@@ -68,14 +68,14 @@
     <string name="settings_target_weight">Target weight</string>
     <string name="settings_goal_start_date">Goal start date</string>
     <string name="settings_approximation">Approximation</string>
-    <string name="settings_approximation_summary">Regression: %1$d days · Min cluster: %2$d · Streak window: %3$d · Score window: %4$d · Volatility window: %5$d · Trend cutoff: %6$d</string>
+    <string name="settings_approximation_summary">Regression: %1$d days · Min cluster: %2$d · Streak window: %3$d · Score window: %4$d · Volatility window: %5$d · Staleness cutoff: %6$d</string>
     <string name="settings_adjust_approximation">Adjust approximation</string>
     <string name="settings_regression_interval">Regression interval</string>
     <string name="settings_min_cluster_size">Min cluster size</string>
     <string name="settings_streak_window">Streak window</string>
     <string name="settings_score_window">Score window</string>
     <string name="settings_volatility_window">Volatility window</string>
-    <string name="settings_trend_stale_window">Trend cutoff (periods)</string>
+    <string name="settings_stale_cutoff_window">Staleness cutoff (periods)</string>
     <string name="label_days">days</string>
     <string name="settings_start_over">Define a new goal</string>
     <string name="settings_start_over_with_import">Define a new goal with data import</string>
