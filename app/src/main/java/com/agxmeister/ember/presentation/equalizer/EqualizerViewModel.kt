@@ -247,7 +247,7 @@ class EqualizerViewModel @Inject constructor(
                 EqualizerDayData(date = weekStart, weightKg = weeklyMap[weekStart]?.median)
             }
 
-            trendLine = computeTrendLine(days)
+            trendLine = computeTrendLine(days, maxStalePeriods = algorithmConfig.trendStalePeriods)
             val lastMeasuredWeekIdx = days.indexOfLast { it.weightKg != null }
             val hasRecentWeek = lastMeasuredWeekIdx >= days.size - 7
             val rateWeekWindowStart = currentWeekStart.minus(DatePeriod(days = 27 * 7))
@@ -310,7 +310,7 @@ class EqualizerViewModel @Inject constructor(
                 EqualizerDayData(date = date, weightKg = candle?.close, rawWeightKg = candle?.rawClose)
             }
 
-            trendLine = computeTrendLine(days)
+            trendLine = computeTrendLine(days, maxStalePeriods = algorithmConfig.trendStalePeriods)
             val lastMeasuredDayIdx = days.indexOfLast { it.weightKg != null }
             val hasRecentDay = lastMeasuredDayIdx >= days.size - 7
             val regressionDays = algorithmConfig.regressionIntervalDays
@@ -409,11 +409,16 @@ class EqualizerViewModel @Inject constructor(
     )
 }
 
-private fun computeTrendLine(days: List<EqualizerDayData>, minPoints: Int = 2): TrendLineData? {
+private fun computeTrendLine(
+    days: List<EqualizerDayData>,
+    minPoints: Int = 2,
+    maxStalePeriods: Int? = null,
+): TrendLineData? {
     val measured = days.mapIndexedNotNull { idx, day ->
         day.weightKg?.let { Pair(idx.toDouble(), it) }
     }
     if (measured.size < minPoints) return null
+    if (maxStalePeriods != null && measured.last().first.toInt() < days.size - maxStalePeriods) return null
     val xs = measured.map { it.first }
     val ys = measured.map { it.second }
     val (slope, intercept) = linearRegression(xs, ys) ?: return null

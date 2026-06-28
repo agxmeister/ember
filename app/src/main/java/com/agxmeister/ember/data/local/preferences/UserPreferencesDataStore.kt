@@ -52,6 +52,7 @@ class UserPreferencesDataStore @Inject constructor(
     private val streakTrendWindowKey = intPreferencesKey("streak_trend_window")
     private val scoreWindowKey = intPreferencesKey("score_window")
     private val volatilityWindowKey = intPreferencesKey("volatility_window")
+    private val trendStalePeriodsKey = intPreferencesKey("trend_stale_periods")
 
     val isOnboardingCompleted: Flow<Boolean> =
         context.dataStore.data.map { it[onboardingCompletedKey] ?: false }
@@ -151,6 +152,9 @@ class UserPreferencesDataStore @Inject constructor(
 
     val volatilityWindow: Flow<Int> =
         context.dataStore.data.map { it[volatilityWindowKey] ?: 14 }
+
+    val trendStalePeriods: Flow<Int> =
+        context.dataStore.data.map { it[trendStalePeriodsKey] ?: 7 }
 
     suspend fun saveOnboardingData(
         weightKg: Double,
@@ -288,6 +292,10 @@ class UserPreferencesDataStore @Inject constructor(
 
     suspend fun setStreakTrendWindow(window: Int) {
         context.dataStore.edit { it[streakTrendWindowKey] = window }
+    }
+
+    suspend fun setTrendStalePeriods(periods: Int) {
+        context.dataStore.edit { it[trendStalePeriodsKey] = periods }
     }
 
     suspend fun setVolatilityWindow(window: Int) {
