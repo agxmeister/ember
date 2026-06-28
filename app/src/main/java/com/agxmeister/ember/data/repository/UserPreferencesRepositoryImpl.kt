@@ -37,7 +37,7 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     override val algorithmConfig: Flow<AlgorithmConfig> = combine(
         dataStore.regressionIntervalDays,
         dataStore.minClusterSize,
-        dataStore.streakTrendWindow,
+        dataStore.streakWindow,
         dataStore.scoreWindow,
         dataStore.volatilityWindow,
         dataStore.trendStalePeriods,
@@ -130,7 +130,7 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     override suspend fun setAlgorithmConfig(config: AlgorithmConfig) {
         dataStore.setRegressionIntervalDays(config.regressionIntervalDays)
         dataStore.setMinClusterSize(config.minClusterSize)
-        dataStore.setStreakTrendWindow(config.streakTrendWindow)
+        dataStore.setStreakWindow(config.streakWindow)
         dataStore.setScoreWindow(config.scoreWindow)
         dataStore.setVolatilityWindow(config.volatilityWindow)
         dataStore.setTrendStalePeriods(config.trendStalePeriods)

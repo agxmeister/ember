@@ -67,7 +67,7 @@
     <string name="settings_adjust_approximation">Ajuster l\'approximation</string>
     <string name="settings_regression_interval">Intervalle de régression</string>
     <string name="settings_min_cluster_size">Taille minimale du cluster</string>
-    <string name="settings_streak_window">Fenêtre de tendance de série</string>
+    <string name="settings_streak_window">Fenêtre de série</string>
     <string name="settings_score_window">Fenêtre de score</string>
     <string name="settings_volatility_window">Fenêtre de volatilité</string>
     <string name="settings_trend_stale_window">Seuil de tendance (périodes)</string>

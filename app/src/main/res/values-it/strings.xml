@@ -72,7 +72,7 @@
     <string name="settings_adjust_approximation">Regola approssimazione</string>
     <string name="settings_regression_interval">Intervallo di regressione</string>
     <string name="settings_min_cluster_size">Dimensione minima del cluster</string>
-    <string name="settings_streak_window">Finestra tendenza serie</string>
+    <string name="settings_streak_window">Finestra serie</string>
     <string name="settings_score_window">Finestra punteggio</string>
     <string name="settings_volatility_window">Finestra volatilità</string>
     <string name="settings_trend_stale_window">Soglia tendenza (periodi)</string>

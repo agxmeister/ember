@@ -72,7 +72,7 @@
     <string name="settings_adjust_approximation">Adjust approximation</string>
     <string name="settings_regression_interval">Regression interval</string>
     <string name="settings_min_cluster_size">Min cluster size</string>
-    <string name="settings_streak_window">Streak trend window</string>
+    <string name="settings_streak_window">Streak window</string>
     <string name="settings_score_window">Score window</string>
     <string name="settings_volatility_window">Volatility window</string>
     <string name="settings_trend_stale_window">Trend cutoff (periods)</string>

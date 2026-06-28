@@ -65,7 +65,7 @@ fun SettingsDevelopmentScreen(
                 R.string.settings_approximation_summary,
                 algorithmConfig.regressionIntervalDays,
                 algorithmConfig.minClusterSize,
-                algorithmConfig.streakTrendWindow,
+                algorithmConfig.streakWindow,
                 algorithmConfig.scoreWindow,
                 algorithmConfig.volatilityWindow,
                 algorithmConfig.trendStalePeriods,
@@ -76,7 +76,7 @@ fun SettingsDevelopmentScreen(
         if (showApproximationDialog) {
             var regressionText by remember { mutableStateOf(algorithmConfig.regressionIntervalDays.toString()) }
             var clusterText by remember { mutableStateOf(algorithmConfig.minClusterSize.toString()) }
-            var streakText by remember { mutableStateOf(algorithmConfig.streakTrendWindow.toString()) }
+            var streakText by remember { mutableStateOf(algorithmConfig.streakWindow.toString()) }
             var scoreText by remember { mutableStateOf(algorithmConfig.scoreWindow.toString()) }
             var volatilityText by remember { mutableStateOf(algorithmConfig.volatilityWindow.toString()) }
             var trendStaleText by remember { mutableStateOf(algorithmConfig.trendStalePeriods.toString()) }
@@ -260,7 +260,7 @@ fun SettingsDevelopmentScreen(
                                 AlgorithmConfig(
                                     regressionIntervalDays = regressionVal!!,
                                     minClusterSize = clusterVal!!,
-                                    streakTrendWindow = streakVal!!,
+                                    streakWindow = streakVal!!,
                                     scoreWindow = scoreVal!!,
                                     volatilityWindow = volatilityVal!!,
                                     trendStalePeriods = trendStaleVal!!,

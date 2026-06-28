@@ -49,7 +49,7 @@ class UserPreferencesDataStore @Inject constructor(
     private val goalStartDateKey = stringPreferencesKey("goal_start_date")
     private val regressionIntervalDaysKey = intPreferencesKey("regression_interval_days")
     private val minClusterSizeKey = intPreferencesKey("min_cluster_size")
-    private val streakTrendWindowKey = intPreferencesKey("streak_trend_window")
+    private val streakWindowKey = intPreferencesKey("streak_trend_window")
     private val scoreWindowKey = intPreferencesKey("score_window")
     private val volatilityWindowKey = intPreferencesKey("volatility_window")
     private val trendStalePeriodsKey = intPreferencesKey("trend_stale_periods")
@@ -144,8 +144,8 @@ class UserPreferencesDataStore @Inject constructor(
     val minClusterSize: Flow<Int> =
         context.dataStore.data.map { it[minClusterSizeKey] ?: 14 }
 
-    val streakTrendWindow: Flow<Int> =
-        context.dataStore.data.map { it[streakTrendWindowKey] ?: 14 }
+    val streakWindow: Flow<Int> =
+        context.dataStore.data.map { it[streakWindowKey] ?: 14 }
 
     val scoreWindow: Flow<Int> =
         context.dataStore.data.map { it[scoreWindowKey] ?: 14 }
@@ -290,8 +290,8 @@ class UserPreferencesDataStore @Inject constructor(
         context.dataStore.edit { it[scoreWindowKey] = window }
     }
 
-    suspend fun setStreakTrendWindow(window: Int) {
-        context.dataStore.edit { it[streakTrendWindowKey] = window }
+    suspend fun setStreakWindow(window: Int) {
+        context.dataStore.edit { it[streakWindowKey] = window }
     }
 
     suspend fun setTrendStalePeriods(periods: Int) {

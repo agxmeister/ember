@@ -265,8 +265,8 @@ class EqualizerViewModel @Inject constructor(
             var w = weeklyMap.keys.filter { it <= currentWeekStart }.maxOrNull() ?: currentWeekStart
             while (true) {
                 if (!weeklyMap.containsKey(w)) break
-                val wStart = w.minus(DatePeriod(days = (algorithmConfig.streakTrendWindow - 1) * 7))
-                val window = (0 until algorithmConfig.streakTrendWindow).map { offset ->
+                val wStart = w.minus(DatePeriod(days = (algorithmConfig.streakWindow - 1) * 7))
+                val window = (0 until algorithmConfig.streakWindow).map { offset ->
                     val weekStart = wStart.plus(DatePeriod(days = offset * 7))
                     EqualizerDayData(date = weekStart, weightKg = weeklyMap[weekStart]?.median)
                 }
@@ -329,8 +329,8 @@ class EqualizerViewModel @Inject constructor(
             var d = candleMap.keys.filter { it <= todayDate }.maxOrNull() ?: todayDate
             while (true) {
                 if (!candleMap.containsKey(d)) break
-                val wStart = d.minus(DatePeriod(days = algorithmConfig.streakTrendWindow - 1))
-                val window = (0 until algorithmConfig.streakTrendWindow).map { offset ->
+                val wStart = d.minus(DatePeriod(days = algorithmConfig.streakWindow - 1))
+                val window = (0 until algorithmConfig.streakWindow).map { offset ->
                     val date = wStart.plus(DatePeriod(days = offset))
                     EqualizerDayData(date = date, weightKg = candleMap[date]?.close)
                 }
