@@ -63,7 +63,7 @@
     <string name="settings_target_weight">Poids cible</string>
     <string name="settings_goal_start_date">Date de début</string>
     <string name="settings_approximation">Approximation</string>
-    <string name="settings_approximation_summary">Régression : %1$d jours · Cluster min. : %2$d · Fenêtre série : %3$d · Fenêtre score : %4$d · Fenêtre volatilité : %5$d · Seuil d\'obsolescence : %6$d</string>
+    <string name="settings_approximation_summary">Régression : %1$d jours · Cluster min. : %2$d · Fenêtre série : %3$d · Fenêtre score : %4$d · Fenêtre volatilité : %5$d · Seuil d\'obsolescence : %6$d · Écart max. : %7$d</string>
     <string name="settings_adjust_approximation">Ajuster l\'approximation</string>
     <string name="settings_regression_interval">Intervalle de régression</string>
     <string name="settings_min_cluster_size">Taille minimale du cluster</string>
@@ -71,6 +71,7 @@
     <string name="settings_score_window">Fenêtre de score</string>
     <string name="settings_volatility_window">Fenêtre de volatilité</string>
     <string name="settings_stale_cutoff_window">Seuil d\'obsolescence (périodes)</string>
+    <string name="settings_max_gap">Écart max. (périodes)</string>
     <string name="label_days">jours</string>
 
     <string name="onboarding_welcome">Bienvenue sur Ember</string>

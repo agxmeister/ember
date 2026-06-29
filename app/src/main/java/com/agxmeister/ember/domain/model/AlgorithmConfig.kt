@@ -7,4 +7,5 @@ data class AlgorithmConfig(
     val scoreWindow: Int = 14,
     val volatilityWindow: Int = 14,
     val staleCutoffPeriods: Int = 7,
+    val maxGapDays: Int = 7,
 )

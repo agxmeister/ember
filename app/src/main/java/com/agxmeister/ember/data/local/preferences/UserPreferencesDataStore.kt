@@ -53,6 +53,7 @@ class UserPreferencesDataStore @Inject constructor(
     private val scoreWindowKey = intPreferencesKey("score_window")
     private val volatilityWindowKey = intPreferencesKey("volatility_window")
     private val staleCutoffPeriodsKey = intPreferencesKey("stale_cutoff_periods")
+    private val maxGapDaysKey = intPreferencesKey("max_gap_days")
 
     val isOnboardingCompleted: Flow<Boolean> =
         context.dataStore.data.map { it[onboardingCompletedKey] ?: false }
@@ -155,6 +156,9 @@ class UserPreferencesDataStore @Inject constructor(
 
     val staleCutoffPeriods: Flow<Int> =
         context.dataStore.data.map { it[staleCutoffPeriodsKey] ?: 7 }
+
+    val maxGapDays: Flow<Int> =
+        context.dataStore.data.map { it[maxGapDaysKey] ?: 7 }
 
     suspend fun saveOnboardingData(
         weightKg: Double,
@@ -296,6 +300,10 @@ class UserPreferencesDataStore @Inject constructor(
 
     suspend fun setStaleCutoffPeriods(periods: Int) {
         context.dataStore.edit { it[staleCutoffPeriodsKey] = periods }
+    }
+
+    suspend fun setMaxGapDays(days: Int) {
+        context.dataStore.edit { it[maxGapDaysKey] = days }
     }
 
     suspend fun setVolatilityWindow(window: Int) {
