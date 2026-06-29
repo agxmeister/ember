@@ -109,6 +109,7 @@
     <string name="trends_tgt_prefix">ZIEL</string>
     <string name="trends_delta_target">Δ TREND</string>
     <string name="trends_trend_info">Der Trend zeigt, wie schnell sich dein Durchschnittsgewicht pro Woche ändert. ▼ bedeutet fallend, ▲ bedeutet steigend.</string>
+    <string name="trends_trend_gap_info">Eine Lücke in deinen Messungen war zu groß, um sie zu überbrücken, daher verwendet Ember nur deine jüngste Messreihe. Erfasse %1$d weitere, um ihn zurückzuholen.</string>
     <string name="trends_tap_to_edit">ZUM BEARBEITEN TIPPEN</string>
     <string name="trends_tap_again_to_clear">NOCHMAL TIPPEN ZUM ENTFERNEN</string>
     <string name="trends_tap_a_day">TAG ANTIPPEN ZUM ÖFFNEN</string>

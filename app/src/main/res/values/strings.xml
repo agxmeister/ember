@@ -120,6 +120,7 @@
     <string name="trends_delta_target">Δ TREND</string>
     <string name="trends_trend_pending_info">Your weekly trend appears once Ember has enough measurements. Log %1$d more to see how fast you\'re moving.</string>
     <string name="trends_trend_info">The trend shows how fast your average weight is changing each week. ▼ means it\'s falling, ▲ means it\'s rising.</string>
+    <string name="trends_trend_gap_info">A gap in your readings was too large to bridge, so Ember is using only your most recent run. Log %1$d more to bring it back.</string>
     <string name="trends_tap_to_edit">TAP TO EDIT</string>
     <string name="trends_tap_again_to_clear">TAP AGAIN TO CLEAR</string>
     <string name="trends_tap_a_day">TAP A DAY TO OPEN</string>

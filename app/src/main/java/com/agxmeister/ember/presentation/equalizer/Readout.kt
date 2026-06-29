@@ -44,7 +44,7 @@ internal fun Readout(
     label: String,
     weeklyRateKg: Double?,
     goalIsLoss: Boolean,
-    trendMeasurementsNeeded: Int?,
+    trendPending: TrendPending?,
     displayColor: Color,
     weightUnit: WeightUnit,
     isFocused: Boolean,
@@ -69,7 +69,7 @@ internal fun Readout(
             label = label,
             weeklyRateKg = weeklyRateKg,
             goalIsLoss = goalIsLoss,
-            trendMeasurementsNeeded = trendMeasurementsNeeded,
+            trendPending = trendPending,
             displayColor = displayColor,
             weightUnit = weightUnit,
             isFocused = isFocused,
@@ -103,7 +103,7 @@ private fun WeightDisplay(
     label: String,
     weeklyRateKg: Double?,
     goalIsLoss: Boolean,
-    trendMeasurementsNeeded: Int?,
+    trendPending: TrendPending?,
     displayColor: Color,
     weightUnit: WeightUnit,
     isFocused: Boolean,
@@ -137,10 +137,10 @@ private fun WeightDisplay(
     )
 
     var showTrendInfo by remember { mutableStateOf(false) }
-    if (showTrendInfo && trendMeasurementsNeeded != null) {
+    if (showTrendInfo && trendPending != null) {
         InfoDialog(
             title = appString(R.string.trends_delta_target),
-            text = appString(R.string.trends_trend_pending_info, trendMeasurementsNeeded),
+            text = trendPendingText(trendPending, R.string.trends_trend_pending_info),
             onDismiss = { showTrendInfo = false },
         )
     }
@@ -209,7 +209,7 @@ private fun WeightDisplay(
             }
             Row(verticalAlignment = Alignment.Bottom) {
                 val trendGlow = Shadow(color = trendColor.copy(alpha = 0.65f), blurRadius = 22f)
-                if (trendMeasurementsNeeded != null) {
+                if (trendPending != null) {
                     InfoIcon(
                         onClick = { showTrendInfo = true },
                         helpKey = "trends_trend_pending",

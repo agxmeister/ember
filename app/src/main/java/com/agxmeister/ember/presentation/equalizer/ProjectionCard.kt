@@ -45,7 +45,7 @@ internal fun ProjectionCard(
     projection: ProjectionResult,
     targetKg: Double,
     weightUnit: WeightUnit,
-    measurementsNeeded: Int? = null,
+    trendPending: TrendPending? = null,
 ) {
     val onSurface = MaterialTheme.colorScheme.onSurface
     var showInfo by remember { mutableStateOf(false) }
@@ -57,10 +57,10 @@ internal fun ProjectionCard(
         )
     }
     var showPendingInfo by remember { mutableStateOf(false) }
-    if (showPendingInfo && measurementsNeeded != null) {
+    if (showPendingInfo && trendPending != null) {
         InfoDialog(
             title = appString(R.string.trends_projected_eta),
-            text = appString(R.string.trends_eta_pending_info, measurementsNeeded),
+            text = trendPendingText(trendPending, R.string.trends_eta_pending_info),
             onDismiss = { showPendingInfo = false },
         )
     }
@@ -71,7 +71,7 @@ internal fun ProjectionCard(
         when (projection) {
             is ProjectionResult.Eta -> EtaContent(Modifier.weight(1f), projection, onSurface)
             ProjectionResult.Reached -> ReachedContent()
-            ProjectionResult.Unavailable.NotEnoughData -> if (measurementsNeeded != null) {
+            ProjectionResult.Unavailable.NotEnoughData -> if (trendPending != null) {
                 PendingContent(Modifier.weight(1f), onSurface, onInfo = { showPendingInfo = true })
             } else {
                 UnavailableContent(projection, onSurface)

@@ -46,6 +46,12 @@ data class EqualizerDayData(
 
 data class TrendLineData(val startKg: Double, val endKg: Double, val diffKg: Double)
 
+sealed interface TrendPending {
+    val measurementsNeeded: Int
+    data class NotEnoughData(override val measurementsNeeded: Int) : TrendPending
+    data class GapTooBig(override val measurementsNeeded: Int) : TrendPending
+}
+
 sealed interface ProjectionResult {
     data class Eta(val date: LocalDate, val daysAway: Int, val currentAvgKg: Double, val progress: Float?, val goalIsLoss: Boolean) : ProjectionResult
     data object Reached : ProjectionResult
@@ -73,7 +79,7 @@ data class EqualizerUiState(
     val trendLine: TrendLineData?,
     val weeklyRateKg: Double?,
     val goalIsLoss: Boolean,
-    val trendMeasurementsNeeded: Int?,
+    val trendPending: TrendPending?,
     val canScrollLeft: Boolean,
     val canScrollRight: Boolean,
     val projection: ProjectionResult,
@@ -222,7 +228,7 @@ class EqualizerViewModel @Inject constructor(
         val volatilityKg: Double?
         val trendLine: TrendLineData?
         val weeklyRateKg: Double?
-        val trendMeasurementsNeeded: Int?
+        val trendPending: TrendPending?
         val canScrollLeft: Boolean
         val canScrollRight: Boolean
 
@@ -255,11 +261,14 @@ class EqualizerViewModel @Inject constructor(
                 val weekStart = rateWeekWindowStart.plus(DatePeriod(days = offset * 7))
                 EqualizerDayData(date = weekStart, weightKg = weeklyMap[weekStart]?.median)
             }
-            val measuredIn28Weeks = rateWeekWindow.count { it.weightKg != null }
-            weeklyRateKg = if (hasRecentWeek && measuredIn28Weeks >= 7) {
-                computeWeeklyRate(rateWeekWindow, indexStepDays = 7)
+            val rateWeekSegment = mostRecentCleanSegment(rateWeekWindow, algorithmConfig.maxGapDays)
+            val measuredInWeekSegment = rateWeekSegment.count { it.weightKg != null }
+            weeklyRateKg = if (hasRecentWeek && measuredInWeekSegment >= MIN_MEASURED_FOR_RATE) {
+                computeWeeklyRate(rateWeekSegment, indexStepDays = 7, maxGap = algorithmConfig.maxGapDays)
             } else null
-            trendMeasurementsNeeded = if (weeklyRateKg == null) (7 - measuredIn28Weeks).coerceAtLeast(1) else null
+            trendPending = if (weeklyRateKg == null) {
+                computeTrendPending(rateWeekWindow, measuredInWeekSegment)
+            } else null
 
             var s = 0
             var w = weeklyMap.keys.filter { it <= currentWeekStart }.maxOrNull() ?: currentWeekStart
@@ -284,7 +293,7 @@ class EqualizerViewModel @Inject constructor(
                 val weekStart = scoreStart.plus(DatePeriod(days = offset * 7))
                 EqualizerDayData(date = weekStart, weightKg = weeklyMap[weekStart]?.median)
             }
-            score = computeScore(scoreWeeks, indexStepDays = 7, streak = streak, goalIsLoss = goalIsLoss)
+            score = computeScore(scoreWeeks, indexStepDays = 7, streak = streak, goalIsLoss = goalIsLoss, maxGap = algorithmConfig.maxGapDays)
 
             val volStart = days.last().date.minus(DatePeriod(days = (algorithmConfig.volatilityWindow - 1) * 7))
             val volWeeks = (0 until algorithmConfig.volatilityWindow).map { offset ->
@@ -319,11 +328,14 @@ class EqualizerViewModel @Inject constructor(
                 val date = rateDayWindowStart.plus(DatePeriod(days = offset))
                 EqualizerDayData(date = date, weightKg = candleMap[date]?.close)
             }
-            val measuredInRateWindow = rateDayWindow.count { it.weightKg != null }
-            weeklyRateKg = if (hasRecentDay && measuredInRateWindow >= 7) {
-                computeWeeklyRate(rateDayWindow)
+            val rateDaySegment = mostRecentCleanSegment(rateDayWindow, algorithmConfig.maxGapDays)
+            val measuredInDaySegment = rateDaySegment.count { it.weightKg != null }
+            weeklyRateKg = if (hasRecentDay && measuredInDaySegment >= MIN_MEASURED_FOR_RATE) {
+                computeWeeklyRate(rateDaySegment, maxGap = algorithmConfig.maxGapDays)
             } else null
-            trendMeasurementsNeeded = if (weeklyRateKg == null) (7 - measuredInRateWindow).coerceAtLeast(1) else null
+            trendPending = if (weeklyRateKg == null) {
+                computeTrendPending(rateDayWindow, measuredInDaySegment)
+            } else null
 
             var s = 0
             var d = candleMap.keys.filter { it <= todayDate }.maxOrNull() ?: todayDate
@@ -348,7 +360,7 @@ class EqualizerViewModel @Inject constructor(
                 val date = scoreStart.plus(DatePeriod(days = offset))
                 EqualizerDayData(date = date, weightKg = candleMap[date]?.close)
             }
-            score = computeScore(scoreDays, indexStepDays = 1, streak = streak, goalIsLoss = goalIsLoss)
+            score = computeScore(scoreDays, indexStepDays = 1, streak = streak, goalIsLoss = goalIsLoss, maxGap = algorithmConfig.maxGapDays)
 
             val volStart = days.last().date.minus(DatePeriod(days = algorithmConfig.volatilityWindow - 1))
             val volDays = (0 until algorithmConfig.volatilityWindow).map { offset ->
@@ -376,7 +388,7 @@ class EqualizerViewModel @Inject constructor(
             trendLine = trendLine,
             weeklyRateKg = weeklyRateKg,
             goalIsLoss = goalIsLoss,
-            trendMeasurementsNeeded = trendMeasurementsNeeded,
+            trendPending = trendPending,
             canScrollLeft = canScrollLeft,
             canScrollRight = canScrollRight,
             projection = projection,
@@ -400,7 +412,7 @@ class EqualizerViewModel @Inject constructor(
             trendLine = null,
             weeklyRateKg = null,
             goalIsLoss = true,
-            trendMeasurementsNeeded = null,
+            trendPending = null,
             canScrollLeft = false,
             canScrollRight = false,
             projection = ProjectionResult.Unavailable.NotEnoughData,
@@ -475,6 +487,7 @@ private fun computeScore(
     indexStepDays: Int,
     streak: Int,
     goalIsLoss: Boolean,
+    maxGap: Int,
 ): Int? {
     val window = scoreDays.size
     val measuredCount = scoreDays.count { it.weightKg != null }
@@ -482,7 +495,7 @@ private fun computeScore(
 
     val factors = mutableListOf<Pair<Double, Double>>()
 
-    val momentum = computeWeeklyRate(scoreDays, indexStepDays)?.let { momentumQuality(it, goalIsLoss) }
+    val momentum = computeWeeklyRate(scoreDays, indexStepDays, maxGap)?.let { momentumQuality(it, goalIsLoss) }
     if (momentum != null) factors += 0.5 to momentum
 
     val consistency = (streak.toDouble() / window).coerceIn(0.0, 1.0)
@@ -519,15 +532,34 @@ private fun classifyWeeklyRate(weeklyRateKg: Double?, goalIsLoss: Boolean): Week
     }
 }
 
-private fun computeWeeklyRate(window: List<EqualizerDayData>, indexStepDays: Int = 1): Double? {
-    val filled = fillGaps(window) ?: return null
+private const val MIN_MEASURED_FOR_RATE = 7
+
+private fun computeWeeklyRate(window: List<EqualizerDayData>, indexStepDays: Int = 1, maxGap: Int): Double? {
+    val filled = fillGaps(window, maxGap) ?: return null
     val measured = filled.mapIndexedNotNull { idx, day -> day.weightKg?.let { idx.toDouble() to it } }
     if (measured.size < 2) return null
     val (slope, _) = linearRegression(measured.map { it.first }, measured.map { it.second }) ?: return null
     return slope * 7.0 / indexStepDays
 }
 
-private fun fillGaps(days: List<EqualizerDayData>, maxGap: Int = 5): List<EqualizerDayData>? {
+private fun computeTrendPending(rateWindow: List<EqualizerDayData>, measuredInSegment: Int): TrendPending {
+    val needed = (MIN_MEASURED_FOR_RATE - measuredInSegment).coerceAtLeast(1)
+    val hasOlderData = rateWindow.count { it.weightKg != null } > measuredInSegment
+    return if (hasOlderData) TrendPending.GapTooBig(needed) else TrendPending.NotEnoughData(needed)
+}
+
+private fun mostRecentCleanSegment(window: List<EqualizerDayData>, maxGap: Int): List<EqualizerDayData> {
+    val measuredIdx = window.mapIndexedNotNull { idx, day -> idx.takeIf { day.weightKg != null } }
+    if (measuredIdx.isEmpty()) return emptyList()
+    var start = measuredIdx.last()
+    for (k in measuredIdx.size - 1 downTo 1) {
+        if (measuredIdx[k] - measuredIdx[k - 1] - 1 > maxGap) break
+        start = measuredIdx[k - 1]
+    }
+    return window.subList(start, window.size)
+}
+
+private fun fillGaps(days: List<EqualizerDayData>, maxGap: Int): List<EqualizerDayData>? {
     val weights = days.map { it.weightKg }.toMutableList()
     val n = weights.size
     var i = 0
@@ -535,10 +567,10 @@ private fun fillGaps(days: List<EqualizerDayData>, maxGap: Int = 5): List<Equali
         if (weights[i] == null) {
             var j = i
             while (j < n && weights[j] == null) j++
-            if (j - i > maxGap) return null
             val before = if (i > 0) weights[i - 1] else null
             val after = if (j < n) weights[j] else null
             if (before != null && after != null) {
+                if (j - i > maxGap) return null
                 for (k in i until j) {
                     weights[k] = before + (after - before) * (k - i + 1).toDouble() / (j - i + 1)
                 }

@@ -109,6 +109,7 @@
     <string name="trends_tgt_prefix">OBJ</string>
     <string name="trends_delta_target">Δ TENDANCE</string>
     <string name="trends_trend_info">La tendance indique à quelle vitesse votre poids moyen évolue chaque semaine. ▼ signifie qu\'il baisse, ▲ qu\'il monte.</string>
+    <string name="trends_trend_gap_info">Un écart dans vos relevés était trop grand à combler, Ember n\'utilise donc que votre série la plus récente. Enregistrez-en %1$d de plus pour la retrouver.</string>
     <string name="trends_tap_to_edit">APPUYER POUR MODIFIER</string>
     <string name="trends_tap_again_to_clear">APPUYER À NOUVEAU POUR EFFACER</string>
     <string name="trends_tap_a_day">APPUYER SUR UN JOUR</string>

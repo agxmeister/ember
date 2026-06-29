@@ -93,7 +93,7 @@ fun EqualizerScreen(animateEntry: Boolean = false) {
             label = readoutLabel,
             weeklyRateKg = state.weeklyRateKg,
             goalIsLoss = state.goalIsLoss,
-            trendMeasurementsNeeded = state.trendMeasurementsNeeded,
+            trendPending = state.trendPending,
             displayColor = readoutColor,
             weightUnit = state.weightUnit,
             isFocused = isFocused,
@@ -137,13 +137,13 @@ fun EqualizerScreen(animateEntry: Boolean = false) {
             projection = state.projection,
             targetKg = state.targetKg,
             weightUnit = state.weightUnit,
-            measurementsNeeded = state.trendMeasurementsNeeded,
+            trendPending = state.trendPending,
         )
         WeeklyRateCard(
             modifier = Modifier.fillMaxWidth().weight(1f),
             weeklyRateKg = state.weeklyRateKg,
             rateZone = state.rateZone,
-            measurementsNeeded = state.trendMeasurementsNeeded,
+            trendPending = state.trendPending,
         )
     }
 

@@ -32,7 +32,7 @@ internal fun WeeklyRateCard(
     modifier: Modifier = Modifier,
     weeklyRateKg: Double?,
     rateZone: WeeklyRateZone,
-    measurementsNeeded: Int? = null,
+    trendPending: TrendPending? = null,
 ) {
     var showInfo by remember { mutableStateOf(false) }
     if (showInfo) {
@@ -44,10 +44,10 @@ internal fun WeeklyRateCard(
     }
 
     var showPendingInfo by remember { mutableStateOf(false) }
-    if (showPendingInfo) {
+    if (showPendingInfo && trendPending != null) {
         InfoDialog(
             title = appString(R.string.trends_weekly_rate),
-            text = appString(R.string.trends_weekly_rate_pending_info, measurementsNeeded ?: 1),
+            text = trendPendingText(trendPending, R.string.trends_weekly_rate_pending_info),
             onDismiss = { showPendingInfo = false },
         )
     }

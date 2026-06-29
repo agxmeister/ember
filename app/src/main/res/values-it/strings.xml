@@ -120,6 +120,7 @@
     <string name="trends_delta_target">Δ TENDENZA</string>
     <string name="trends_trend_pending_info">La tua tendenza settimanale appare quando Ember ha abbastanza misurazioni. Registrane altre %1$d per vedere quanto velocemente stai progredendo.</string>
     <string name="trends_trend_info">La tendenza mostra quanto velocemente il tuo peso medio cambia ogni settimana. ▼ significa che sta calando, ▲ che sta salendo.</string>
+    <string name="trends_trend_gap_info">Un intervallo nelle tue misurazioni era troppo grande da colmare, quindi Ember usa solo la tua serie più recente. Registrane %1$d in più per riaverla.</string>
     <string name="trends_tap_to_edit">TOCCA PER MODIFICARE</string>
     <string name="trends_tap_again_to_clear">TOCCA DI NUOVO PER CANCELLARE</string>
     <string name="trends_tap_a_day">TOCCA UN GIORNO PER APRIRE</string>
