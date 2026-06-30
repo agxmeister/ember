@@ -2,37 +2,29 @@ package com.agxmeister.ember.presentation.settings
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.agxmeister.ember.R
-import com.agxmeister.ember.domain.model.AlgorithmConfig
 import com.agxmeister.ember.presentation.appString
+
+private enum class AlgorithmField {
+    MinClusterSize, RegressionInterval, StaleCutoff, MaxGap, StreakWindow, ScoreWindow, VolatilityWindow,
+}
 
 @Composable
 fun SettingsDevelopmentScreen(
@@ -43,8 +35,9 @@ fun SettingsDevelopmentScreen(
     val algorithmConfig by viewModel.algorithmConfig.collectAsStateWithLifecycle()
     val accentCloseness by viewModel.accentCloseness.collectAsStateWithLifecycle()
 
-    var showApproximationDialog by remember { mutableStateOf(false) }
+    var editingField by remember { mutableStateOf<AlgorithmField?>(null) }
     var showDefineGoalDialog by remember { mutableStateOf(false) }
+    val daysSuffix = appString(R.string.label_days)
 
     SettingsAccentTheme(accentCloseness) {
     Column(
@@ -59,254 +52,122 @@ fun SettingsDevelopmentScreen(
         )
         Spacer(modifier = Modifier.height(24.dp))
 
-        SettingsSectionHeader(appString(R.string.settings_approximation))
-        TappableSetting(
-            value = appString(
-                R.string.settings_approximation_summary,
-                algorithmConfig.regressionIntervalDays,
-                algorithmConfig.minClusterSize,
-                algorithmConfig.streakWindow,
-                algorithmConfig.scoreWindow,
-                algorithmConfig.volatilityWindow,
-                algorithmConfig.staleCutoffPeriods,
-                algorithmConfig.maxGapDays,
-            ),
-            onClick = { showApproximationDialog = true },
+        SettingsSectionHeader(appString(R.string.settings_smart_tracking))
+        LabeledTappableSetting(
+            label = appString(R.string.settings_min_cluster_size),
+            value = algorithmConfig.minClusterSize.toString(),
+            onClick = { editingField = AlgorithmField.MinClusterSize },
+        )
+        SettingsDivider()
+
+        SettingsSectionHeader(appString(R.string.settings_trend))
+        LabeledTappableSetting(
+            label = appString(R.string.settings_regression_interval),
+            value = "${algorithmConfig.regressionIntervalDays} $daysSuffix",
+            onClick = { editingField = AlgorithmField.RegressionInterval },
+        )
+        LabeledTappableSetting(
+            label = appString(R.string.settings_stale_cutoff_window),
+            value = algorithmConfig.staleCutoffPeriods.toString(),
+            onClick = { editingField = AlgorithmField.StaleCutoff },
+        )
+        LabeledTappableSetting(
+            label = appString(R.string.settings_max_gap),
+            value = algorithmConfig.maxGapDays.toString(),
+            onClick = { editingField = AlgorithmField.MaxGap },
+        )
+        SettingsDivider()
+
+        SettingsSectionHeader(appString(R.string.settings_windows))
+        LabeledTappableSetting(
+            label = appString(R.string.settings_streak_window),
+            value = algorithmConfig.streakWindow.toString(),
+            onClick = { editingField = AlgorithmField.StreakWindow },
+        )
+        LabeledTappableSetting(
+            label = appString(R.string.settings_score_window),
+            value = algorithmConfig.scoreWindow.toString(),
+            onClick = { editingField = AlgorithmField.ScoreWindow },
+        )
+        LabeledTappableSetting(
+            label = appString(R.string.settings_volatility_window),
+            value = algorithmConfig.volatilityWindow.toString(),
+            onClick = { editingField = AlgorithmField.VolatilityWindow },
         )
 
-        if (showApproximationDialog) {
-            var regressionText by remember { mutableStateOf(algorithmConfig.regressionIntervalDays.toString()) }
-            var clusterText by remember { mutableStateOf(algorithmConfig.minClusterSize.toString()) }
-            var streakText by remember { mutableStateOf(algorithmConfig.streakWindow.toString()) }
-            var scoreText by remember { mutableStateOf(algorithmConfig.scoreWindow.toString()) }
-            var volatilityText by remember { mutableStateOf(algorithmConfig.volatilityWindow.toString()) }
-            var staleCutoffText by remember { mutableStateOf(algorithmConfig.staleCutoffPeriods.toString()) }
-            var maxGapText by remember { mutableStateOf(algorithmConfig.maxGapDays.toString()) }
-            val regressionVal = regressionText.toIntOrNull()
-            val clusterVal = clusterText.toIntOrNull()
-            val streakVal = streakText.toIntOrNull()
-            val scoreVal = scoreText.toIntOrNull()
-            val volatilityVal = volatilityText.toIntOrNull()
-            val staleCutoffVal = staleCutoffText.toIntOrNull()
-            val maxGapVal = maxGapText.toIntOrNull()
-            val isValid = regressionVal != null && regressionVal in 7..365 &&
-                clusterVal != null && clusterVal in 1..365 &&
-                streakVal != null && streakVal in 2..365 &&
-                scoreVal != null && scoreVal in 1..365 &&
-                volatilityVal != null && volatilityVal in 2..365 &&
-                staleCutoffVal != null && staleCutoffVal in 1..14 &&
-                maxGapVal != null && maxGapVal in 1..30
-            val borderColor = MaterialTheme.colorScheme.outline
-            AlertDialog(
-                onDismissRequest = { showApproximationDialog = false },
-                title = { Text(appString(R.string.settings_adjust_approximation)) },
-                text = {
-                    Column {
-                        Text(
-                            appString(R.string.settings_regression_interval),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            BasicTextField(
-                                value = regressionText,
-                                onValueChange = { if (it.length <= 3 && it.all { c -> c.isDigit() }) regressionText = it },
-                                textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                singleLine = true,
-                                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                                modifier = Modifier
-                                    .width(64.dp)
-                                    .drawBehind {
-                                        drawLine(
-                                            color = borderColor,
-                                            start = Offset(0f, size.height),
-                                            end = Offset(size.width, size.height),
-                                            strokeWidth = 1.dp.toPx(),
-                                        )
-                                    },
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(appString(R.string.label_days), style = MaterialTheme.typography.bodyMedium)
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            appString(R.string.settings_min_cluster_size),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        BasicTextField(
-                            value = clusterText,
-                            onValueChange = { if (it.length <= 3 && it.all { c -> c.isDigit() }) clusterText = it },
-                            textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            singleLine = true,
-                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                            modifier = Modifier
-                                .width(64.dp)
-                                .drawBehind {
-                                    drawLine(
-                                        color = borderColor,
-                                        start = Offset(0f, size.height),
-                                        end = Offset(size.width, size.height),
-                                        strokeWidth = 1.dp.toPx(),
-                                    )
-                                },
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            appString(R.string.settings_streak_window),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        BasicTextField(
-                            value = streakText,
-                            onValueChange = { if (it.length <= 3 && it.all { c -> c.isDigit() }) streakText = it },
-                            textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            singleLine = true,
-                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                            modifier = Modifier
-                                .width(64.dp)
-                                .drawBehind {
-                                    drawLine(
-                                        color = borderColor,
-                                        start = Offset(0f, size.height),
-                                        end = Offset(size.width, size.height),
-                                        strokeWidth = 1.dp.toPx(),
-                                    )
-                                },
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            appString(R.string.settings_score_window),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        BasicTextField(
-                            value = scoreText,
-                            onValueChange = { if (it.length <= 3 && it.all { c -> c.isDigit() }) scoreText = it },
-                            textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            singleLine = true,
-                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                            modifier = Modifier
-                                .width(64.dp)
-                                .drawBehind {
-                                    drawLine(
-                                        color = borderColor,
-                                        start = Offset(0f, size.height),
-                                        end = Offset(size.width, size.height),
-                                        strokeWidth = 1.dp.toPx(),
-                                    )
-                                },
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            appString(R.string.settings_volatility_window),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        BasicTextField(
-                            value = volatilityText,
-                            onValueChange = { if (it.length <= 3 && it.all { c -> c.isDigit() }) volatilityText = it },
-                            textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            singleLine = true,
-                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                            modifier = Modifier
-                                .width(64.dp)
-                                .drawBehind {
-                                    drawLine(
-                                        color = borderColor,
-                                        start = Offset(0f, size.height),
-                                        end = Offset(size.width, size.height),
-                                        strokeWidth = 1.dp.toPx(),
-                                    )
-                                },
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            appString(R.string.settings_stale_cutoff_window),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        BasicTextField(
-                            value = staleCutoffText,
-                            onValueChange = { if (it.length <= 3 && it.all { c -> c.isDigit() }) staleCutoffText = it },
-                            textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            singleLine = true,
-                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                            modifier = Modifier
-                                .width(64.dp)
-                                .drawBehind {
-                                    drawLine(
-                                        color = borderColor,
-                                        start = Offset(0f, size.height),
-                                        end = Offset(size.width, size.height),
-                                        strokeWidth = 1.dp.toPx(),
-                                    )
-                                },
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            appString(R.string.settings_max_gap),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        BasicTextField(
-                            value = maxGapText,
-                            onValueChange = { if (it.length <= 3 && it.all { c -> c.isDigit() }) maxGapText = it },
-                            textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            singleLine = true,
-                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                            modifier = Modifier
-                                .width(64.dp)
-                                .drawBehind {
-                                    drawLine(
-                                        color = borderColor,
-                                        start = Offset(0f, size.height),
-                                        end = Offset(size.width, size.height),
-                                        strokeWidth = 1.dp.toPx(),
-                                    )
-                                },
-                        )
-                    }
+        when (editingField) {
+            AlgorithmField.MinClusterSize -> IntSettingDialog(
+                title = appString(R.string.settings_min_cluster_size),
+                initialValue = algorithmConfig.minClusterSize,
+                validRange = 1..365,
+                onConfirm = {
+                    viewModel.onAlgorithmConfigChanged(algorithmConfig.copy(minClusterSize = it))
+                    editingField = null
                 },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            viewModel.onAlgorithmConfigChanged(
-                                AlgorithmConfig(
-                                    regressionIntervalDays = regressionVal!!,
-                                    minClusterSize = clusterVal!!,
-                                    streakWindow = streakVal!!,
-                                    scoreWindow = scoreVal!!,
-                                    volatilityWindow = volatilityVal!!,
-                                    staleCutoffPeriods = staleCutoffVal!!,
-                                    maxGapDays = maxGapVal!!,
-                                )
-                            )
-                            showApproximationDialog = false
-                        },
-                        enabled = isValid,
-                    ) { Text(appString(R.string.label_save)) }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showApproximationDialog = false }) {
-                        Text(appString(R.string.label_cancel))
-                    }
-                },
+                onDismiss = { editingField = null },
             )
+            AlgorithmField.RegressionInterval -> IntSettingDialog(
+                title = appString(R.string.settings_regression_interval),
+                initialValue = algorithmConfig.regressionIntervalDays,
+                validRange = 7..365,
+                suffix = daysSuffix,
+                onConfirm = {
+                    viewModel.onAlgorithmConfigChanged(algorithmConfig.copy(regressionIntervalDays = it))
+                    editingField = null
+                },
+                onDismiss = { editingField = null },
+            )
+            AlgorithmField.StaleCutoff -> IntSettingDialog(
+                title = appString(R.string.settings_stale_cutoff_window),
+                initialValue = algorithmConfig.staleCutoffPeriods,
+                validRange = 1..14,
+                onConfirm = {
+                    viewModel.onAlgorithmConfigChanged(algorithmConfig.copy(staleCutoffPeriods = it))
+                    editingField = null
+                },
+                onDismiss = { editingField = null },
+            )
+            AlgorithmField.MaxGap -> IntSettingDialog(
+                title = appString(R.string.settings_max_gap),
+                initialValue = algorithmConfig.maxGapDays,
+                validRange = 1..30,
+                onConfirm = {
+                    viewModel.onAlgorithmConfigChanged(algorithmConfig.copy(maxGapDays = it))
+                    editingField = null
+                },
+                onDismiss = { editingField = null },
+            )
+            AlgorithmField.StreakWindow -> IntSettingDialog(
+                title = appString(R.string.settings_streak_window),
+                initialValue = algorithmConfig.streakWindow,
+                validRange = 2..365,
+                onConfirm = {
+                    viewModel.onAlgorithmConfigChanged(algorithmConfig.copy(streakWindow = it))
+                    editingField = null
+                },
+                onDismiss = { editingField = null },
+            )
+            AlgorithmField.ScoreWindow -> IntSettingDialog(
+                title = appString(R.string.settings_score_window),
+                initialValue = algorithmConfig.scoreWindow,
+                validRange = 1..365,
+                onConfirm = {
+                    viewModel.onAlgorithmConfigChanged(algorithmConfig.copy(scoreWindow = it))
+                    editingField = null
+                },
+                onDismiss = { editingField = null },
+            )
+            AlgorithmField.VolatilityWindow -> IntSettingDialog(
+                title = appString(R.string.settings_volatility_window),
+                initialValue = algorithmConfig.volatilityWindow,
+                validRange = 2..365,
+                onConfirm = {
+                    viewModel.onAlgorithmConfigChanged(algorithmConfig.copy(volatilityWindow = it))
+                    editingField = null
+                },
+                onDismiss = { editingField = null },
+            )
+            null -> Unit
         }
 
         SettingsDivider()

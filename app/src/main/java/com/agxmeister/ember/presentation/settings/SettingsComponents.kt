@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -21,9 +23,17 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.agxmeister.ember.R
 import com.agxmeister.ember.presentation.appString
@@ -135,6 +145,75 @@ internal fun StartOverConfirmDialog(onConfirm: () -> Unit, onDismiss: () -> Unit
         text = { Text(appString(R.string.settings_start_over_confirm_message)) },
         confirmButton = {
             TextButton(onClick = onConfirm) { Text(appString(R.string.label_confirm)) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(appString(R.string.label_cancel)) }
+        },
+    )
+}
+
+/** A small label above a tappable value, for settings that share a section header. */
+@Composable
+internal fun LabeledTappableSetting(
+    label: String,
+    value: String,
+    onClick: () -> Unit,
+) {
+    Text(
+        label,
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    TappableSetting(value = value, onClick = onClick)
+}
+
+/** Dialog for editing a single integer setting constrained to [validRange]. */
+@Composable
+internal fun IntSettingDialog(
+    title: String,
+    initialValue: Int,
+    validRange: IntRange,
+    suffix: String? = null,
+    onConfirm: (Int) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var text by remember { mutableStateOf(initialValue.toString()) }
+    val intValue = text.toIntOrNull()
+    val isValid = intValue != null && intValue in validRange
+    val borderColor = MaterialTheme.colorScheme.outline
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                BasicTextField(
+                    value = text,
+                    onValueChange = { if (it.length <= 3 && it.all { c -> c.isDigit() }) text = it },
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                    modifier = Modifier
+                        .width(64.dp)
+                        .drawBehind {
+                            drawLine(
+                                color = borderColor,
+                                start = Offset(0f, size.height),
+                                end = Offset(size.width, size.height),
+                                strokeWidth = 1.dp.toPx(),
+                            )
+                        },
+                )
+                if (suffix != null) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(suffix, style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { intValue?.let(onConfirm) }, enabled = isValid) {
+                Text(appString(R.string.label_save))
+            }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text(appString(R.string.label_cancel)) }
