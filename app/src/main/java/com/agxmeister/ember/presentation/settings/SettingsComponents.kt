@@ -159,12 +159,19 @@ internal fun LabeledTappableSetting(
     value: String,
     onClick: () -> Unit,
 ) {
-    Text(
-        label,
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-    TappableSetting(value = value, onClick = onClick)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(vertical = 8.dp),
+    ) {
+        Text("$label: $value", style = MaterialTheme.typography.bodyLarge)
+        Text(
+            appString(R.string.label_tap_to_adjust),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
 }
 
 /** Dialog for editing a single integer setting constrained to [validRange]. */
