@@ -109,7 +109,7 @@
     <string name="trends_tgt_prefix">ZIEL</string>
     <string name="trends_delta_target">Δ TREND</string>
     <string name="trends_trend_info">Der Trend zeigt, wie schnell sich dein Durchschnittsgewicht pro Woche ändert. ▼ bedeutet fallend, ▲ bedeutet steigend.</string>
-    <string name="trends_trend_gap_info">Eine Lücke in deinen Messungen war zu groß, um sie zu überbrücken, daher verwendet Ember nur deine jüngste Messreihe. Erfasse %1$d weitere, um ihn zurückzuholen.</string>
+    <string name="trends_trend_gap_info">Dein Trend erscheint wieder nach %1$d weiteren Einträgen.</string>
     <string name="trends_tap_to_edit">ZUM BEARBEITEN TIPPEN</string>
     <string name="trends_tap_again_to_clear">NOCHMAL TIPPEN ZUM ENTFERNEN</string>
     <string name="trends_tap_a_day">TAG ANTIPPEN ZUM ÖFFNEN</string>
@@ -141,6 +141,7 @@
     <!-- Projection card -->
     <string name="trends_projected_eta">VORAUSSICHTLICH</string>
     <string name="trends_projected_eta_info">Dein voraussichtliches Zieldatum basiert auf deinem aktuellen Trend und wird laufend aktualisiert.</string>
+    <string name="trends_eta_pending_info">Das geschätzte Datum, an dem du dein Ziel erreichst,\nerscheint nach %1$d weiteren Einträgen.</string>
     <string name="trends_in_days">in %1$d Tagen</string>
     <string name="trends_today">heute</string>
     <string name="trends_goal_reached">Ziel erreicht</string>
@@ -152,7 +153,8 @@
     <!-- Weekly rate card -->
     <string name="trends_weekly_rate">WÖCHENTLICHE RATE</string>
     <string name="trends_weekly_rate_info">Deine wöchentliche Rate zeigt, wie schnell sich dein Gewicht verändert. Eine gesunde Rate liegt bei 0,25–1,0 kg pro Woche.</string>
-    <string name="trends_weekly_rate_pending_info">Deine wöchentliche Rate erscheint, sobald Ember genügend Messungen hat. Erfasse noch %1$d weitere, um sie zu sehen.</string>
+    <string name="trends_weekly_rate_pending_info_loss">Die Rate, mit der du abnimmst,\nerscheint nach %1$d weiteren Einträgen.</string>
+    <string name="trends_weekly_rate_pending_info_gain">Die Rate, mit der du zunimmst,\nerscheint nach %1$d weiteren Einträgen.</string>
     <string name="trends_rate_zone_too_slow">ZU LANGSAM</string>
     <string name="trends_rate_zone_healthy">IM PLAN</string>
     <string name="trends_rate_zone_aggressive">AGGRESSIV</string>

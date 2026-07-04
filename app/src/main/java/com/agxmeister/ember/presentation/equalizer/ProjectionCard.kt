@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,7 +33,6 @@ import com.agxmeister.ember.R
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.presentation.appString
 import com.agxmeister.ember.presentation.common.InfoDialog
-import com.agxmeister.ember.presentation.common.InfoIcon
 import com.agxmeister.ember.presentation.theme.DangerRed
 import com.agxmeister.ember.presentation.theme.SuccessGreen
 
@@ -56,23 +53,22 @@ internal fun ProjectionCard(
             onDismiss = { showInfo = false },
         )
     }
-    var showPendingInfo by remember { mutableStateOf(false) }
-    if (showPendingInfo && trendPending != null) {
-        InfoDialog(
-            title = appString(R.string.trends_projected_eta),
-            text = trendPendingText(trendPending, R.string.trends_eta_pending_info),
-            onDismiss = { showPendingInfo = false },
-        )
-    }
+    val pendingOverlayText = if (projection == ProjectionResult.Unavailable.NotEnoughData && trendPending != null) {
+        trendPendingText(trendPending, R.string.trends_eta_pending_info)
+    } else null
 
-    StatCardSurface(modifier = modifier) {
-        CardLabelRow(label = appString(R.string.trends_projected_eta), onInfo = { showInfo = true }, helpKey = "trends_projected_eta")
+    StatCardSurface(modifier = modifier, pendingOverlayText = pendingOverlayText) {
+        CardLabelRow(
+            label = appString(R.string.trends_projected_eta),
+            onInfo = if (pendingOverlayText == null) ({ showInfo = true }) else null,
+            helpKey = if (pendingOverlayText == null) "trends_projected_eta" else null,
+        )
         Spacer(Modifier.height(6.dp))
         when (projection) {
             is ProjectionResult.Eta -> EtaContent(Modifier.weight(1f), projection, onSurface)
             ProjectionResult.Reached -> ReachedContent()
             ProjectionResult.Unavailable.NotEnoughData -> if (trendPending != null) {
-                PendingContent(Modifier.weight(1f), onSurface, onInfo = { showPendingInfo = true })
+                PendingContent(Modifier.weight(1f), onSurface)
             } else {
                 UnavailableContent(projection, onSurface)
             }
@@ -213,27 +209,17 @@ private fun ReachedContent() {
 }
 
 @Composable
-private fun PendingContent(modifier: Modifier = Modifier, onSurface: Color, onInfo: () -> Unit) {
+private fun PendingContent(modifier: Modifier = Modifier, onSurface: Color) {
     Column(modifier = modifier) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = ".-",
-                style = TextStyle(
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = onSurface.copy(alpha = 0.30f),
-                ),
-            )
-            Spacer(Modifier.width(10.dp))
-            InfoIcon(
-                onClick = onInfo,
-                helpKey = "trends_projection_pending",
-                icon = Icons.Filled.Info,
-                tint = onSurface.copy(alpha = 0.6f),
-                seenTint = onSurface.copy(alpha = 0.6f),
-            )
-        }
+        Text(
+            text = ".-",
+            style = TextStyle(
+                fontFamily = FontFamily.Monospace,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = onSurface.copy(alpha = 0.30f),
+            ),
+        )
         Spacer(Modifier.height(8.dp))
         EtaJourney(
             progress = null,

@@ -32,6 +32,7 @@ internal fun WeeklyRateCard(
     modifier: Modifier = Modifier,
     weeklyRateKg: Double?,
     rateZone: WeeklyRateZone,
+    goalIsLoss: Boolean,
     trendPending: TrendPending? = null,
 ) {
     var showInfo by remember { mutableStateOf(false) }
@@ -43,15 +44,6 @@ internal fun WeeklyRateCard(
         )
     }
 
-    var showPendingInfo by remember { mutableStateOf(false) }
-    if (showPendingInfo && trendPending != null) {
-        InfoDialog(
-            title = appString(R.string.trends_weekly_rate),
-            text = trendPendingText(trendPending, R.string.trends_weekly_rate_pending_info),
-            onDismiss = { showPendingInfo = false },
-        )
-    }
-
     val zoneBadge = when (rateZone) {
         WeeklyRateZone.TooSlow -> appString(R.string.trends_rate_zone_too_slow)
         WeeklyRateZone.Healthy -> appString(R.string.trends_rate_zone_healthy)
@@ -60,14 +52,20 @@ internal fun WeeklyRateCard(
         WeeklyRateZone.WrongDirection -> appString(R.string.trends_rate_zone_wrong_direction)
         WeeklyRateZone.Unavailable -> ""
     }
-    StatCardSurface(modifier = modifier) {
-        val pending = weeklyRateKg == null
+    val pending = weeklyRateKg == null
+    val pendingInfoRes = if (goalIsLoss) {
+        R.string.trends_weekly_rate_pending_info_loss
+    } else {
+        R.string.trends_weekly_rate_pending_info_gain
+    }
+    val pendingOverlayText = if (pending && trendPending != null) {
+        trendPendingText(trendPending, pendingInfoRes)
+    } else null
+    StatCardSurface(modifier = modifier, pendingOverlayText = pendingOverlayText) {
         CardLabelRow(
             label = appString(R.string.trends_weekly_rate),
-            onInfo = { showInfo = true },
-            helpKey = "trends_weekly_rate",
-            onPending = if (pending) ({ showPendingInfo = true }) else null,
-            pendingHelpKey = if (pending) "trends_weekly_rate_pending" else null,
+            onInfo = if (pendingOverlayText == null) ({ showInfo = true }) else null,
+            helpKey = if (pendingOverlayText == null) "trends_weekly_rate" else null,
         )
         Spacer(Modifier.weight(1f))
         RateZoneBar(

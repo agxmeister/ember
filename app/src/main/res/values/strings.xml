@@ -120,7 +120,7 @@
     <string name="trends_delta_target">Δ TREND</string>
     <string name="trends_trend_pending_info">Your weekly trend appears once Ember has enough measurements. Log %1$d more to see how fast you\'re moving.</string>
     <string name="trends_trend_info">The trend shows how fast your average weight is changing each week. ▼ means it\'s falling, ▲ means it\'s rising.</string>
-    <string name="trends_trend_gap_info">A gap in your readings was too large to bridge, so Ember is using only your most recent run. Log %1$d more to bring it back.</string>
+    <string name="trends_trend_gap_info">Your trend reappears after %1$d more logs.</string>
     <string name="trends_tap_to_edit">TAP TO EDIT</string>
     <string name="trends_tap_again_to_clear">TAP AGAIN TO CLEAR</string>
     <string name="trends_tap_a_day">TAP A DAY TO OPEN</string>
@@ -152,7 +152,7 @@
     <!-- Projection card -->
     <string name="trends_projected_eta">PROJECTED ETA</string>
     <string name="trends_projected_eta_info">Your projected goal date is based on your current trend. It updates as your weight changes.</string>
-    <string name="trends_eta_pending_info">Your projected goal date appears once Ember has enough measurements. Log %1$d more to see it.</string>
+    <string name="trends_eta_pending_info">The estimated date you\'ll reach your goal\nwill appear after %1$d more logs.</string>
     <string name="trends_in_days">in %1$d days</string>
     <string name="trends_today">today</string>
     <string name="trends_goal_reached">Goal reached</string>
@@ -164,7 +164,8 @@
     <!-- Weekly rate card -->
     <string name="trends_weekly_rate">WEEKLY RATE</string>
     <string name="trends_weekly_rate_info">Your weekly rate shows how fast your weight is changing. A healthy rate is 0.25–1.0 kg per week.</string>
-    <string name="trends_weekly_rate_pending_info">Your weekly rate appears once Ember has enough measurements. Log %1$d more to see it.</string>
+    <string name="trends_weekly_rate_pending_info_loss">The rate you\'re losing weight\nwill appear after %1$d more logs.</string>
+    <string name="trends_weekly_rate_pending_info_gain">The rate you\'re gaining weight\nwill appear after %1$d more logs.</string>
     <string name="trends_rate_zone_too_slow">TOO SLOW</string>
     <string name="trends_rate_zone_healthy">ON PACE</string>
     <string name="trends_rate_zone_aggressive">AGGRESSIVE</string>
