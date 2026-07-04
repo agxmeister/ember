@@ -75,6 +75,7 @@
     <string name="settings_streak_window">Streak window</string>
     <string name="settings_score_window">Score window</string>
     <string name="settings_volatility_window">Volatility window</string>
+    <string name="settings_min_measured_for_volatility">Min. measurements for volatility</string>
     <string name="settings_stale_cutoff_window">Staleness cutoff (periods)</string>
     <string name="settings_max_gap">Max gap (periods)</string>
     <string name="label_days">days</string>

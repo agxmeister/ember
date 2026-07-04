@@ -40,10 +40,11 @@ class UserPreferencesRepositoryImpl @Inject constructor(
         dataStore.streakWindow,
         dataStore.scoreWindow,
         dataStore.volatilityWindow,
+        dataStore.minMeasuredForVolatility,
         dataStore.staleCutoffPeriods,
         dataStore.maxGapDays,
     ) { values ->
-        AlgorithmConfig(values[0], values[1], values[2], values[3], values[4], values[5], values[6])
+        AlgorithmConfig(values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7])
     }
 
     override suspend fun saveOnboardingData(
@@ -134,6 +135,7 @@ class UserPreferencesRepositoryImpl @Inject constructor(
         dataStore.setStreakWindow(config.streakWindow)
         dataStore.setScoreWindow(config.scoreWindow)
         dataStore.setVolatilityWindow(config.volatilityWindow)
+        dataStore.setMinMeasuredForVolatility(config.minMeasuredForVolatility)
         dataStore.setStaleCutoffPeriods(config.staleCutoffPeriods)
         dataStore.setMaxGapDays(config.maxGapDays)
     }

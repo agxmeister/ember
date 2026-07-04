@@ -75,6 +75,7 @@
     <string name="settings_streak_window">Ventana de racha</string>
     <string name="settings_score_window">Ventana de puntuación</string>
     <string name="settings_volatility_window">Ventana de volatilidad</string>
+    <string name="settings_min_measured_for_volatility">Mediciones mín. para la volatilidad</string>
     <string name="settings_stale_cutoff_window">Umbral de obsolescencia (períodos)</string>
     <string name="settings_max_gap">Hueco máx. (períodos)</string>
     <string name="label_days">días</string>

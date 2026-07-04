@@ -70,6 +70,7 @@
     <string name="settings_streak_window">Streak-Fenster</string>
     <string name="settings_score_window">Score-Fenster</string>
     <string name="settings_volatility_window">Schwankungsfenster</string>
+    <string name="settings_min_measured_for_volatility">Min. Messungen für Schwankung</string>
     <string name="settings_stale_cutoff_window">Veraltungsgrenze (Perioden)</string>
     <string name="settings_max_gap">Max. Lücke (Perioden)</string>
     <string name="label_days">Tage</string>

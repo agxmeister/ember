@@ -70,6 +70,7 @@
     <string name="settings_streak_window">Fenêtre de série</string>
     <string name="settings_score_window">Fenêtre de score</string>
     <string name="settings_volatility_window">Fenêtre de volatilité</string>
+    <string name="settings_min_measured_for_volatility">Mesures min. pour la volatilité</string>
     <string name="settings_stale_cutoff_window">Seuil d\'obsolescence (périodes)</string>
     <string name="settings_max_gap">Écart max. (périodes)</string>
     <string name="label_days">jours</string>

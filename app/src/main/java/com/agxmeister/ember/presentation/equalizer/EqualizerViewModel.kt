@@ -300,7 +300,7 @@ class EqualizerViewModel @Inject constructor(
                 val weekStart = volStart.plus(DatePeriod(days = offset * 7))
                 EqualizerDayData(date = weekStart, weightKg = weeklyMap[weekStart]?.median)
             }
-            volatilityKg = computeVolatility(volWeeks)
+            volatilityKg = computeVolatility(volWeeks, algorithmConfig.minMeasuredForVolatility)
         } else {
             today = todayDate
 
@@ -367,7 +367,7 @@ class EqualizerViewModel @Inject constructor(
                 val date = volStart.plus(DatePeriod(days = offset))
                 EqualizerDayData(date = date, weightKg = candleMap[date]?.close)
             }
-            volatilityKg = computeVolatility(volDays)
+            volatilityKg = computeVolatility(volDays, algorithmConfig.minMeasuredForVolatility)
         }
 
         val projection = computeProjection(weeklyAvg, weeklyRateKg, targetKg, initialWeightKg, goalIsLoss, todayDate)
@@ -439,11 +439,9 @@ private fun computeTrendLine(
     return TrendLineData(startKg = startKg, endKg = endKg, diffKg = endKg - startKg)
 }
 
-private const val MIN_MEASURED_FOR_VOLATILITY = 4
-
-private fun computeVolatility(window: List<EqualizerDayData>): Double? {
+private fun computeVolatility(window: List<EqualizerDayData>, minMeasured: Int): Double? {
     val measured = window.mapIndexedNotNull { idx, day -> day.weightKg?.let { idx.toDouble() to it } }
-    if (measured.size < MIN_MEASURED_FOR_VOLATILITY) return null
+    if (measured.size < minMeasured) return null
     val xs = measured.map { it.first }
     val ys = measured.map { it.second }
     val (slope, intercept) = linearRegression(xs, ys) ?: return null

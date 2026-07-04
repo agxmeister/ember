@@ -52,6 +52,7 @@ class UserPreferencesDataStore @Inject constructor(
     private val streakWindowKey = intPreferencesKey("streak_window")
     private val scoreWindowKey = intPreferencesKey("score_window")
     private val volatilityWindowKey = intPreferencesKey("volatility_window")
+    private val minMeasuredForVolatilityKey = intPreferencesKey("min_measured_for_volatility")
     private val staleCutoffPeriodsKey = intPreferencesKey("stale_cutoff_periods")
     private val maxGapDaysKey = intPreferencesKey("max_gap_days")
 
@@ -153,6 +154,9 @@ class UserPreferencesDataStore @Inject constructor(
 
     val volatilityWindow: Flow<Int> =
         context.dataStore.data.map { it[volatilityWindowKey] ?: 14 }
+
+    val minMeasuredForVolatility: Flow<Int> =
+        context.dataStore.data.map { it[minMeasuredForVolatilityKey] ?: 4 }
 
     val staleCutoffPeriods: Flow<Int> =
         context.dataStore.data.map { it[staleCutoffPeriodsKey] ?: 7 }
@@ -308,6 +312,10 @@ class UserPreferencesDataStore @Inject constructor(
 
     suspend fun setVolatilityWindow(window: Int) {
         context.dataStore.edit { it[volatilityWindowKey] = window }
+    }
+
+    suspend fun setMinMeasuredForVolatility(count: Int) {
+        context.dataStore.edit { it[minMeasuredForVolatilityKey] = count }
     }
 
     suspend fun resetOnboarding() {

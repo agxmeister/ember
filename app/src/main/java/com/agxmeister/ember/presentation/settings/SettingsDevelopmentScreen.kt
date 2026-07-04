@@ -24,6 +24,7 @@ import com.agxmeister.ember.presentation.appString
 
 private enum class AlgorithmField {
     MinClusterSize, RegressionInterval, StaleCutoff, MaxGap, StreakWindow, ScoreWindow, VolatilityWindow,
+    MinMeasuredForVolatility,
 }
 
 @Composable
@@ -94,6 +95,11 @@ fun SettingsDevelopmentScreen(
             value = algorithmConfig.volatilityWindow.toString(),
             onClick = { editingField = AlgorithmField.VolatilityWindow },
         )
+        LabeledTappableSetting(
+            label = appString(R.string.settings_min_measured_for_volatility),
+            value = algorithmConfig.minMeasuredForVolatility.toString(),
+            onClick = { editingField = AlgorithmField.MinMeasuredForVolatility },
+        )
 
         when (editingField) {
             AlgorithmField.MinClusterSize -> IntSettingDialog(
@@ -163,6 +169,16 @@ fun SettingsDevelopmentScreen(
                 validRange = 2..365,
                 onConfirm = {
                     viewModel.onAlgorithmConfigChanged(algorithmConfig.copy(volatilityWindow = it))
+                    editingField = null
+                },
+                onDismiss = { editingField = null },
+            )
+            AlgorithmField.MinMeasuredForVolatility -> IntSettingDialog(
+                title = appString(R.string.settings_min_measured_for_volatility),
+                initialValue = algorithmConfig.minMeasuredForVolatility,
+                validRange = 2..algorithmConfig.volatilityWindow,
+                onConfirm = {
+                    viewModel.onAlgorithmConfigChanged(algorithmConfig.copy(minMeasuredForVolatility = it))
                     editingField = null
                 },
                 onDismiss = { editingField = null },
