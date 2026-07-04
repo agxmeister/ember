@@ -30,7 +30,7 @@ internal fun VolatilityCard(
             closenessColor((1.0 - it / VOLATILITY_REFERENCE_KG).coerceIn(0.0, 1.0).toFloat(), darkTheme)
         } ?: MaterialTheme.colorScheme.onSurface
         StatValueRow(
-            value = display?.let { formatVolatility(it) } ?: "−",
+            value = display?.let { formatVolatility(it) } ?: ".--",
             unit = display?.let { weightUnit.label },
             color = color,
         )
