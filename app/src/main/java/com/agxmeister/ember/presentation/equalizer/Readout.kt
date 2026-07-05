@@ -1,15 +1,20 @@
 package com.agxmeister.ember.presentation.equalizer
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.outlined.HelpOutline
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,6 +37,8 @@ import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.presentation.appString
 import com.agxmeister.ember.presentation.common.InfoDialog
 import com.agxmeister.ember.presentation.common.InfoIcon
+import com.agxmeister.ember.presentation.common.LocalHelpIconsVisible
+import com.agxmeister.ember.presentation.theme.InfoIconSize
 import com.agxmeister.ember.presentation.theme.closenessColor
 import com.agxmeister.ember.presentation.theme.trendSpeedColor
 import kotlinx.datetime.LocalDate
@@ -175,11 +182,18 @@ private fun WeightDisplay(
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(text = appString(R.string.trends_delta_target), style = labelStyle)
-            InfoIcon(
-                onClick = { showTrendLabelInfo = true },
-                helpKey = "trends_trend_label",
-                modifier = Modifier.padding(start = 4.dp),
-            )
+            if (trendPending != null) {
+                PendingHelpBadge(
+                    onClick = { showTrendInfo = true },
+                    modifier = Modifier.padding(start = 4.dp),
+                )
+            } else {
+                InfoIcon(
+                    onClick = { showTrendLabelInfo = true },
+                    helpKey = "trends_trend_label",
+                    modifier = Modifier.padding(start = 4.dp),
+                )
+            }
         }
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -209,16 +223,6 @@ private fun WeightDisplay(
             }
             Row(verticalAlignment = Alignment.Bottom) {
                 val trendGlow = Shadow(color = trendColor.copy(alpha = 0.65f), blurRadius = 22f)
-                if (trendPending != null) {
-                    InfoIcon(
-                        onClick = { showTrendInfo = true },
-                        helpKey = "trends_trend_pending",
-                        modifier = Modifier.align(Alignment.CenterVertically).padding(end = 8.dp),
-                        icon = Icons.Filled.Info,
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                        seenTint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    )
-                }
                 if (arrow != null) {
                     Text(
                         text = arrow,
@@ -255,6 +259,29 @@ private fun WeightDisplay(
                 modifier = Modifier.weight(1f),
             )
         }
+    }
+}
+
+/**
+ * Solid "?" badge marking a widget as pending due to missing data. Unlike [InfoIcon] it never
+ * dims: pending is an ongoing state, not a one-time hint, so opening the dialog doesn't affect it.
+ */
+@Composable
+private fun PendingHelpBadge(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    if (!LocalHelpIconsVisible.current) return
+    Box(
+        modifier = modifier
+            .size(InfoIconSize)
+            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), CircleShape)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.HelpOutline,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.surface,
+            modifier = Modifier.size(InfoIconSize * 0.75f),
+        )
     }
 }
 
