@@ -18,18 +18,21 @@ internal fun StatCard(
     label: String,
     info: String? = null,
     helpKey: String? = null,
+    pendingInfo: String? = null,
     content: @Composable () -> Unit,
 ) {
     var showInfo by remember { mutableStateOf(false) }
-    if (showInfo && info != null) {
-        InfoDialog(title = label, text = info, onDismiss = { showInfo = false })
+    val effectiveInfo = pendingInfo ?: info
+    if (showInfo && effectiveInfo != null) {
+        InfoDialog(title = label, text = effectiveInfo, onDismiss = { showInfo = false })
     }
     StatCardSurface(modifier = modifier) {
         CardLabelRow(
             label = label,
             modifier = Modifier.height(InfoIconSize),
-            onInfo = if (info != null) ({ showInfo = true }) else null,
+            onInfo = if (effectiveInfo != null) ({ showInfo = true }) else null,
             helpKey = helpKey,
+            pending = pendingInfo != null,
         )
         Spacer(modifier = Modifier.height(4.dp))
         content()

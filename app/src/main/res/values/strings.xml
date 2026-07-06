@@ -119,7 +119,7 @@
     <!-- Trends / Equalizer -->
     <string name="trends_tgt_prefix">TGT</string>
     <string name="trends_delta_target">Δ TREND</string>
-    <string name="trends_trend_pending_info">Your weekly trend appears once Ember has enough measurements. Log %1$d more to see how fast you\'re moving.</string>
+    <string name="trends_trend_pending_info">Weekly trend appears once you have enough measurements. Log %1$d more to see how fast you\'re moving.</string>
     <string name="trends_trend_info">The trend shows how fast your average weight is changing each week. ▼ means it\'s falling, ▲ means it\'s rising.</string>
     <string name="trends_trend_gap_info">Your trend reappears after %1$d more logs.</string>
     <string name="trends_tap_to_edit">TAP TO EDIT</string>
@@ -145,6 +145,7 @@
     <string name="stat_volatility">VOLATILITY</string>
     <string name="stat_volatility_info_daily">Volatility measures how much your weight bounces around from day to day. Lower numbers mean steadier readings; higher numbers mean more scatter.</string>
     <string name="stat_volatility_info_weekly">Volatility measures how much your weight bounces around from week to week. Lower numbers mean steadier readings; higher numbers mean more scatter.</string>
+    <string name="stat_volatility_pending_info">Volatility appears once you have enough measurements. Log %1$d more to see how steady you\'re moving.</string>
     <string name="trends_score">SCORE</string>
     <string name="trends_score_info_daily">Your score grades how well you\'re progressing lately: the pace of your weight change, how steadily you trend toward your goal, and how consistently you weigh in.</string>
     <string name="trends_score_info_weekly">Your score grades how well you\'re progressing lately: the pace of your weight change, how steadily you trend toward your goal, and how consistently you weigh in.</string>

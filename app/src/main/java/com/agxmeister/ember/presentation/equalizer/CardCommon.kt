@@ -10,8 +10,11 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -25,6 +28,8 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.luminance
 import com.agxmeister.ember.presentation.common.InfoIcon
+import com.agxmeister.ember.presentation.common.LocalHelpIconsVisible
+import com.agxmeister.ember.presentation.theme.InfoIconSize
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.font.FontFamily
@@ -83,18 +88,50 @@ internal fun StatCardSurface(
     }
 }
 
-/** Stat card header: a label with an optional trailing help icon opening [onInfo]. */
+/**
+ * Stat card header: a label with a trailing help icon opening [onInfo]. When [pending] is true,
+ * the icon renders as a solid [PendingHelpBadge] instead, since data is missing rather than just
+ * unexplained.
+ */
 @Composable
 internal fun CardLabelRow(
     label: String,
     modifier: Modifier = Modifier,
     onInfo: (() -> Unit)? = null,
     helpKey: String? = null,
+    pending: Boolean = false,
 ) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         Text(text = label, style = cardLabelStyle())
         Spacer(Modifier.weight(1f))
-        if (onInfo != null && helpKey != null) InfoIcon(onClick = onInfo, helpKey = helpKey)
+        if (pending && onInfo != null) {
+            PendingHelpBadge(onClick = onInfo)
+        } else if (onInfo != null && helpKey != null) {
+            InfoIcon(onClick = onInfo, helpKey = helpKey)
+        }
+    }
+}
+
+/**
+ * Solid "?" badge marking a widget as pending due to missing data. Unlike [InfoIcon] it never
+ * dims: pending is an ongoing state, not a one-time hint, so opening the dialog doesn't affect it.
+ */
+@Composable
+internal fun PendingHelpBadge(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    if (!LocalHelpIconsVisible.current) return
+    Box(
+        modifier = modifier
+            .size(InfoIconSize)
+            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), CircleShape)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.HelpOutline,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.surface,
+            modifier = Modifier.size(InfoIconSize * 0.75f),
+        )
     }
 }
 

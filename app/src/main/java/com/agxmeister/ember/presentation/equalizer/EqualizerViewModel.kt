@@ -75,6 +75,7 @@ data class EqualizerUiState(
     val weeklyAvg: Double?,
     val score: Int?,
     val volatilityKg: Double?,
+    val volatilityMeasuresNeeded: Int?,
     val isWeekly: Boolean,
     val trendLine: TrendLineData?,
     val weeklyRateKg: Double?,
@@ -226,6 +227,7 @@ class EqualizerViewModel @Inject constructor(
         val weeklyAvg: Double?
         val score: Int?
         val volatilityKg: Double?
+        val volatilityMeasuresNeeded: Int?
         val trendLine: TrendLineData?
         val weeklyRateKg: Double?
         val trendPending: TrendPending?
@@ -301,6 +303,7 @@ class EqualizerViewModel @Inject constructor(
                 EqualizerDayData(date = weekStart, weightKg = weeklyMap[weekStart]?.median)
             }
             volatilityKg = computeVolatility(volWeeks, algorithmConfig.minMeasuredForVolatility)
+            volatilityMeasuresNeeded = volatilityMeasuresNeeded(volWeeks, algorithmConfig.minMeasuredForVolatility)
         } else {
             today = todayDate
 
@@ -368,6 +371,7 @@ class EqualizerViewModel @Inject constructor(
                 EqualizerDayData(date = date, weightKg = candleMap[date]?.close)
             }
             volatilityKg = computeVolatility(volDays, algorithmConfig.minMeasuredForVolatility)
+            volatilityMeasuresNeeded = volatilityMeasuresNeeded(volDays, algorithmConfig.minMeasuredForVolatility)
         }
 
         val projection = computeProjection(weeklyAvg, weeklyRateKg, targetKg, initialWeightKg, goalIsLoss, todayDate)
@@ -384,6 +388,7 @@ class EqualizerViewModel @Inject constructor(
             weeklyAvg = weeklyAvg,
             score = score,
             volatilityKg = volatilityKg,
+            volatilityMeasuresNeeded = volatilityMeasuresNeeded,
             isWeekly = isWeekly,
             trendLine = trendLine,
             weeklyRateKg = weeklyRateKg,
@@ -408,6 +413,7 @@ class EqualizerViewModel @Inject constructor(
             weeklyAvg = null,
             score = null,
             volatilityKg = null,
+            volatilityMeasuresNeeded = null,
             isWeekly = false,
             trendLine = null,
             weeklyRateKg = null,
@@ -437,6 +443,11 @@ private fun computeTrendLine(
     val startKg = intercept
     val endKg = slope * (days.size - 1) + intercept
     return TrendLineData(startKg = startKg, endKg = endKg, diffKg = endKg - startKg)
+}
+
+private fun volatilityMeasuresNeeded(window: List<EqualizerDayData>, minMeasured: Int): Int? {
+    val measuredCount = window.count { it.weightKg != null }
+    return (minMeasured - measuredCount).takeIf { it > 0 }
 }
 
 private fun computeVolatility(window: List<EqualizerDayData>, minMeasured: Int): Double? {

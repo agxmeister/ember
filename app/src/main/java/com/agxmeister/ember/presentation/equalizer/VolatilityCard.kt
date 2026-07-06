@@ -15,6 +15,7 @@ private const val VOLATILITY_REFERENCE_KG = 1.0
 internal fun VolatilityCard(
     modifier: Modifier = Modifier,
     volatilityKg: Double?,
+    volatilityMeasuresNeeded: Int?,
     weightUnit: WeightUnit,
     isWeekly: Boolean,
 ) {
@@ -24,6 +25,7 @@ internal fun VolatilityCard(
         label = appString(R.string.stat_volatility),
         info = appString(if (isWeekly) R.string.stat_volatility_info_weekly else R.string.stat_volatility_info_daily),
         helpKey = "stat_volatility",
+        pendingInfo = volatilityMeasuresNeeded?.let { appString(R.string.stat_volatility_pending_info, it) },
     ) {
         val display = volatilityKg?.let { weightUnit.scaleDiff(it) }
         val color = volatilityKg?.let {

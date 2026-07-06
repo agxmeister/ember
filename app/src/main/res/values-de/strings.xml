@@ -134,6 +134,7 @@
     <string name="stat_volatility">SCHWANKUNG</string>
     <string name="stat_volatility_info_daily">Die Schwankung misst, wie stark dein Gewicht von Tag zu Tag schwankt. Niedrigere Werte bedeuten gleichmäßigere Messungen, höhere Werte mehr Streuung.</string>
     <string name="stat_volatility_info_weekly">Die Schwankung misst, wie stark dein Gewicht von Woche zu Woche schwankt. Niedrigere Werte bedeuten gleichmäßigere Messungen, höhere Werte mehr Streuung.</string>
+    <string name="stat_volatility_pending_info">Die Schwankung erscheint, sobald du genug Messungen hast. Trage %1$d weitere ein, um zu sehen, wie stabil du dich bewegst.</string>
     <string name="trends_score">WERT</string>
     <string name="trends_score_info_daily">Dein Wert bewertet, wie gut du zuletzt vorankommst: das Tempo deiner Gewichtsänderung, wie stetig du dich deinem Ziel näherst und wie regelmäßig du dich wiegst.</string>
     <string name="trends_score_info_weekly">Dein Wert bewertet, wie gut du zuletzt vorankommst: das Tempo deiner Gewichtsänderung, wie stetig du dich deinem Ziel näherst und wie regelmäßig du dich wiegst.</string>

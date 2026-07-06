@@ -134,6 +134,7 @@
     <string name="stat_volatility">VOLATILITÉ</string>
     <string name="stat_volatility_info_daily">La volatilité mesure à quel point votre poids fluctue d\'un jour à l\'autre. Des valeurs plus basses indiquent des mesures plus stables, des valeurs plus hautes plus de dispersion.</string>
     <string name="stat_volatility_info_weekly">La volatilité mesure à quel point votre poids fluctue d\'une semaine à l\'autre. Des valeurs plus basses indiquent des mesures plus stables, des valeurs plus hautes plus de dispersion.</string>
+    <string name="stat_volatility_pending_info">La volatilité apparaît dès que vous avez suffisamment de mesures. Enregistrez %1$d de plus pour voir votre degré de stabilité.</string>
     <string name="trends_score">SCORE</string>
     <string name="trends_score_info_daily">Votre score évalue la qualité de votre progression récente : le rythme de variation de votre poids, la régularité de votre tendance vers l\'objectif et la constance de vos pesées.</string>
     <string name="trends_score_info_weekly">Votre score évalue la qualité de votre progression récente : le rythme de variation de votre poids, la régularité de votre tendance vers l\'objectif et la constance de vos pesées.</string>

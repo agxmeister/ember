@@ -123,6 +123,7 @@ fun EqualizerScreen(animateEntry: Boolean = false) {
             VolatilityCard(
                 modifier = Modifier.weight(1f).fillMaxHeight(),
                 volatilityKg = state.volatilityKg,
+                volatilityMeasuresNeeded = state.volatilityMeasuresNeeded,
                 weightUnit = state.weightUnit,
                 isWeekly = state.isWeekly,
             )

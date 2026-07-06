@@ -119,7 +119,7 @@
     <!-- Trends / Equalizer -->
     <string name="trends_tgt_prefix">OB.</string>
     <string name="trends_delta_target">Δ TENDENZA</string>
-    <string name="trends_trend_pending_info">La tua tendenza settimanale appare quando Ember ha abbastanza misurazioni. Registrane altre %1$d per vedere quanto velocemente stai progredendo.</string>
+    <string name="trends_trend_pending_info">La tendenza settimanale appare quando hai abbastanza misurazioni. Registrane altre %1$d per vedere quanto velocemente stai progredendo.</string>
     <string name="trends_trend_info">La tendenza mostra quanto velocemente il tuo peso medio cambia ogni settimana. ▼ significa che sta calando, ▲ che sta salendo.</string>
     <string name="trends_trend_gap_info">Il tuo trend riappare dopo altre %1$d misurazioni.</string>
     <string name="trends_tap_to_edit">TOCCA PER MODIFICARE</string>
@@ -145,6 +145,7 @@
     <string name="stat_volatility">VOLATILITÀ</string>
     <string name="stat_volatility_info_daily">La volatilità misura quanto il tuo peso oscilla da un giorno all\'altro. Valori più bassi indicano misurazioni più stabili; valori più alti indicano maggiore dispersione.</string>
     <string name="stat_volatility_info_weekly">La volatilità misura quanto il tuo peso oscilla da una settimana all\'altra. Valori più bassi indicano misurazioni più stabili; valori più alti indicano maggiore dispersione.</string>
+    <string name="stat_volatility_pending_info">La volatilità appare quando hai abbastanza misurazioni. Registrane altre %1$d per vedere quanto sei stabile nel tuo andamento.</string>
     <string name="trends_score">PUNTEGGIO</string>
     <string name="trends_score_info_daily">Il tuo punteggio valuta quanto bene stai progredendo di recente: il ritmo del cambiamento di peso, quanto costantemente ti muovi verso l\'obiettivo e con quanta regolarità ti pesi.</string>
     <string name="trends_score_info_weekly">Il tuo punteggio valuta quanto bene stai progredendo di recente: il ritmo del cambiamento di peso, quanto costantemente ti muovi verso l\'obiettivo e con quanta regolarità ti pesi.</string>

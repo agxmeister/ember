@@ -119,7 +119,7 @@
     <!-- Trends / Equalizer -->
     <string name="trends_tgt_prefix">OBJ</string>
     <string name="trends_delta_target">Δ TENDENCIA</string>
-    <string name="trends_trend_pending_info">Tu tendencia semanal aparece cuando Ember tiene suficientes mediciones. Registra %1$d más para ver con qué rapidez avanzas.</string>
+    <string name="trends_trend_pending_info">La tendencia semanal aparece cuando tienes suficientes mediciones. Registra %1$d más para ver con qué rapidez avanzas.</string>
     <string name="trends_trend_info">La tendencia muestra con qué rapidez cambia tu peso medio cada semana. ▼ significa que baja, ▲ que sube.</string>
     <string name="trends_trend_gap_info">Tu tendencia reaparece tras %1$d mediciones más.</string>
     <string name="trends_tap_to_edit">TOCA PARA EDITAR</string>
@@ -145,6 +145,7 @@
     <string name="stat_volatility">VOLATILIDAD</string>
     <string name="stat_volatility_info_daily">La volatilidad mide cuánto fluctúa tu peso de un día a otro. Valores más bajos indican lecturas más estables; valores más altos indican mayor dispersión.</string>
     <string name="stat_volatility_info_weekly">La volatilidad mide cuánto fluctúa tu peso de una semana a otra. Valores más bajos indican lecturas más estables; valores más altos indican mayor dispersión.</string>
+    <string name="stat_volatility_pending_info">La volatilidad aparece cuando tienes suficientes mediciones. Registra %1$d más para ver qué tan estable te mueves.</string>
     <string name="trends_score">PUNTUACIÓN</string>
     <string name="trends_score_info_daily">Tu puntuación evalúa lo bien que estás progresando últimamente: el ritmo de cambio de tu peso, con qué constancia avanzas hacia tu objetivo y con qué regularidad te pesas.</string>
     <string name="trends_score_info_weekly">Tu puntuación evalúa lo bien que estás progresando últimamente: el ritmo de cambio de tu peso, con qué constancia avanzas hacia tu objetivo y con qué regularidad te pesas.</string>
