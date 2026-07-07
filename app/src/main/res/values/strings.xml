@@ -122,6 +122,7 @@
     <string name="trends_trend_pending_info">Weekly trend appears once you have enough measurements. Log %1$d more to see how fast you\'re moving.</string>
     <string name="trends_trend_info">The trend shows how fast your average weight is changing each week. ▼ means it\'s falling, ▲ means it\'s rising.</string>
     <string name="trends_trend_gap_info">Your trend reappears after %1$d more logs.</string>
+    <string name="trends_trend_gap_explanation">Your trend will reappear once you have enough recent measurements.</string>
     <string name="trends_tap_to_edit">TAP TO EDIT</string>
     <string name="trends_tap_again_to_clear">TAP AGAIN TO CLEAR</string>
     <string name="trends_tap_a_day">TAP A DAY TO OPEN</string>
@@ -155,6 +156,8 @@
     <string name="trends_projected_eta">PROJECTED ETA</string>
     <string name="trends_projected_eta_info">Your projected goal date is based on your current trend. It updates as your weight changes.</string>
     <string name="trends_eta_pending_info">The estimated date you\'ll reach your goal\nwill appear after %1$d more logs.</string>
+    <string name="trends_eta_pending_explanation">The estimated date you\'ll reach your goal will appear once you have enough measurements.</string>
+    <string name="label_more_to_go">more to go</string>
     <string name="trends_in_days">in %1$d days</string>
     <string name="trends_today">today</string>
     <string name="trends_goal_reached">Goal reached</string>

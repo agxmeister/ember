@@ -7,8 +7,12 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
@@ -37,15 +41,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+/** Right side of a [PendingOverlaySplit] scrim: an explanation and a "N more to go" count. */
+internal data class PendingOverlaySplit(
+    val explanation: String,
+    val count: Int,
+    val countLabel: String,
+)
+
 /**
  * Card chrome shared by all equalizer stat cards: surface color, rounding, and inner padding.
- * When [pendingOverlayText] is non-null, a scrim covers the whole card with a lock icon
- * top-left and the explanatory text centered on top.
+ * When pending, a scrim covers the whole card with a lock icon top-left, plus either
+ * [pendingOverlayText] centered, or [pendingOverlaySplit] laid out as explanation | count.
  */
 @Composable
 internal fun StatCardSurface(
     modifier: Modifier = Modifier,
     pendingOverlayText: String? = null,
+    pendingOverlaySplit: PendingOverlaySplit? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Card(
@@ -55,35 +67,87 @@ internal fun StatCardSurface(
     ) {
         Box {
             Column(modifier = Modifier.padding(12.dp).fillMaxHeight(), content = content)
-            if (pendingOverlayText != null) {
+            if (pendingOverlayText != null || pendingOverlaySplit != null) {
                 val darkTheme = MaterialTheme.colorScheme.surface.luminance() < 0.5f
                 val scrimColor = if (darkTheme) Color(0xFF242424) else Color.LightGray
                 val textColor = if (darkTheme) Color(0xFFAEAEAE) else Color.DarkGray
                 Box(
                     modifier = Modifier
                         .matchParentSize()
-                        .background(scrimColor)
-                        .padding(12.dp),
+                        .background(scrimColor),
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Lock,
                         contentDescription = null,
                         tint = textColor,
-                        modifier = Modifier.size(14.dp).align(Alignment.TopStart),
+                        modifier = Modifier.padding(12.dp).size(14.dp).align(Alignment.TopStart),
                     )
-                    Text(
-                        text = pendingOverlayText,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.align(Alignment.Center),
-                        style = TextStyle(
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = textColor,
-                        ),
-                    )
+                    if (pendingOverlaySplit != null) {
+                        // Weighted 2:1 split over the full (unpadded) card width so the divider
+                        // lands where the 2/3 boundary falls in the stat-card row above.
+                        PendingOverlaySplitRow(
+                            split = pendingOverlaySplit,
+                            textColor = textColor,
+                            modifier = Modifier.align(Alignment.Center).fillMaxSize().padding(vertical = 12.dp),
+                        )
+                    } else if (pendingOverlayText != null) {
+                        Text(
+                            text = pendingOverlayText,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.align(Alignment.Center).padding(12.dp),
+                            style = TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = textColor,
+                            ),
+                        )
+                    }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun PendingOverlaySplitRow(split: PendingOverlaySplit, textColor: Color, modifier: Modifier = Modifier) {
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = split.explanation,
+            modifier = Modifier.weight(2f).padding(start = 12.dp, end = 10.dp),
+            style = TextStyle(
+                fontFamily = FontFamily.Monospace,
+                fontSize = 12.sp,
+                color = textColor,
+            ),
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(1.dp)
+                .background(textColor.copy(alpha = 0.35f)),
+        )
+        Column(
+            modifier = Modifier.weight(1f).padding(start = 10.dp, end = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = split.count.toString(),
+                style = TextStyle(
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 52.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = textColor,
+                ),
+            )
+            Text(
+                text = split.countLabel,
+                style = TextStyle(
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 12.sp,
+                    color = textColor,
+                ),
+            )
         }
     }
 }

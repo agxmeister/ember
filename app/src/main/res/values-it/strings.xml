@@ -122,6 +122,7 @@
     <string name="trends_trend_pending_info">La tendenza settimanale appare quando hai abbastanza misurazioni. Registrane altre %1$d per vedere quanto velocemente stai progredendo.</string>
     <string name="trends_trend_info">La tendenza mostra quanto velocemente il tuo peso medio cambia ogni settimana. ▼ significa che sta calando, ▲ che sta salendo.</string>
     <string name="trends_trend_gap_info">Il tuo trend riappare dopo altre %1$d misurazioni.</string>
+    <string name="trends_trend_gap_explanation">Il tuo trend riapparirà quando avrai abbastanza misurazioni recenti.</string>
     <string name="trends_tap_to_edit">TOCCA PER MODIFICARE</string>
     <string name="trends_tap_again_to_clear">TOCCA DI NUOVO PER CANCELLARE</string>
     <string name="trends_tap_a_day">TOCCA UN GIORNO PER APRIRE</string>
@@ -155,6 +156,8 @@
     <string name="trends_projected_eta">DATA STIMATA</string>
     <string name="trends_projected_eta_info">La data stimata per l\'obiettivo si basa sulla tua tendenza attuale. Si aggiorna man mano che il tuo peso cambia.</string>
     <string name="trends_eta_pending_info">La data stimata in cui raggiungerai il tuo obiettivo\napparirà dopo altre %1$d misurazioni.</string>
+    <string name="trends_eta_pending_explanation">La data stimata in cui raggiungerai il tuo obiettivo apparirà quando avrai abbastanza misurazioni.</string>
+    <string name="label_more_to_go">mancanti</string>
     <string name="trends_in_days">tra %1$d giorni</string>
     <string name="trends_today">oggi</string>
     <string name="trends_goal_reached">Obiettivo raggiunto</string>

@@ -111,6 +111,7 @@
     <string name="trends_delta_target">Δ TENDANCE</string>
     <string name="trends_trend_info">La tendance indique à quelle vitesse votre poids moyen évolue chaque semaine. ▼ signifie qu\'il baisse, ▲ qu\'il monte.</string>
     <string name="trends_trend_gap_info">Votre tendance réapparaît après %1$d relevés de plus.</string>
+    <string name="trends_trend_gap_explanation">Votre tendance réapparaîtra dès que vous aurez suffisamment de mesures récentes.</string>
     <string name="trends_tap_to_edit">APPUYER POUR MODIFIER</string>
     <string name="trends_tap_again_to_clear">APPUYER À NOUVEAU POUR EFFACER</string>
     <string name="trends_tap_a_day">APPUYER SUR UN JOUR</string>
@@ -144,6 +145,8 @@
     <string name="trends_projected_eta">DATE ESTIMÉE</string>
     <string name="trends_projected_eta_info">Votre date d\'objectif estimée est basée sur votre tendance actuelle et se met à jour au fil du temps.</string>
     <string name="trends_eta_pending_info">La date estimée à laquelle vous atteindrez votre objectif\napparaîtra après %1$d relevés de plus.</string>
+    <string name="trends_eta_pending_explanation">La date estimée à laquelle vous atteindrez votre objectif apparaîtra dès que vous aurez suffisamment de mesures.</string>
+    <string name="label_more_to_go">de plus</string>
     <string name="trends_in_days">dans %1$d jours</string>
     <string name="trends_today">aujourd\'hui</string>
     <string name="trends_goal_reached">Objectif atteint</string>

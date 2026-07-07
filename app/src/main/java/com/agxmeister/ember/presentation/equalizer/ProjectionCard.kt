@@ -53,15 +53,19 @@ internal fun ProjectionCard(
             onDismiss = { showInfo = false },
         )
     }
-    val pendingOverlayText = if (projection == ProjectionResult.Unavailable.NotEnoughData && trendPending != null) {
-        trendPendingText(trendPending, R.string.trends_eta_pending_info)
+    val pendingOverlaySplit = if (projection == ProjectionResult.Unavailable.NotEnoughData && trendPending != null) {
+        PendingOverlaySplit(
+            explanation = trendPendingExplanation(trendPending, R.string.trends_eta_pending_explanation),
+            count = trendPending.measurementsNeeded,
+            countLabel = appString(R.string.label_more_to_go),
+        )
     } else null
 
-    StatCardSurface(modifier = modifier, pendingOverlayText = pendingOverlayText) {
+    StatCardSurface(modifier = modifier, pendingOverlaySplit = pendingOverlaySplit) {
         CardLabelRow(
             label = appString(R.string.trends_projected_eta),
-            onInfo = if (pendingOverlayText == null) ({ showInfo = true }) else null,
-            helpKey = if (pendingOverlayText == null) "trends_projected_eta" else null,
+            onInfo = if (pendingOverlaySplit == null) ({ showInfo = true }) else null,
+            helpKey = if (pendingOverlaySplit == null) "trends_projected_eta" else null,
         )
         Spacer(Modifier.height(6.dp))
         when (projection) {
