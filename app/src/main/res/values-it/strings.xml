@@ -150,6 +150,7 @@
     <string name="trends_score">PUNTEGGIO</string>
     <string name="trends_score_info_daily">Il tuo punteggio valuta quanto bene stai progredendo di recente: il ritmo del cambiamento di peso, quanto costantemente ti muovi verso l\'obiettivo e con quanta regolarità ti pesi.</string>
     <string name="trends_score_info_weekly">Il tuo punteggio valuta quanto bene stai progredendo di recente: il ritmo del cambiamento di peso, quanto costantemente ti muovi verso l\'obiettivo e con quanta regolarità ti pesi.</string>
+    <string name="trends_score_pending_info">Il punteggio appare non appena registri una misurazione.</string>
     <string name="cd_delete">Elimina</string>
 
     <!-- Projection card -->

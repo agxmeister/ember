@@ -150,6 +150,7 @@
     <string name="trends_score">PUNTUACIÓN</string>
     <string name="trends_score_info_daily">Tu puntuación evalúa lo bien que estás progresando últimamente: el ritmo de cambio de tu peso, con qué constancia avanzas hacia tu objetivo y con qué regularidad te pesas.</string>
     <string name="trends_score_info_weekly">Tu puntuación evalúa lo bien que estás progresando últimamente: el ritmo de cambio de tu peso, con qué constancia avanzas hacia tu objetivo y con qué regularidad te pesas.</string>
+    <string name="trends_score_pending_info">La puntuación aparece en cuanto registras una medición.</string>
     <string name="cd_delete">Eliminar</string>
 
     <!-- Projection card -->

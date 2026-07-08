@@ -139,6 +139,7 @@
     <string name="trends_score">SCORE</string>
     <string name="trends_score_info_daily">Votre score évalue la qualité de votre progression récente : le rythme de variation de votre poids, la régularité de votre tendance vers l\'objectif et la constance de vos pesées.</string>
     <string name="trends_score_info_weekly">Votre score évalue la qualité de votre progression récente : le rythme de variation de votre poids, la régularité de votre tendance vers l\'objectif et la constance de vos pesées.</string>
+    <string name="trends_score_pending_info">Le score apparaît dès que vous avez enregistré une mesure.</string>
     <string name="cd_delete">Supprimer</string>
 
     <!-- Projection card -->

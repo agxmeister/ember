@@ -139,6 +139,7 @@
     <string name="trends_score">WERT</string>
     <string name="trends_score_info_daily">Dein Wert bewertet, wie gut du zuletzt vorankommst: das Tempo deiner Gewichtsänderung, wie stetig du dich deinem Ziel näherst und wie regelmäßig du dich wiegst.</string>
     <string name="trends_score_info_weekly">Dein Wert bewertet, wie gut du zuletzt vorankommst: das Tempo deiner Gewichtsänderung, wie stetig du dich deinem Ziel näherst und wie regelmäßig du dich wiegst.</string>
+    <string name="trends_score_pending_info">Der Wert erscheint, sobald du eine Messung erfasst hast.</string>
     <string name="cd_delete">Löschen</string>
 
     <!-- Projection card -->

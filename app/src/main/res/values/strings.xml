@@ -150,6 +150,7 @@
     <string name="trends_score">SCORE</string>
     <string name="trends_score_info_daily">Your score grades how well you\'re progressing lately: the pace of your weight change, how steadily you trend toward your goal, and how consistently you weigh in.</string>
     <string name="trends_score_info_weekly">Your score grades how well you\'re progressing lately: the pace of your weight change, how steadily you trend toward your goal, and how consistently you weigh in.</string>
+    <string name="trends_score_pending_info">Score appears once you have logged a measurement.</string>
     <string name="cd_delete">Delete</string>
 
     <!-- Projection card -->

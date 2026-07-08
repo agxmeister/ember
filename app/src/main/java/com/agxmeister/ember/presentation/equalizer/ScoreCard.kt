@@ -1,6 +1,7 @@
 package com.agxmeister.ember.presentation.equalizer
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -25,10 +26,11 @@ internal fun ScoreCard(
         label = appString(R.string.trends_score),
         info = appString(if (isWeekly) R.string.trends_score_info_weekly else R.string.trends_score_info_daily),
         helpKey = "trends_score",
+        pendingInfo = if (score == null) appString(R.string.trends_score_pending_info) else null,
     ) {
-        val scoreColor = closenessColor((score ?: 0) / 100f, darkTheme)
+        val scoreColor = if (score != null) closenessColor(score / 100f, darkTheme) else MaterialTheme.colorScheme.onSurface
         Text(
-            text = score?.toString() ?: "−",
+            text = score?.toString() ?: "--",
             style = TextStyle(
                 fontFamily = FontFamily.Monospace,
                 fontSize = 28.sp,
