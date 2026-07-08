@@ -24,9 +24,12 @@ fun closenessColor(
     lightness: Float = if (darkTheme) 0.57f else 0.40f,
 ): Color = Color.hsl(hue = 8f + sqrt(closeness) * 112f, saturation = saturation, lightness = lightness)
 
+/** Neutral gray used by "no data yet" placeholders (e.g. Δ TREND's "−.−−"), shared across stat cards. */
+fun pendingPlaceholderColor(): Color = Color.hsl(hue = 8f, saturation = 0.0f, lightness = 0.45f)
+
 fun trendSpeedColor(weeklyRateKg: Double?, goalIsLoss: Boolean, darkTheme: Boolean = true): Color {
     val lightness = if (darkTheme) 0.57f else 0.40f
-    if (weeklyRateKg == null) return Color.hsl(hue = 8f, saturation = 0.0f, lightness = 0.45f)
+    if (weeklyRateKg == null) return pendingPlaceholderColor()
     val towardTarget = if (goalIsLoss) weeklyRateKg < 0.0 else weeklyRateKg > 0.0
     if (!towardTarget) return Color.hsl(hue = 8f, saturation = 0.82f, lightness = lightness)
     val speedProgress = (abs(weeklyRateKg) / 0.5).coerceIn(0.0, 1.0).toFloat()

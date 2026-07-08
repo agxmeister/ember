@@ -1,13 +1,13 @@
 package com.agxmeister.ember.presentation.equalizer
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.agxmeister.ember.R
 import com.agxmeister.ember.domain.model.WeightUnit
 import com.agxmeister.ember.presentation.appString
 import com.agxmeister.ember.presentation.theme.closenessColor
+import com.agxmeister.ember.presentation.theme.pendingPlaceholderColor
 
 private const val VOLATILITY_REFERENCE_KG = 1.0
 
@@ -30,7 +30,7 @@ internal fun VolatilityCard(
         val display = volatilityKg?.let { weightUnit.scaleDiff(it) }
         val color = volatilityKg?.let {
             closenessColor((1.0 - it / VOLATILITY_REFERENCE_KG).coerceIn(0.0, 1.0).toFloat(), darkTheme)
-        } ?: MaterialTheme.colorScheme.onSurface
+        } ?: pendingPlaceholderColor()
         StatValueRow(
             value = display?.let { formatVolatility(it) } ?: ".--",
             unit = display?.let { weightUnit.label },
