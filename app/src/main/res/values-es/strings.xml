@@ -131,6 +131,7 @@
     <string name="trends_readout_week_avg">MEDIA 14 SEM.</string>
     <string name="trends_avg_info_daily">Es una media de 14 días que combina tus pesajes recientes, suavizando las subidas y bajadas diarias para que veas tu peso real en lugar del ruido de hoy.</string>
     <string name="trends_avg_info_weekly">Es una media de 14 semanas que combina tus pesajes recientes, suavizando las oscilaciones de una semana a otra para que veas tu peso real en lugar del ruido de esta semana.</string>
+    <string name="trends_avg_pending_info">Tu media aparece en cuanto registras una medición.</string>
     <string name="trends_readout_wk_prefix">SEM.</string>
     <string name="trends_day_and_time">día y hora</string>
     <string name="trends_tap_to_change">toca para cambiar</string>

@@ -120,6 +120,7 @@
     <string name="trends_readout_week_avg">14-WO Ø</string>
     <string name="trends_avg_info_daily">Dies ist ein 14-Tage-Durchschnitt, der deine letzten Messungen zusammenfasst und tägliche Schwankungen glättet, sodass du dein echtes Gewicht statt des Rauschens von heute siehst.</string>
     <string name="trends_avg_info_weekly">Dies ist ein 14-Wochen-Durchschnitt, der deine letzten Messungen zusammenfasst und wöchentliche Schwankungen glättet, sodass du dein echtes Gewicht statt des Rauschens dieser Woche siehst.</string>
+    <string name="trends_avg_pending_info">Dein Durchschnitt erscheint, sobald du eine Messung erfasst hast.</string>
     <string name="trends_readout_wk_prefix">WO</string>
     <string name="trends_day_and_time">Tag &amp; Uhrzeit</string>
     <string name="trends_tap_to_change">tippen zum ändern</string>

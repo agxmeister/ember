@@ -120,6 +120,7 @@
     <string name="trends_readout_week_avg">MOY. 14 SEM.</string>
     <string name="trends_avg_info_daily">Il s\'agit d\'une moyenne sur 14 jours qui combine vos dernières pesées et lisse les variations quotidiennes, pour voir votre vrai poids plutôt que le bruit du jour.</string>
     <string name="trends_avg_info_weekly">Il s\'agit d\'une moyenne sur 14 semaines qui combine vos dernières pesées et lisse les variations hebdomadaires, pour voir votre vrai poids plutôt que le bruit de la semaine.</string>
+    <string name="trends_avg_pending_info">Votre moyenne apparaît dès que vous avez enregistré une mesure.</string>
     <string name="trends_readout_wk_prefix">SEM.</string>
     <string name="trends_day_and_time">jour &amp; heure</string>
     <string name="trends_tap_to_change">appuyer pour modifier</string>

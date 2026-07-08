@@ -131,6 +131,7 @@
     <string name="trends_readout_week_avg">MEDIA 14 SETT.</string>
     <string name="trends_avg_info_daily">È una media a 14 giorni che combina le tue pesate recenti, attenuando gli alti e bassi giornalieri così da vedere il tuo peso reale invece del rumore di oggi.</string>
     <string name="trends_avg_info_weekly">È una media a 14 settimane che combina le tue pesate recenti, attenuando le oscillazioni settimanali così da vedere il tuo peso reale invece del rumore di questa settimana.</string>
+    <string name="trends_avg_pending_info">La tua media appare non appena registri una misurazione.</string>
     <string name="trends_readout_wk_prefix">SETT.</string>
     <string name="trends_day_and_time">giorno e ora</string>
     <string name="trends_tap_to_change">tocca per modificare</string>

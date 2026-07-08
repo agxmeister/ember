@@ -31,6 +31,7 @@ import com.agxmeister.ember.presentation.appString
 import com.agxmeister.ember.presentation.common.InfoDialog
 import com.agxmeister.ember.presentation.common.InfoIcon
 import com.agxmeister.ember.presentation.theme.closenessColor
+import com.agxmeister.ember.presentation.theme.pendingPlaceholderColor
 import com.agxmeister.ember.presentation.theme.trendSpeedColor
 import kotlinx.datetime.LocalDate
 import kotlin.math.abs
@@ -109,7 +110,9 @@ private fun WeightDisplay(
     onTap: () -> Unit,
 ) {
     val darkTheme = isSystemInDarkTheme()
+    val avgPending = displayWeight == null
     val weightStr = displayWeight?.let { "%.1f".format(weightUnit.fromKg(it)) } ?: "−.−"
+    val effectiveDisplayColor = if (avgPending) pendingPlaceholderColor() else displayColor
     val diffDisplay = weeklyRateKg?.let { weightUnit.scaleDiff(it) }
     val arrow = when {
         diffDisplay == null -> null
@@ -125,7 +128,7 @@ private fun WeightDisplay(
     val trendColor = trendSpeedColor(weeklyRateKg, goalIsLoss, darkTheme)
 
     val onBg = MaterialTheme.colorScheme.onBackground
-    val glow = Shadow(color = displayColor.copy(alpha = 0.65f), blurRadius = 22f)
+    val glow = if (avgPending) null else Shadow(color = effectiveDisplayColor.copy(alpha = 0.65f), blurRadius = 22f)
     val dimColor = onBg.copy(alpha = 0.6f)
     val labelStyle = TextStyle(
         fontFamily = FontFamily.Monospace,
@@ -147,7 +150,11 @@ private fun WeightDisplay(
     if (showAvgInfo) {
         InfoDialog(
             title = label,
-            text = appString(if (isWeekly) R.string.trends_avg_info_weekly else R.string.trends_avg_info_daily),
+            text = if (avgPending) {
+                appString(R.string.trends_avg_pending_info)
+            } else {
+                appString(if (isWeekly) R.string.trends_avg_info_weekly else R.string.trends_avg_info_daily)
+            },
             onDismiss = { showAvgInfo = false },
         )
     }
@@ -166,11 +173,18 @@ private fun WeightDisplay(
     ) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(text = label, style = labelStyle)
-            InfoIcon(
-                onClick = { showAvgInfo = true },
-                helpKey = "trends_avg",
-                modifier = Modifier.padding(start = 4.dp),
-            )
+            if (avgPending) {
+                PendingHelpBadge(
+                    onClick = { showAvgInfo = true },
+                    modifier = Modifier.padding(start = 4.dp),
+                )
+            } else {
+                InfoIcon(
+                    onClick = { showAvgInfo = true },
+                    helpKey = "trends_avg",
+                    modifier = Modifier.padding(start = 4.dp),
+                )
+            }
             Spacer(modifier = Modifier.weight(1f))
             Text(text = appString(R.string.trends_delta_target), style = labelStyle)
             if (trendPending != null) {
@@ -197,7 +211,7 @@ private fun WeightDisplay(
                         fontFamily = FontFamily.Monospace,
                         fontSize = 52.sp,
                         fontWeight = FontWeight.Bold,
-                        color = displayColor,
+                        color = effectiveDisplayColor,
                         shadow = glow,
                     ),
                 )
@@ -206,8 +220,8 @@ private fun WeightDisplay(
                     style = TextStyle(
                         fontFamily = FontFamily.Monospace,
                         fontSize = 18.sp,
-                        color = displayColor.copy(alpha = 0.85f),
-                        shadow = Shadow(color = displayColor.copy(alpha = 0.5f), blurRadius = 12f),
+                        color = effectiveDisplayColor.copy(alpha = 0.85f),
+                        shadow = if (avgPending) null else Shadow(color = effectiveDisplayColor.copy(alpha = 0.5f), blurRadius = 12f),
                     ),
                     modifier = Modifier.padding(bottom = 8.dp),
                 )
