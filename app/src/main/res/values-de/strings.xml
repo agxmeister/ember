@@ -160,8 +160,8 @@
     <!-- Weekly rate card -->
     <string name="trends_weekly_rate">WÖCHENTLICHE RATE</string>
     <string name="trends_weekly_rate_info">Deine wöchentliche Rate zeigt, wie schnell sich dein Gewicht verändert. Eine gesunde Rate liegt bei 0,25–1,0 kg pro Woche.</string>
-    <string name="trends_weekly_rate_pending_info_loss">Die Rate, mit der du abnimmst,\nerscheint nach %1$d weiteren Einträgen.</string>
-    <string name="trends_weekly_rate_pending_info_gain">Die Rate, mit der du zunimmst,\nerscheint nach %1$d weiteren Einträgen.</string>
+    <string name="trends_weekly_rate_pending_explanation_loss">Die Rate, mit der du abnimmst, erscheint, sobald du genug Messungen hast.</string>
+    <string name="trends_weekly_rate_pending_explanation_gain">Die Rate, mit der du zunimmst, erscheint, sobald du genug Messungen hast.</string>
     <string name="trends_rate_zone_too_slow">ZU LANGSAM</string>
     <string name="trends_rate_zone_healthy">IM PLAN</string>
     <string name="trends_rate_zone_aggressive">AGGRESSIV</string>

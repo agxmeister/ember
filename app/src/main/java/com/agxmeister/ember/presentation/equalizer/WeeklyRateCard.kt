@@ -53,19 +53,25 @@ internal fun WeeklyRateCard(
         WeeklyRateZone.Unavailable -> ""
     }
     val pending = weeklyRateKg == null
-    val pendingInfoRes = if (goalIsLoss) {
-        R.string.trends_weekly_rate_pending_info_loss
+    val pendingExplanationRes = if (goalIsLoss) {
+        R.string.trends_weekly_rate_pending_explanation_loss
     } else {
-        R.string.trends_weekly_rate_pending_info_gain
+        R.string.trends_weekly_rate_pending_explanation_gain
     }
-    val pendingOverlayText = if (pending && trendPending != null) {
-        trendPendingText(trendPending, pendingInfoRes)
+    val pendingOverlaySplit = if (pending && trendPending != null) {
+        PendingOverlaySplit(
+            explanation = trendPendingExplanation(trendPending, pendingExplanationRes),
+            count = trendPending.measurementsNeeded,
+            countLabel = appString(R.string.label_more_to_go),
+            countFontSize = 28.sp,
+            countOnLeft = true,
+        )
     } else null
-    StatCardSurface(modifier = modifier, pendingOverlayText = pendingOverlayText) {
+    StatCardSurface(modifier = modifier, pendingOverlaySplit = pendingOverlaySplit) {
         CardLabelRow(
             label = appString(R.string.trends_weekly_rate),
-            onInfo = if (pendingOverlayText == null) ({ showInfo = true }) else null,
-            helpKey = if (pendingOverlayText == null) "trends_weekly_rate" else null,
+            onInfo = if (pendingOverlaySplit == null) ({ showInfo = true }) else null,
+            helpKey = if (pendingOverlaySplit == null) "trends_weekly_rate" else null,
         )
         Spacer(Modifier.weight(1f))
         RateZoneBar(

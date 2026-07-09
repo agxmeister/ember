@@ -171,8 +171,8 @@
     <!-- Weekly rate card -->
     <string name="trends_weekly_rate">RITMO SEMANAL</string>
     <string name="trends_weekly_rate_info">Tu ritmo semanal muestra con qué rapidez cambia tu peso. Un ritmo saludable es de 0,25 a 1,0 kg por semana.</string>
-    <string name="trends_weekly_rate_pending_info_loss">El ritmo al que pierdes peso\naparecerá tras %1$d mediciones más.</string>
-    <string name="trends_weekly_rate_pending_info_gain">El ritmo al que ganas peso\naparecerá tras %1$d mediciones más.</string>
+    <string name="trends_weekly_rate_pending_explanation_loss">El ritmo al que pierdes peso aparecerá cuando tengas suficientes mediciones.</string>
+    <string name="trends_weekly_rate_pending_explanation_gain">El ritmo al que ganas peso aparecerá cuando tengas suficientes mediciones.</string>
     <string name="trends_rate_zone_too_slow">DEMASIADO LENTO</string>
     <string name="trends_rate_zone_healthy">EN BUEN RITMO</string>
     <string name="trends_rate_zone_aggressive">AGRESIVO</string>

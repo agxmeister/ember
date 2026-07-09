@@ -38,14 +38,17 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-/** Right side of a [PendingOverlaySplit] scrim: an explanation and a "N more to go" count. */
+/** Explanation and "N more to go" count shown in a [PendingOverlaySplit] scrim. */
 internal data class PendingOverlaySplit(
     val explanation: String,
     val count: Int,
     val countLabel: String,
+    val countFontSize: TextUnit = 52.sp,
+    val countOnLeft: Boolean = false,
 )
 
 /**
@@ -111,31 +114,24 @@ internal fun StatCardSurface(
 
 @Composable
 private fun PendingOverlaySplitRow(split: PendingOverlaySplit, textColor: Color, modifier: Modifier = Modifier) {
-    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+    val explanationText: @Composable (Modifier) -> Unit = { textModifier ->
         Text(
             text = split.explanation,
-            modifier = Modifier.weight(2f).padding(start = 12.dp, end = 10.dp),
+            modifier = textModifier,
             style = TextStyle(
                 fontFamily = FontFamily.Monospace,
                 fontSize = 12.sp,
                 color = textColor,
             ),
         )
-        Box(
-            modifier = Modifier
-                .fillMaxHeight()
-                .width(1.dp)
-                .background(textColor.copy(alpha = 0.35f)),
-        )
-        Column(
-            modifier = Modifier.weight(1f).padding(start = 10.dp, end = 12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
+    }
+    val countColumn: @Composable (Modifier) -> Unit = { columnModifier ->
+        Column(modifier = columnModifier, horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = split.count.toString(),
                 style = TextStyle(
                     fontFamily = FontFamily.Monospace,
-                    fontSize = 52.sp,
+                    fontSize = split.countFontSize,
                     fontWeight = FontWeight.Bold,
                     color = textColor,
                 ),
@@ -148,6 +144,26 @@ private fun PendingOverlaySplitRow(split: PendingOverlaySplit, textColor: Color,
                     color = textColor,
                 ),
             )
+        }
+    }
+    val divider: @Composable () -> Unit = {
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(1.dp)
+                .background(textColor.copy(alpha = 0.35f)),
+        )
+    }
+
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+        if (split.countOnLeft) {
+            countColumn(Modifier.weight(1f).padding(start = 12.dp, end = 10.dp))
+            divider()
+            explanationText(Modifier.weight(2f).padding(start = 10.dp, end = 12.dp))
+        } else {
+            explanationText(Modifier.weight(2f).padding(start = 12.dp, end = 10.dp))
+            divider()
+            countColumn(Modifier.weight(1f).padding(start = 10.dp, end = 12.dp))
         }
     }
 }
