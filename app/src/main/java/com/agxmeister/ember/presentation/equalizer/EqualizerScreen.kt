@@ -138,7 +138,7 @@ fun EqualizerScreen(animateEntry: Boolean = false) {
             projection = state.projection,
             targetKg = state.targetKg,
             weightUnit = state.weightUnit,
-            trendPending = state.trendPending,
+            trendPending = state.etaTrendPending,
         )
         WeeklyRateCard(
             modifier = Modifier.fillMaxWidth().weight(1f),

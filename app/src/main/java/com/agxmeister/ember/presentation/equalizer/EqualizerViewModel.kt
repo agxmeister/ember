@@ -81,6 +81,7 @@ data class EqualizerUiState(
     val weeklyRateKg: Double?,
     val goalIsLoss: Boolean,
     val trendPending: TrendPending?,
+    val etaTrendPending: TrendPending?,
     val canScrollLeft: Boolean,
     val canScrollRight: Boolean,
     val projection: ProjectionResult,
@@ -231,6 +232,7 @@ class EqualizerViewModel @Inject constructor(
         val trendLine: TrendLineData?
         val weeklyRateKg: Double?
         val trendPending: TrendPending?
+        val etaTrendPending: TrendPending?
         val canScrollLeft: Boolean
         val canScrollRight: Boolean
 
@@ -269,7 +271,10 @@ class EqualizerViewModel @Inject constructor(
                 computeWeeklyRate(rateWeekSegment, indexStepDays = 7, maxGap = algorithmConfig.maxGapDays)
             } else null
             trendPending = if (weeklyRateKg == null) {
-                computeTrendPending(rateWeekWindow, measuredInWeekSegment)
+                computeTrendPending(rateWeekWindow, measuredInWeekSegment, MIN_MEASURED_FOR_RATE)
+            } else null
+            etaTrendPending = if (measuredInWeekSegment < MIN_MEASURED_FOR_ETA) {
+                computeTrendPending(rateWeekWindow, measuredInWeekSegment, MIN_MEASURED_FOR_ETA)
             } else null
 
             var s = 0
@@ -337,7 +342,10 @@ class EqualizerViewModel @Inject constructor(
                 computeWeeklyRate(rateDaySegment, maxGap = algorithmConfig.maxGapDays)
             } else null
             trendPending = if (weeklyRateKg == null) {
-                computeTrendPending(rateDayWindow, measuredInDaySegment)
+                computeTrendPending(rateDayWindow, measuredInDaySegment, MIN_MEASURED_FOR_RATE)
+            } else null
+            etaTrendPending = if (measuredInDaySegment < MIN_MEASURED_FOR_ETA) {
+                computeTrendPending(rateDayWindow, measuredInDaySegment, MIN_MEASURED_FOR_ETA)
             } else null
 
             var s = 0
@@ -374,7 +382,7 @@ class EqualizerViewModel @Inject constructor(
             volatilityMeasuresNeeded = volatilityMeasuresNeeded(volDays, algorithmConfig.minMeasuredForVolatility)
         }
 
-        val projection = computeProjection(weeklyAvg, weeklyRateKg, targetKg, initialWeightKg, goalIsLoss, todayDate)
+        val projection = computeProjection(weeklyAvg, weeklyRateKg, etaTrendPending, targetKg, initialWeightKg, goalIsLoss, todayDate)
         val rateZone = classifyWeeklyRate(weeklyRateKg, goalIsLoss)
 
         EqualizerUiState(
@@ -394,6 +402,7 @@ class EqualizerViewModel @Inject constructor(
             weeklyRateKg = weeklyRateKg,
             goalIsLoss = goalIsLoss,
             trendPending = trendPending,
+            etaTrendPending = etaTrendPending,
             canScrollLeft = canScrollLeft,
             canScrollRight = canScrollRight,
             projection = projection,
@@ -419,6 +428,7 @@ class EqualizerViewModel @Inject constructor(
             weeklyRateKg = null,
             goalIsLoss = true,
             trendPending = null,
+            etaTrendPending = null,
             canScrollLeft = false,
             canScrollRight = false,
             projection = ProjectionResult.Unavailable.NotEnoughData,
@@ -466,11 +476,13 @@ private fun computeVolatility(window: List<EqualizerDayData>, minMeasured: Int):
 private fun computeProjection(
     weeklyAvg: Double?,
     weeklyRateKg: Double?,
+    etaTrendPending: TrendPending?,
     targetKg: Double,
     initialWeightKg: Double,
     goalIsLoss: Boolean,
     today: LocalDate,
 ): ProjectionResult {
+    if (etaTrendPending != null) return ProjectionResult.Unavailable.NotEnoughData
     if (weeklyAvg == null || weeklyRateKg == null) return ProjectionResult.Unavailable.NotEnoughData
     val alreadyReached = if (goalIsLoss) weeklyAvg <= targetKg else weeklyAvg >= targetKg
     if (alreadyReached) return ProjectionResult.Reached
@@ -542,6 +554,7 @@ private fun classifyWeeklyRate(weeklyRateKg: Double?, goalIsLoss: Boolean): Week
 }
 
 private const val MIN_MEASURED_FOR_RATE = 7
+private const val MIN_MEASURED_FOR_ETA = 14
 
 private fun computeWeeklyRate(window: List<EqualizerDayData>, indexStepDays: Int = 1, maxGap: Int): Double? {
     val filled = fillGaps(window, maxGap) ?: return null
@@ -551,8 +564,8 @@ private fun computeWeeklyRate(window: List<EqualizerDayData>, indexStepDays: Int
     return slope * 7.0 / indexStepDays
 }
 
-private fun computeTrendPending(rateWindow: List<EqualizerDayData>, measuredInSegment: Int): TrendPending {
-    val needed = (MIN_MEASURED_FOR_RATE - measuredInSegment).coerceAtLeast(1)
+private fun computeTrendPending(rateWindow: List<EqualizerDayData>, measuredInSegment: Int, minMeasured: Int): TrendPending {
+    val needed = (minMeasured - measuredInSegment).coerceAtLeast(1)
     val hasOlderData = rateWindow.count { it.weightKg != null } > measuredInSegment
     return if (hasOlderData) TrendPending.GapTooBig(needed) else TrendPending.NotEnoughData(needed)
 }
