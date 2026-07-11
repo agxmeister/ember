@@ -267,14 +267,14 @@ class EqualizerViewModel @Inject constructor(
             }
             val rateWeekSegment = mostRecentCleanSegment(rateWeekWindow, algorithmConfig.maxGapDays)
             val measuredInWeekSegment = rateWeekSegment.count { it.weightKg != null }
-            weeklyRateKg = if (hasRecentWeek && measuredInWeekSegment >= MIN_MEASURED_FOR_RATE) {
+            weeklyRateKg = if (hasRecentWeek && measuredInWeekSegment >= algorithmConfig.minMeasuredForRate) {
                 computeWeeklyRate(rateWeekSegment, indexStepDays = 7, maxGap = algorithmConfig.maxGapDays)
             } else null
             trendPending = if (weeklyRateKg == null) {
-                computeTrendPending(rateWeekWindow, measuredInWeekSegment, MIN_MEASURED_FOR_RATE)
+                computeTrendPending(rateWeekWindow, measuredInWeekSegment, algorithmConfig.minMeasuredForRate)
             } else null
-            etaTrendPending = if (measuredInWeekSegment < MIN_MEASURED_FOR_ETA) {
-                computeTrendPending(rateWeekWindow, measuredInWeekSegment, MIN_MEASURED_FOR_ETA)
+            etaTrendPending = if (measuredInWeekSegment < algorithmConfig.minMeasuredForEta) {
+                computeTrendPending(rateWeekWindow, measuredInWeekSegment, algorithmConfig.minMeasuredForEta)
             } else null
 
             var s = 0
@@ -338,14 +338,14 @@ class EqualizerViewModel @Inject constructor(
             }
             val rateDaySegment = mostRecentCleanSegment(rateDayWindow, algorithmConfig.maxGapDays)
             val measuredInDaySegment = rateDaySegment.count { it.weightKg != null }
-            weeklyRateKg = if (hasRecentDay && measuredInDaySegment >= MIN_MEASURED_FOR_RATE) {
+            weeklyRateKg = if (hasRecentDay && measuredInDaySegment >= algorithmConfig.minMeasuredForRate) {
                 computeWeeklyRate(rateDaySegment, maxGap = algorithmConfig.maxGapDays)
             } else null
             trendPending = if (weeklyRateKg == null) {
-                computeTrendPending(rateDayWindow, measuredInDaySegment, MIN_MEASURED_FOR_RATE)
+                computeTrendPending(rateDayWindow, measuredInDaySegment, algorithmConfig.minMeasuredForRate)
             } else null
-            etaTrendPending = if (measuredInDaySegment < MIN_MEASURED_FOR_ETA) {
-                computeTrendPending(rateDayWindow, measuredInDaySegment, MIN_MEASURED_FOR_ETA)
+            etaTrendPending = if (measuredInDaySegment < algorithmConfig.minMeasuredForEta) {
+                computeTrendPending(rateDayWindow, measuredInDaySegment, algorithmConfig.minMeasuredForEta)
             } else null
 
             var s = 0
@@ -552,9 +552,6 @@ private fun classifyWeeklyRate(weeklyRateKg: Double?, goalIsLoss: Boolean): Week
         else -> WeeklyRateZone.TooFast
     }
 }
-
-private const val MIN_MEASURED_FOR_RATE = 7
-private const val MIN_MEASURED_FOR_ETA = 14
 
 private fun computeWeeklyRate(window: List<EqualizerDayData>, indexStepDays: Int = 1, maxGap: Int): Double? {
     val filled = fillGaps(window, maxGap) ?: return null

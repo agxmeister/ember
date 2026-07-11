@@ -78,6 +78,8 @@
     <string name="settings_min_measured_for_volatility">Misurazioni min. per la volatilità</string>
     <string name="settings_stale_cutoff_window">Soglia di obsolescenza (periodi)</string>
     <string name="settings_max_gap">Intervallo max (periodi)</string>
+    <string name="settings_min_measured_for_rate">Misurazioni min. per il ritmo</string>
+    <string name="settings_min_measured_for_eta">Misurazioni min. per l\'ETA</string>
     <string name="label_days">giorni</string>
     <string name="settings_start_over">Definisci un nuovo obiettivo</string>
     <string name="settings_start_over_with_import">Definisci un nuovo obiettivo con importazione dati</string>

@@ -73,6 +73,8 @@
     <string name="settings_min_measured_for_volatility">Mesures min. pour la volatilité</string>
     <string name="settings_stale_cutoff_window">Seuil d\'obsolescence (périodes)</string>
     <string name="settings_max_gap">Écart max. (périodes)</string>
+    <string name="settings_min_measured_for_rate">Mesures min. pour le rythme</string>
+    <string name="settings_min_measured_for_eta">Mesures min. pour l\'ETA</string>
     <string name="label_days">jours</string>
 
     <string name="onboarding_welcome">Bienvenue sur Ember</string>

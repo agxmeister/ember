@@ -73,6 +73,8 @@
     <string name="settings_min_measured_for_volatility">Min. Messungen für Schwankung</string>
     <string name="settings_stale_cutoff_window">Veraltungsgrenze (Perioden)</string>
     <string name="settings_max_gap">Max. Lücke (Perioden)</string>
+    <string name="settings_min_measured_for_rate">Min. Messungen für Rate</string>
+    <string name="settings_min_measured_for_eta">Min. Messungen für ETA</string>
     <string name="label_days">Tage</string>
 
     <string name="onboarding_welcome">Willkommen bei Ember</string>

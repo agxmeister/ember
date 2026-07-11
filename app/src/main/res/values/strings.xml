@@ -78,6 +78,8 @@
     <string name="settings_min_measured_for_volatility">Min. measurements for volatility</string>
     <string name="settings_stale_cutoff_window">Staleness cutoff (periods)</string>
     <string name="settings_max_gap">Max gap (periods)</string>
+    <string name="settings_min_measured_for_rate">Min. measurements for rate</string>
+    <string name="settings_min_measured_for_eta">Min. measurements for ETA</string>
     <string name="label_days">days</string>
     <string name="settings_start_over">Define a new goal</string>
     <string name="settings_start_over_with_import">Define a new goal with data import</string>

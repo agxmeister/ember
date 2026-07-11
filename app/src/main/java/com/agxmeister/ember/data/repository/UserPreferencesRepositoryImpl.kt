@@ -43,8 +43,10 @@ class UserPreferencesRepositoryImpl @Inject constructor(
         dataStore.minMeasuredForVolatility,
         dataStore.staleCutoffPeriods,
         dataStore.maxGapDays,
+        dataStore.minMeasuredForRate,
+        dataStore.minMeasuredForEta,
     ) { values ->
-        AlgorithmConfig(values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7])
+        AlgorithmConfig(values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7], values[8], values[9])
     }
 
     override suspend fun saveOnboardingData(
@@ -138,6 +140,8 @@ class UserPreferencesRepositoryImpl @Inject constructor(
         dataStore.setMinMeasuredForVolatility(config.minMeasuredForVolatility)
         dataStore.setStaleCutoffPeriods(config.staleCutoffPeriods)
         dataStore.setMaxGapDays(config.maxGapDays)
+        dataStore.setMinMeasuredForRate(config.minMeasuredForRate)
+        dataStore.setMinMeasuredForEta(config.minMeasuredForEta)
     }
 
     override suspend fun resetOnboarding() {

@@ -9,4 +9,6 @@ data class AlgorithmConfig(
     val minMeasuredForVolatility: Int = 4,
     val staleCutoffPeriods: Int = 7,
     val maxGapDays: Int = 7,
+    val minMeasuredForRate: Int = 7,
+    val minMeasuredForEta: Int = 14,
 )

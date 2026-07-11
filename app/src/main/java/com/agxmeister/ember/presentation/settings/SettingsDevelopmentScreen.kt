@@ -24,7 +24,7 @@ import com.agxmeister.ember.presentation.appString
 
 private enum class AlgorithmField {
     MinClusterSize, RegressionInterval, StaleCutoff, MaxGap, StreakWindow, ScoreWindow, VolatilityWindow,
-    MinMeasuredForVolatility,
+    MinMeasuredForVolatility, MinMeasuredForRate, MinMeasuredForEta,
 }
 
 @Composable
@@ -76,6 +76,16 @@ fun SettingsDevelopmentScreen(
             label = appString(R.string.settings_max_gap),
             value = algorithmConfig.maxGapDays.toString(),
             onClick = { editingField = AlgorithmField.MaxGap },
+        )
+        LabeledTappableSetting(
+            label = appString(R.string.settings_min_measured_for_rate),
+            value = algorithmConfig.minMeasuredForRate.toString(),
+            onClick = { editingField = AlgorithmField.MinMeasuredForRate },
+        )
+        LabeledTappableSetting(
+            label = appString(R.string.settings_min_measured_for_eta),
+            value = algorithmConfig.minMeasuredForEta.toString(),
+            onClick = { editingField = AlgorithmField.MinMeasuredForEta },
         )
         SettingsDivider()
 
@@ -139,6 +149,26 @@ fun SettingsDevelopmentScreen(
                 validRange = 1..30,
                 onConfirm = {
                     viewModel.onAlgorithmConfigChanged(algorithmConfig.copy(maxGapDays = it))
+                    editingField = null
+                },
+                onDismiss = { editingField = null },
+            )
+            AlgorithmField.MinMeasuredForRate -> IntSettingDialog(
+                title = appString(R.string.settings_min_measured_for_rate),
+                initialValue = algorithmConfig.minMeasuredForRate,
+                validRange = 2..365,
+                onConfirm = {
+                    viewModel.onAlgorithmConfigChanged(algorithmConfig.copy(minMeasuredForRate = it))
+                    editingField = null
+                },
+                onDismiss = { editingField = null },
+            )
+            AlgorithmField.MinMeasuredForEta -> IntSettingDialog(
+                title = appString(R.string.settings_min_measured_for_eta),
+                initialValue = algorithmConfig.minMeasuredForEta,
+                validRange = 2..365,
+                onConfirm = {
+                    viewModel.onAlgorithmConfigChanged(algorithmConfig.copy(minMeasuredForEta = it))
                     editingField = null
                 },
                 onDismiss = { editingField = null },

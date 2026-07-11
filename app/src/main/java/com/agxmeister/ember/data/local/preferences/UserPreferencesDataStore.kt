@@ -55,6 +55,8 @@ class UserPreferencesDataStore @Inject constructor(
     private val minMeasuredForVolatilityKey = intPreferencesKey("min_measured_for_volatility")
     private val staleCutoffPeriodsKey = intPreferencesKey("stale_cutoff_periods")
     private val maxGapDaysKey = intPreferencesKey("max_gap_days")
+    private val minMeasuredForRateKey = intPreferencesKey("min_measured_for_rate")
+    private val minMeasuredForEtaKey = intPreferencesKey("min_measured_for_eta")
 
     val isOnboardingCompleted: Flow<Boolean> =
         context.dataStore.data.map { it[onboardingCompletedKey] ?: false }
@@ -163,6 +165,12 @@ class UserPreferencesDataStore @Inject constructor(
 
     val maxGapDays: Flow<Int> =
         context.dataStore.data.map { it[maxGapDaysKey] ?: 7 }
+
+    val minMeasuredForRate: Flow<Int> =
+        context.dataStore.data.map { it[minMeasuredForRateKey] ?: 7 }
+
+    val minMeasuredForEta: Flow<Int> =
+        context.dataStore.data.map { it[minMeasuredForEtaKey] ?: 14 }
 
     suspend fun saveOnboardingData(
         weightKg: Double,
@@ -312,6 +320,14 @@ class UserPreferencesDataStore @Inject constructor(
 
     suspend fun setVolatilityWindow(window: Int) {
         context.dataStore.edit { it[volatilityWindowKey] = window }
+    }
+
+    suspend fun setMinMeasuredForRate(count: Int) {
+        context.dataStore.edit { it[minMeasuredForRateKey] = count }
+    }
+
+    suspend fun setMinMeasuredForEta(count: Int) {
+        context.dataStore.edit { it[minMeasuredForEtaKey] = count }
     }
 
     suspend fun setMinMeasuredForVolatility(count: Int) {
