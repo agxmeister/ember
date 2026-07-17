@@ -212,18 +212,17 @@ private fun ReachedContent() {
     )
 }
 
+private fun etaPlaceholderStyle(onSurface: Color): TextStyle = TextStyle(
+    fontFamily = FontFamily.Monospace,
+    fontSize = 22.sp,
+    fontWeight = FontWeight.Bold,
+    color = onSurface.copy(alpha = 0.30f),
+)
+
 @Composable
 private fun PendingContent(modifier: Modifier = Modifier, onSurface: Color) {
     Column(modifier = modifier) {
-        Text(
-            text = ".-",
-            style = TextStyle(
-                fontFamily = FontFamily.Monospace,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                color = onSurface.copy(alpha = 0.30f),
-            ),
-        )
+        Text(text = ".-", style = etaPlaceholderStyle(onSurface))
         Spacer(Modifier.height(8.dp))
         EtaJourney(
             progress = null,
@@ -241,15 +240,7 @@ private fun UnavailableContent(projection: ProjectionResult, onSurface: Color) {
         else -> appString(R.string.trends_eta_not_enough_data)
     }
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            text = ".-",
-            style = TextStyle(
-                fontFamily = FontFamily.Monospace,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                color = onSurface.copy(alpha = 0.30f),
-            ),
-        )
+        Text(text = ".-", style = etaPlaceholderStyle(onSurface))
         Spacer(Modifier.width(10.dp))
         Text(
             text = secondary,
