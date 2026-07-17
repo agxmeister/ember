@@ -70,7 +70,7 @@
     <string name="settings_smart_tracking">Seguimiento inteligente</string>
     <string name="settings_trend">Tendencia</string>
     <string name="settings_windows">Ventanas</string>
-    <string name="settings_regression_interval">Intervalo de regresión</string>
+    <string name="settings_regression_window">Ventana de regresión</string>
     <string name="settings_min_cluster_size">Tamaño mínimo del clúster</string>
     <string name="settings_streak_window">Ventana de racha</string>
     <string name="settings_score_window">Ventana de puntuación</string>
@@ -79,9 +79,7 @@
     <string name="settings_stale_cutoff_window">Umbral de obsolescencia (períodos)</string>
     <string name="settings_max_gap">Hueco máx. (períodos)</string>
     <string name="settings_min_measured_for_rate">Mediciones mín. para el ritmo</string>
-    <string name="settings_min_measured_for_eta">Mediciones mín. para la ETA</string>
-    <string name="label_days">días</string>
-    <string name="settings_start_over">Definir un nuevo objetivo</string>
+    <string name="settings_min_measured_for_eta">Mediciones mín. para la ETA</string>    <string name="settings_start_over">Definir un nuevo objetivo</string>
     <string name="settings_start_over_with_import">Definir un nuevo objetivo con importación de datos</string>
     <string name="settings_start_over_confirm_title">¿Definir un nuevo objetivo?</string>
     <string name="settings_start_over_confirm_message">Se eliminarán todas las mediciones y volverás a hacer la introducción para establecer un nuevo objetivo. Esto no se puede deshacer.</string>

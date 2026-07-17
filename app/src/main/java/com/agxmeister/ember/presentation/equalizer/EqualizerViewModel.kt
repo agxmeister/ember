@@ -229,7 +229,7 @@ class EqualizerViewModel @Inject constructor(
             PeriodSpec(
                 stepDays = 7,
                 current = todayDate.isoWeekStart(),
-                rateWindowPeriods = algorithmConfig.regressionIntervalDays,
+                rateWindowPeriods = algorithmConfig.regressionWindow,
                 measuredPeriods = weeklyMap.keys,
                 normalize = { it.isoWeekStart() },
                 lookup = { weeklyMap[it]?.median },
@@ -239,7 +239,7 @@ class EqualizerViewModel @Inject constructor(
             PeriodSpec(
                 stepDays = 1,
                 current = todayDate,
-                rateWindowPeriods = algorithmConfig.regressionIntervalDays,
+                rateWindowPeriods = algorithmConfig.regressionWindow,
                 measuredPeriods = candleMap.keys,
                 normalize = { it },
                 lookup = { candleMap[it]?.close },

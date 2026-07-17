@@ -70,7 +70,7 @@
     <string name="settings_smart_tracking">Monitoraggio intelligente</string>
     <string name="settings_trend">Tendenza</string>
     <string name="settings_windows">Finestre</string>
-    <string name="settings_regression_interval">Intervallo di regressione</string>
+    <string name="settings_regression_window">Finestra di regressione</string>
     <string name="settings_min_cluster_size">Dimensione minima del cluster</string>
     <string name="settings_streak_window">Finestra serie</string>
     <string name="settings_score_window">Finestra punteggio</string>
@@ -79,9 +79,7 @@
     <string name="settings_stale_cutoff_window">Soglia di obsolescenza (periodi)</string>
     <string name="settings_max_gap">Intervallo max (periodi)</string>
     <string name="settings_min_measured_for_rate">Misurazioni min. per il ritmo</string>
-    <string name="settings_min_measured_for_eta">Misurazioni min. per l\'ETA</string>
-    <string name="label_days">giorni</string>
-    <string name="settings_start_over">Definisci un nuovo obiettivo</string>
+    <string name="settings_min_measured_for_eta">Misurazioni min. per l\'ETA</string>    <string name="settings_start_over">Definisci un nuovo obiettivo</string>
     <string name="settings_start_over_with_import">Definisci un nuovo obiettivo con importazione dati</string>
     <string name="settings_start_over_confirm_title">Definire un nuovo obiettivo?</string>
     <string name="settings_start_over_confirm_message">Tutte le misurazioni verranno eliminate e farai di nuovo l\'onboarding per impostare un nuovo obiettivo. Questa azione non può essere annullata.</string>

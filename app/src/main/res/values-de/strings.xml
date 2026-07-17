@@ -65,7 +65,7 @@
     <string name="settings_smart_tracking">Intelligentes Tracking</string>
     <string name="settings_trend">Trend</string>
     <string name="settings_windows">Fenster</string>
-    <string name="settings_regression_interval">Regressionsintervall</string>
+    <string name="settings_regression_window">Regressionsfenster</string>
     <string name="settings_min_cluster_size">Min. Clustergröße</string>
     <string name="settings_streak_window">Streak-Fenster</string>
     <string name="settings_score_window">Score-Fenster</string>
@@ -75,8 +75,6 @@
     <string name="settings_max_gap">Max. Lücke (Perioden)</string>
     <string name="settings_min_measured_for_rate">Min. Messungen für Rate</string>
     <string name="settings_min_measured_for_eta">Min. Messungen für ETA</string>
-    <string name="label_days">Tage</string>
-
     <string name="onboarding_welcome">Willkommen bei Ember</string>
     <string name="onboarding_current_weight_question">Wie viel wiegst du ungefähr?</string>
     <string name="onboarding_target_weight_title">Zielgewicht</string>

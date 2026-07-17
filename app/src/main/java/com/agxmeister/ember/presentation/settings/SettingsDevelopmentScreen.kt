@@ -23,7 +23,7 @@ import com.agxmeister.ember.R
 import com.agxmeister.ember.presentation.appString
 
 private enum class AlgorithmField {
-    MinClusterSize, RegressionInterval, StaleCutoff, MaxGap, StreakWindow, ScoreWindow, VolatilityWindow,
+    MinClusterSize, RegressionWindow, StaleCutoff, MaxGap, StreakWindow, ScoreWindow, VolatilityWindow,
     MinMeasuredForVolatility, MinMeasuredForRate, MinMeasuredForEta,
 }
 
@@ -38,7 +38,6 @@ fun SettingsDevelopmentScreen(
 
     var editingField by remember { mutableStateOf<AlgorithmField?>(null) }
     var showDefineGoalDialog by remember { mutableStateOf(false) }
-    val daysSuffix = appString(R.string.label_days)
 
     SettingsAccentTheme(accentCloseness) {
     Column(
@@ -63,9 +62,9 @@ fun SettingsDevelopmentScreen(
 
         SettingsSectionHeader(appString(R.string.settings_trend))
         LabeledTappableSetting(
-            label = appString(R.string.settings_regression_interval),
-            value = "${algorithmConfig.regressionIntervalDays} $daysSuffix",
-            onClick = { editingField = AlgorithmField.RegressionInterval },
+            label = appString(R.string.settings_regression_window),
+            value = algorithmConfig.regressionWindow.toString(),
+            onClick = { editingField = AlgorithmField.RegressionWindow },
         )
         LabeledTappableSetting(
             label = appString(R.string.settings_stale_cutoff_window),
@@ -122,13 +121,12 @@ fun SettingsDevelopmentScreen(
                 },
                 onDismiss = { editingField = null },
             )
-            AlgorithmField.RegressionInterval -> IntSettingDialog(
-                title = appString(R.string.settings_regression_interval),
-                initialValue = algorithmConfig.regressionIntervalDays,
+            AlgorithmField.RegressionWindow -> IntSettingDialog(
+                title = appString(R.string.settings_regression_window),
+                initialValue = algorithmConfig.regressionWindow,
                 validRange = 7..365,
-                suffix = daysSuffix,
                 onConfirm = {
-                    viewModel.onAlgorithmConfigChanged(algorithmConfig.copy(regressionIntervalDays = it))
+                    viewModel.onAlgorithmConfigChanged(algorithmConfig.copy(regressionWindow = it))
                     editingField = null
                 },
                 onDismiss = { editingField = null },

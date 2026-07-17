@@ -47,7 +47,7 @@ class UserPreferencesDataStore @Inject constructor(
     private val themeModeKey = stringPreferencesKey("theme_mode")
     private val languageKey = stringPreferencesKey("language_explicit")
     private val goalStartDateKey = stringPreferencesKey("goal_start_date")
-    private val regressionIntervalDaysKey = intPreferencesKey("regression_interval_days")
+    private val regressionWindowKey = intPreferencesKey("regression_interval_days")
     private val minClusterSizeKey = intPreferencesKey("min_cluster_size")
     private val streakWindowKey = intPreferencesKey("streak_window")
     private val scoreWindowKey = intPreferencesKey("score_window")
@@ -142,8 +142,8 @@ class UserPreferencesDataStore @Inject constructor(
     val goalStartDate: Flow<String> =
         context.dataStore.data.map { it[goalStartDateKey] ?: "" }
 
-    val regressionIntervalDays: Flow<Int> =
-        context.dataStore.data.map { it[regressionIntervalDaysKey] ?: 28 }
+    val regressionWindow: Flow<Int> =
+        context.dataStore.data.map { it[regressionWindowKey] ?: 28 }
 
     val minClusterSize: Flow<Int> =
         context.dataStore.data.map { it[minClusterSizeKey] ?: 14 }
@@ -294,8 +294,8 @@ class UserPreferencesDataStore @Inject constructor(
         }
     }
 
-    suspend fun setRegressionIntervalDays(days: Int) {
-        context.dataStore.edit { it[regressionIntervalDaysKey] = days }
+    suspend fun setRegressionWindow(value: Int) {
+        context.dataStore.edit { it[regressionWindowKey] = value }
     }
 
     suspend fun setMinClusterSize(size: Int) {
