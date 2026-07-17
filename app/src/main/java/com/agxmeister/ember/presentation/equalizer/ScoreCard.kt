@@ -5,10 +5,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
 import com.agxmeister.ember.R
 import com.agxmeister.ember.presentation.appString
 import com.agxmeister.ember.presentation.theme.closenessColor
@@ -31,11 +27,7 @@ internal fun ScoreCard(
         val scoreColor = if (score != null) closenessColor(score / 100f, darkTheme) else pendingPlaceholderColor()
         Text(
             text = score?.toString() ?: "--",
-            style = TextStyle(
-                fontFamily = FontFamily.Monospace,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = scoreColor,
+            style = statValueStyle(scoreColor).copy(
                 shadow = Shadow(color = scoreColor.copy(alpha = 0.5f), blurRadius = 10f),
             ),
         )
