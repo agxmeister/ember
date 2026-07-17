@@ -222,165 +222,80 @@ class EqualizerViewModel @Inject constructor(
         val tolerance = abs(initialWeightKg - targetKg).coerceAtLeast(0.1)
         val isWeekly = frequency == WeighingFrequency.Weekly
 
-        val days: List<EqualizerDayData>
-        val today: LocalDate
-        val streak: Int
-        val weeklyAvg: Double?
-        val score: Int?
-        val volatilityKg: Double?
-        val volatilityMeasuresNeeded: Int?
-        val trendLine: TrendLineData?
-        val weeklyRateKg: Double?
-        val trendPending: TrendPending?
-        val etaTrendPending: TrendPending?
-        val canScrollLeft: Boolean
-        val canScrollRight: Boolean
-
         val goalDate = goalStartDateStr.takeIf { it.isNotEmpty() }?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
 
-        if (isWeekly) {
-            val currentWeekStart = todayDate.isoWeekStart()
-            today = currentWeekStart
-
-            val goalWeekStart = goalDate?.isoWeekStart()
-            val currentEpochWeeks = currentWeekStart.toEpochDays() / 7
-            val goalEpochWeeks = goalWeekStart?.toEpochDays()?.div(7) ?: (currentEpochWeeks - 13)
-            val maxOffset = (currentEpochWeeks - goalEpochWeeks - 13).toInt().coerceAtLeast(0)
-            val effectiveOffset = rawOffset.coerceIn(0, maxOffset)
-            canScrollLeft = effectiveOffset < maxOffset
-            canScrollRight = effectiveOffset > 0
-
+        val spec = if (isWeekly) {
             val weeklyMap = allWeekly.associateBy { it.weekStart }
-            val windowStart = currentWeekStart.minus(DatePeriod(days = (13 + effectiveOffset) * 7))
-            days = (0..13).map { offset ->
-                val weekStart = windowStart.plus(DatePeriod(days = offset * 7))
-                EqualizerDayData(date = weekStart, weightKg = weeklyMap[weekStart]?.median)
-            }
-
-            trendLine = computeTrendLine(days, maxStalePeriods = algorithmConfig.staleCutoffPeriods)
-            val lastMeasuredWeekIdx = days.indexOfLast { it.weightKg != null }
-            val hasRecentWeek = lastMeasuredWeekIdx >= days.size - algorithmConfig.staleCutoffPeriods
-            val rateWeekWindowStart = currentWeekStart.minus(DatePeriod(days = 27 * 7))
-            val rateWeekWindow = (0..27).map { offset ->
-                val weekStart = rateWeekWindowStart.plus(DatePeriod(days = offset * 7))
-                EqualizerDayData(date = weekStart, weightKg = weeklyMap[weekStart]?.median)
-            }
-            val rateWeekSegment = mostRecentCleanSegment(rateWeekWindow, algorithmConfig.maxGapDays)
-            val measuredInWeekSegment = rateWeekSegment.count { it.weightKg != null }
-            weeklyRateKg = if (hasRecentWeek && measuredInWeekSegment >= algorithmConfig.minMeasuredForRate) {
-                computeWeeklyRate(rateWeekSegment, indexStepDays = 7, maxGap = algorithmConfig.maxGapDays)
-            } else null
-            trendPending = if (weeklyRateKg == null) {
-                computeTrendPending(rateWeekWindow, measuredInWeekSegment, algorithmConfig.minMeasuredForRate)
-            } else null
-            etaTrendPending = if (measuredInWeekSegment < algorithmConfig.minMeasuredForEta) {
-                computeTrendPending(rateWeekWindow, measuredInWeekSegment, algorithmConfig.minMeasuredForEta)
-            } else null
-
-            var s = 0
-            var w = weeklyMap.keys.filter { it <= currentWeekStart }.maxOrNull() ?: currentWeekStart
-            while (true) {
-                if (!weeklyMap.containsKey(w)) break
-                val wStart = w.minus(DatePeriod(days = (algorithmConfig.streakWindow - 1) * 7))
-                val window = (0 until algorithmConfig.streakWindow).map { offset ->
-                    val weekStart = wStart.plus(DatePeriod(days = offset * 7))
-                    EqualizerDayData(date = weekStart, weightKg = weeklyMap[weekStart]?.median)
-                }
-                val t = computeTrendLine(window) ?: break
-                if (if (goalIsLoss) t.diffKg < 0 else t.diffKg > 0) s++ else break
-                w = w.minus(DatePeriod(days = 7))
-            }
-            streak = s
-
-            val windowWeeks = days.mapNotNull { it.weightKg }
-            weeklyAvg = if (windowWeeks.isNotEmpty()) windowWeeks.median() else null
-
-            val scoreStart = days.last().date.minus(DatePeriod(days = (algorithmConfig.scoreWindow - 1) * 7))
-            val scoreWeeks = (0 until algorithmConfig.scoreWindow).map { offset ->
-                val weekStart = scoreStart.plus(DatePeriod(days = offset * 7))
-                EqualizerDayData(date = weekStart, weightKg = weeklyMap[weekStart]?.median)
-            }
-            score = computeScore(scoreWeeks, indexStepDays = 7, streak = streak, goalIsLoss = goalIsLoss, maxGap = algorithmConfig.maxGapDays)
-
-            val volStart = days.last().date.minus(DatePeriod(days = (algorithmConfig.volatilityWindow - 1) * 7))
-            val volWeeks = (0 until algorithmConfig.volatilityWindow).map { offset ->
-                val weekStart = volStart.plus(DatePeriod(days = offset * 7))
-                EqualizerDayData(date = weekStart, weightKg = weeklyMap[weekStart]?.median)
-            }
-            volatilityKg = computeVolatility(volWeeks, algorithmConfig.minMeasuredForVolatility)
-            volatilityMeasuresNeeded = volatilityMeasuresNeeded(volWeeks, algorithmConfig.minMeasuredForVolatility)
+            PeriodSpec(
+                stepDays = 7,
+                current = todayDate.isoWeekStart(),
+                rateWindowPeriods = algorithmConfig.regressionIntervalDays,
+                measuredPeriods = weeklyMap.keys,
+                normalize = { it.isoWeekStart() },
+                lookup = { weeklyMap[it]?.median },
+            )
         } else {
-            today = todayDate
-
-            val todayEpochDays = todayDate.toEpochDays()
-            val goalEpochDays = goalDate?.toEpochDays() ?: (todayEpochDays - 13)
-            val maxOffset = (todayEpochDays - goalEpochDays - 13).toInt().coerceAtLeast(0)
-            val effectiveOffset = rawOffset.coerceIn(0, maxOffset)
-            canScrollLeft = effectiveOffset < maxOffset
-            canScrollRight = effectiveOffset > 0
-
             val candleMap = allCandles.associateBy { it.date }
-            val windowStart = todayDate.minus(DatePeriod(days = 13 + effectiveOffset))
-            days = (0..13).map { offset ->
-                val date = windowStart.plus(DatePeriod(days = offset))
-                val candle = candleMap[date]
-                EqualizerDayData(date = date, weightKg = candle?.close, rawWeightKg = candle?.rawClose)
-            }
-
-            trendLine = computeTrendLine(days, maxStalePeriods = algorithmConfig.staleCutoffPeriods)
-            val lastMeasuredDayIdx = days.indexOfLast { it.weightKg != null }
-            val hasRecentDay = lastMeasuredDayIdx >= days.size - algorithmConfig.staleCutoffPeriods
-            val regressionDays = algorithmConfig.regressionIntervalDays
-            val rateDayWindowStart = todayDate.minus(DatePeriod(days = regressionDays - 1))
-            val rateDayWindow = (0 until regressionDays).map { offset ->
-                val date = rateDayWindowStart.plus(DatePeriod(days = offset))
-                EqualizerDayData(date = date, weightKg = candleMap[date]?.close)
-            }
-            val rateDaySegment = mostRecentCleanSegment(rateDayWindow, algorithmConfig.maxGapDays)
-            val measuredInDaySegment = rateDaySegment.count { it.weightKg != null }
-            weeklyRateKg = if (hasRecentDay && measuredInDaySegment >= algorithmConfig.minMeasuredForRate) {
-                computeWeeklyRate(rateDaySegment, maxGap = algorithmConfig.maxGapDays)
-            } else null
-            trendPending = if (weeklyRateKg == null) {
-                computeTrendPending(rateDayWindow, measuredInDaySegment, algorithmConfig.minMeasuredForRate)
-            } else null
-            etaTrendPending = if (measuredInDaySegment < algorithmConfig.minMeasuredForEta) {
-                computeTrendPending(rateDayWindow, measuredInDaySegment, algorithmConfig.minMeasuredForEta)
-            } else null
-
-            var s = 0
-            var d = candleMap.keys.filter { it <= todayDate }.maxOrNull() ?: todayDate
-            while (true) {
-                if (!candleMap.containsKey(d)) break
-                val wStart = d.minus(DatePeriod(days = algorithmConfig.streakWindow - 1))
-                val window = (0 until algorithmConfig.streakWindow).map { offset ->
-                    val date = wStart.plus(DatePeriod(days = offset))
-                    EqualizerDayData(date = date, weightKg = candleMap[date]?.close)
-                }
-                val t = computeTrendLine(window) ?: break
-                if (if (goalIsLoss) t.diffKg < 0 else t.diffKg > 0) s++ else break
-                d = d.minus(DatePeriod(days = 1))
-            }
-            streak = s
-
-            val windowWeights = days.mapNotNull { it.weightKg }
-            weeklyAvg = if (windowWeights.isNotEmpty()) windowWeights.median() else null
-
-            val scoreStart = days.last().date.minus(DatePeriod(days = algorithmConfig.scoreWindow - 1))
-            val scoreDays = (0 until algorithmConfig.scoreWindow).map { offset ->
-                val date = scoreStart.plus(DatePeriod(days = offset))
-                EqualizerDayData(date = date, weightKg = candleMap[date]?.close)
-            }
-            score = computeScore(scoreDays, indexStepDays = 1, streak = streak, goalIsLoss = goalIsLoss, maxGap = algorithmConfig.maxGapDays)
-
-            val volStart = days.last().date.minus(DatePeriod(days = algorithmConfig.volatilityWindow - 1))
-            val volDays = (0 until algorithmConfig.volatilityWindow).map { offset ->
-                val date = volStart.plus(DatePeriod(days = offset))
-                EqualizerDayData(date = date, weightKg = candleMap[date]?.close)
-            }
-            volatilityKg = computeVolatility(volDays, algorithmConfig.minMeasuredForVolatility)
-            volatilityMeasuresNeeded = volatilityMeasuresNeeded(volDays, algorithmConfig.minMeasuredForVolatility)
+            PeriodSpec(
+                stepDays = 1,
+                current = todayDate,
+                rateWindowPeriods = algorithmConfig.regressionIntervalDays,
+                measuredPeriods = candleMap.keys,
+                normalize = { it },
+                lookup = { candleMap[it]?.close },
+                rawLookup = { candleMap[it]?.rawClose },
+            )
         }
+        val step = spec.stepDays
+        val today = spec.current
+
+        val currentEpochUnits = spec.current.toEpochDays() / step
+        val goalEpochUnits = goalDate?.let { spec.normalize(it).toEpochDays() / step } ?: (currentEpochUnits - (WINDOW_SIZE - 1))
+        val maxOffset = (currentEpochUnits - goalEpochUnits - (WINDOW_SIZE - 1)).toInt().coerceAtLeast(0)
+        val effectiveOffset = rawOffset.coerceIn(0, maxOffset)
+        val canScrollLeft = effectiveOffset < maxOffset
+        val canScrollRight = effectiveOffset > 0
+
+        val windowEnd = spec.current.minus(DatePeriod(days = effectiveOffset * step))
+        val days = windowEndingAt(windowEnd, WINDOW_SIZE, spec)
+
+        val trendLine = computeTrendLine(days, maxStalePeriods = algorithmConfig.staleCutoffPeriods)
+        val lastMeasuredIdx = days.indexOfLast { it.weightKg != null }
+        val hasRecent = lastMeasuredIdx >= days.size - algorithmConfig.staleCutoffPeriods
+
+        val rateWindow = windowEndingAt(spec.current, spec.rateWindowPeriods, spec)
+        val rateSegment = mostRecentCleanSegment(rateWindow, algorithmConfig.maxGapDays)
+        val measuredInSegment = rateSegment.count { it.weightKg != null }
+        val weeklyRateKg = if (hasRecent && measuredInSegment >= algorithmConfig.minMeasuredForRate) {
+            computeWeeklyRate(rateSegment, indexStepDays = step, maxGap = algorithmConfig.maxGapDays)
+        } else null
+        val trendPending = if (weeklyRateKg == null) {
+            computeTrendPending(rateWindow, measuredInSegment, algorithmConfig.minMeasuredForRate)
+        } else null
+        val etaTrendPending = if (measuredInSegment < algorithmConfig.minMeasuredForEta) {
+            computeTrendPending(rateWindow, measuredInSegment, algorithmConfig.minMeasuredForEta)
+        } else null
+
+        var streakCount = 0
+        var cursor = spec.measuredPeriods.filter { it <= spec.current }.maxOrNull() ?: spec.current
+        while (true) {
+            if (cursor !in spec.measuredPeriods) break
+            val window = windowEndingAt(cursor, algorithmConfig.streakWindow, spec)
+            val t = computeTrendLine(window) ?: break
+            if (if (goalIsLoss) t.diffKg < 0 else t.diffKg > 0) streakCount++ else break
+            cursor = cursor.minus(DatePeriod(days = step))
+        }
+        val streak = streakCount
+
+        val windowValues = days.mapNotNull { it.weightKg }
+        val weeklyAvg = if (windowValues.isNotEmpty()) windowValues.median() else null
+
+        val scoreWindowData = windowEndingAt(days.last().date, algorithmConfig.scoreWindow, spec)
+        val score = computeScore(scoreWindowData, indexStepDays = step, streak = streak, goalIsLoss = goalIsLoss, maxGap = algorithmConfig.maxGapDays)
+
+        val volWindowData = windowEndingAt(days.last().date, algorithmConfig.volatilityWindow, spec)
+        val volatilityKg = computeVolatility(volWindowData, algorithmConfig.minMeasuredForVolatility)
+        val volatilityMeasuresNeeded = volatilityMeasuresNeeded(volWindowData, algorithmConfig.minMeasuredForVolatility)
 
         val projection = computeProjection(weeklyAvg, weeklyRateKg, etaTrendPending, targetKg, initialWeightKg, goalIsLoss, todayDate)
         val rateZone = classifyWeeklyRate(weeklyRateKg, goalIsLoss)
@@ -435,6 +350,26 @@ class EqualizerViewModel @Inject constructor(
             rateZone = WeeklyRateZone.Unavailable,
         ),
     )
+}
+
+private const val WINDOW_SIZE = 14
+
+private class PeriodSpec(
+    val stepDays: Int,
+    val current: LocalDate,
+    val rateWindowPeriods: Int,
+    val measuredPeriods: Set<LocalDate>,
+    val normalize: (LocalDate) -> LocalDate,
+    val lookup: (LocalDate) -> Double?,
+    val rawLookup: (LocalDate) -> Double? = { null },
+)
+
+private fun windowEndingAt(end: LocalDate, count: Int, spec: PeriodSpec): List<EqualizerDayData> {
+    val start = end.minus(DatePeriod(days = (count - 1) * spec.stepDays))
+    return (0 until count).map { i ->
+        val date = start.plus(DatePeriod(days = i * spec.stepDays))
+        EqualizerDayData(date = date, weightKg = spec.lookup(date), rawWeightKg = spec.rawLookup(date))
+    }
 }
 
 private fun computeTrendLine(
